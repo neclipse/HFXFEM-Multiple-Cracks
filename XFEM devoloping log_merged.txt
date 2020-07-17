@@ -1,0 +1,2414 @@
+3/8/2018
+1. Finalized the tentative aggregation relationship of associated classes
+2. Initialized the file packages
+3. Determined some conventions during programming:
+    a. Class all lie in packages and all names should be self-explanatory.
+    b. Class name should reduce abbreviations,especially interface class. 
+    It can be combined by words and the first character of each word should
+    be capitalized.
+    c. Public properties of a class are lower case with only the first 
+	character capitalized; while protected or private properties should 
+	be all upper case.
+    d. methods of a class should also be all lower case
+
+3/9/2018
+1.Start building the upper level interface, i.e. abstract classes. 
+The first of such classes is EnrichPack.EnrichItem. 
+2. The derived classes for this superclass include EnrichPack.EnrCrackBody,
+EnrichPack.EnrCrackTip, EnrichPack.EnrInclusion, etc.
+3. Start building EnrichPack.EnrCrackBody:
+
+3/10/2018
+1. Start building EnrichPack.EnrCrackTip:
+
+3/12/2018
+1. WRONG In DomainPack.LinSysCreater.crtRHS or crtRHS_v2
+The formulation for both stress and traction in crtRHS_v3 
+should be correct upon the double check today.
+ft=integral(Nline'*traction,dtau)= sum(Nline*ww*[tx;ty]*ds)
+where ds=sqrt(x_xi^2+y_xi^2);
+after all, ft= Nline*[tx;ty]*ds 
+or ft = integral(Nline'*n*sigma,dxi)=sum(Nline*ww*n*sigma*dxi)
+the normal vector n of a line for a 2d problem should be always a 2*3 matrix 
+in discretized form no matter how many nodes a line of an element has. 
+n=[y_xi,0,-x_xi;0,-x_xi,y_xi]; sigma=[sigmax,sigmay,sigmaxy]
+for direct integral with traction, traction = [tx,ty].
+2. The line integral for an triangular element has the closed form:
+ft=0.5*l*[tx,ty,tx,ty]';for a constant traction along the edge with a length 
+of l if the third node has to appear in the load vector,
+ft=0.5*l*[tx,ty,tx,ty,0,0]' 
+If the traction is not constant over an element edge, say (tx1,ty1) and 
+(tx2,ty2) at two nodes of the edge with a length of l
+ft=l/6*[2*tx1+tx2,2*ty1+ty2,tx1+2*tx2,ty1+2*ty2,0,0]'.
+
+3/16/2018
+1. Focus on the quadrilateral elements for this version but leave the window
+for extension to triangular elements when writing the code.
+2. Start building ToolPack.Geometry and its derived ToolPack.GeoLevelSet 
+classes.
+The Geometry class should be able to finish the following functions:
+	a. initiate(obj) % To find the initial interacted elements with this 
+    geometry
+	b. update(obj)   % To update the geometry and the interacted elements
+	c. interactwith(obj,elem) % To determine if the geometry is interacted 
+    with elem
+3. The dominant method to achieve these functions is to use level set method, 
+which is to be implemented in the derived class ToolPack.GeoLevelSet. 
+There will be more derivedclass of ToolPack.GeoLevelSet, GeoLSMCrack and
+GeoLSMVoid and potentially GeoLSMInclusion.
+Basically, the major differences between these three derived classes is the 
+number of level set functions and the approach to update themselves.
+
+3/21/2018
+Wrote a method to locate a point within the mesh, return the closest node
+and all connected elements
+Wrote a method to calculate the narrow band radius based on the size of 
+interacted elements with a crack 
+
+
+07/26/2018
+1. Migrated HF(finished) from /codes folder to the /Exciting Research folder 
+and move the +ToolPack and +EnrichPack from HFXFEM(pending) to this folder
+2. Ran "Stepwise_drained_drilling.m" to check if the HF(finished) module is 
+still workable. Checked
+3. Re-familiarized the OO diagram and modified some because of the newly 
+adopted cohesive crack approach.
+a. Deleted the classes related to LEFM crack tip for dry rock, including 
+"EnFAsymptotic"
+4. Studied the "Event" and "Listener" mechanism in OO Matlab because it will
+ be more convenient comparing to passing trigger from class to class
+
+07/27/2018
+1. Practiced on the event and listener mechanism
+2. Continue working on the ClosedGeoLevelSet and OpenGeoLevelSet
+
+08/02/2018
+1. Write the "locate" function inside "Mesher2d" to easily locate the nearest 
+node and the envoloping element
+08/04/2018
+1. Add the method "isinside.m" to ELem2d_UP class
+08/05/2018
+1. Improve the method "isinside.m" by vectorization in a new method 
+"isinside_vec.m"
+2. Finalized the algorithm to define a crack, find all interacted nodes and 
+elements, and calculate the signed distance function.
+08/06-08/07
+1. Change class "OpenGeoLevelSet" to "OpenGeo". Because the selected explict 
+method to describe a crack
+2. Add the following functions:
+        a. "discretize(np)": Discretize the crack according to specified 
+points number whether the crack is described as a piecewise linear points 
+or function handle 
+        b. "callength":     Approximately calculate the total length of 
+the crack.
+        c. "calelen":       Calculate the minimal and maximum element lengths
+of elements along the crack
+        d. "initiate":      Initial calculation of signed distance of nodes 
+within the narrow band arond the open geometry
+08/08/18
+1. Debugged all the new written methods for OpenGeo, Results Checked using 
+three different cracks 
+2. Add "plotme" method to "OpenGeo" so that one can plot the crack itself, 
+add/or enriched nodes, agaist mesh or on a separate figure
+
+08/09/2018-08/11/2018
+1. Add "Toedge" method to enable the intial tips and updated (grown) tips 
+are always on the edge of the tip element.
+2. Debugged the new "Toedge" method, "isinside_vec"  wrong use of norm() 
+for matrix
+3. Strengened the initiate method by considering Nodes not in nodespool, 
+take "initiate" method outside the constructor of OpenGeo because of two 
+varargins, searchlevel and option for "Toedge"
+
+8/14/2018-08/31/2018
+1. Make sure the elements with its nodes too close to the interface are not 
+enriched. See OpenGeo.findelems and Elem_2d_UP.isinside_vec
+2 Note Bmat and Bmatenr are of size 4*2*nnodes
+3. The technique of enrichment is now to make enrichment function a belonging 
+of enrichment item and finish the enrichment by iterating involved nodes, 
+elements and gaussian points. In this way, the enrichment for one crack is 
+isolated within one object of enrich_item class. 
+4. Now, the Nu_enrich and Bmat_enrich can also be calculated by the enrichment
+function class EnfHeaviside; and Np_enrich and DNp_enrich can be calculated 
+by the enrichment function class EnfRidge.
+5. Later on, based on the aforementioned matrices, the components of local 
+Jacobian matrix can be readily computed within Elem_2d_UP class. 
+The global assembly of Jacobian matrix awaits the design of Dof index. 
+This will be implemented later on.
+
+09/13/2018-09/19/2018
+1. Make sure the elements with its nodes too close to the interface are not
+enriched. 
+Corrected the previous algorithm developed during 8/14 to 8/31.
+Now the screening is made after all the interacted elements are already found. 
+The intersection method was programmed to find the intersections between the 
+crack and the edges. This new intersection method takes advantage of signed 
+distance function, different from that in Toedge
+See initiate_2nd-> step 6. 
+2. Finished the subdomain method to divide the enriched element into 
+subpolygons for the integration purpose.
+Take advantage the OpenGeo.intersection method, use the four nodes, 
+two intersections, the midpoint of the two intersection points as the seeds 
+to generate 6 sub-triangles for the numerical integration purpose.
+One thing to note is that the weights directly obtained from "gausstable
+(npt,'TRI')" need to be divided by 2.
+3. Start working on the stiffness matrix in one enriched element
+
+10/24-10/26/2018
+Line Integral again.
+NOTE LINE INTEGRALS (ALONG A SEGMENT) ALWAYS INTEGRATE FROM -1 TO 1 IN THE
+LOCAL PARENT COORDINATE (XI) IF GAUSSIAN QUADRATURE IS USED, 
+REGARDLESS WHAT ELEMENT IT IS because it is mapped to the 1D isoparametric EDGE.
+1. Line integrals for external flow at the flow boundary, qt
+qt=integral(Np_line'*qn,dtau)=integral(Np'*q*ntau,dtau)=sum(ww*Np_line(i)*
+q*ntau*dtau),where q=[qx,qy], ntau*dtau=[nx;ny]*dxi. 
+Therefore, if qn is known, the line integral of qt can be evaluated by
+qt=sum(ww*Np_line(i)*qn*ds), where ds=sqrt(nx^2+ny^2);
+if q is known, it is unnecessary to transform q to qn as it was done by 
+"load2r" in"constrBCTable" in the continuum package version FEM 07262018
+
+2. line integrals along the discontinuity taud for XFEM
+Notes:
+a. The shape function matrix and other matrix in the integrand is elemental 
+but not for segments, which implies that the integral is averaged to the nodes 
+of the element but not the intersections of crack and element edges as they 
+are not real nodes.
+b. Nline_xi or direct methods(like (x1-x2)/2,(y1-y2)/2..) can be used to 
+calculate the normal or tangent vector if they are needed but the shape 
+function matrix and other matrix should be elemental matrix as said in a. 
+c. The global coordinates of the intersections are used instead of the nodes
+coordinates to calculate x_xi and y_xi. However, the local coordinates of the 
+intersections are used to calculate the local element coordinates of the
+gaussian points on the crack line for line integral.
+d. The number of line integral gaussian points are better to be 2 as 
+int(N'*N,dtau) is encountered. Also, the local line gaussian points ksi1 and
+ksi2 should be transformed to local elemental coordinates by using the line 
+shape function and the local element coordinates of the two intersections.
+
+10/31/2018-11/02/2018
+1. Update the subdomain method with smart triangles (pending)
+2. Add two gaussian points for the line integral and calculate the local 
+elemental coordinates
+3. Write a method to calculate D_cohesive
+4. Finish the elemental Jacobian matrix
+
+11/16/18
+1. Designed the dof indexing structure:
+[ux1,uy1,p1,ux2,uy2,p2....uxend,uyend,pend,uxenrN,uyenrN,penrN,...]
+2. enriched dof array is assigned by the EnrichFun.addnodedofs and 
+EnrichItem.updatedofarray function because different ENF may assign 
+different number of dofs and there may exist multiple EnrichItems.
+3. In this way, most of the old codes can remain its way because:
+    a. Methods working on the global dofs do not need to be changed. 
+    For instance in the linsyscreater directly contains all the 
+    standard and enriched dofs and the upconf also work for enriched dofs.
+    b. All the methods working solely on standard dofs do not alter either.
+    Like the crtRHS_UP and the appbound_v2 and appbound_v3.
+
+11/19/2018-11/20/2018
+1. Developed the strategy to compute the internal load vec for enriched 
+elements:
+    a. Loop through all elements-->calculate standard and leave the enriched;
+    b. Loop over all enrichement items-->use *_enriched method to calculate 
+    the stifmat, internal load vector for every INTELEM
+2. Realized that multiple enrichment items within one element may be much 
+more difficult than expected when assembling the discretized equations. 
+3. Actually, when enriched dofs for multiple enrichment items are grouped 
+into one big vector, it is not overwhelming to do the assembly. The 
+dimension of the enriched equation of equilibrium : 2*m*n*1, m=number of 
+kinds of enrichment. 
+For example, when there are two intersecting enrichement items. There are 
+three kinds of enrichment, 1 for enrichment a and 1 for enrichement b and 1 
+for the junction.
+4. However, the coexistence of multiple enrichment items in one element is 
+ignored at current stage.
+
+11/21/18-11/24/18
+1. Reviewed the method to assemble global coefficient matrix LHS. Realized 
+that the old method used for 07262018 is not optimal when there are too many 
+sub-matrices. 
+2. Developed a new (actually the same as the original method for single-phase)
+method to handle the new linear system which has a number of sub-matrices for
+assembly. In this redesigned crtLHS_UP, the elemental Jacobian matrix is already
+a big, complete matrix integrated by the sub-matrices. The Jacobian matrix 
+created in the elem.crtstif is [Juu,Jup;Jpu,Jpp] and it becomes 
+        [Jusus,Jusps,Jusue,Juspe;
+        Jpsus,Jpsps,Jpsue,Jpspe;
+        Jueus,Jueps,Jueue,Juepe;
+        Jpeus,Jpeps,Jpeue,Jpepe].
+The good thing about this structure is that the complete elemental Jacobian
+matrix corresponds to the dofs following such order of
+[ux1,uy1,ux2,..ux4,uy4,p1,...,p4,uxenr1,uyenr1,...uxenr4,uyenr4,penr1,...,penr4];
+Therefore, we just need to rearrage the Locarray in the order of
+[stdU, stdP] or [stdU,stdP,enrU, enrP] depending on the type of the element.
+
+11/27-11/29
+1. Add the gauss_line.updatecrackopening to elem.crtstif_enriched, which will
+be called in linsys.crtLHS_UP every increment.
+2. Reviewed the whole workflow of modified Newton_Raphson procedure: 
+newrapitr.iterating and changed the following:
+    a. move linsyscrt.crtLHS_UP out of the if (dt-dt0) block because it is
+    needed every increment with the crack to be updated.
+    b. add Jacob.F_coh_i and F_coh_old to the linsys.switching
+    c. update enriched dofs and their derivatives in linsys.upconf and 
+    linsys.upconf_trial.
+    d. Specifically, the du2nienri is taken care of in the upconf_trial for
+    the need of cohesion force.
+The rest remains the same as the version of 07262018.  
+SO FAR, THE PACKAGE SHOULD BE ABLE TO FINISH THE WHOLE WORKFLOW.
+HOWEVER, IT IS NOT VERIFIED AND DEBUGGED. 11/29/2018.
+
+02/04/2019
+1. The linear softening cohesive crack behaviour may introduce some numerical
+error because it has zero initial crack stiffness. Perhaps the bilinear law 
+addressed by Khoei in 2010 would better suit the need.
+The initial crack opening and stiffness; the loading and unloading; need to be 
+thought over.
+Now just check when the cohesive crack stifness is set to zero when the inital 
+crack opening is also zero, what will happen to the duenr?
+(not done)
+2. Speical treatments to the StifMatrix (or the Jacobian Matrix) to make it 
+exactly symmetric although they are almost there. 
+3. Debugged to the crtLHS-UP line 23.
+
+02/06/2019-0207
+1. Zero "ntriplets" before the loop over elements in crtLHS_UP.
+2. Make the LHS symmetric by using tril or triu.
+3. Debugged to line 26 in "iterating"
+
+02/08-02/10
+1. Attempted to apply constant pressure boundary condition along the crack.
+2. Found a bug in calculated phi for tip nodes: the phi was calculated before
+Toedge, and they should be updated after the extension of crack. (Not done)
+
+02/14-02/15
+1. In fact, it must be noted a systematical erros will present in partially
+enriched elements. In this case, the tip elements will not be symmetric. 
+Perhaps, it is better to keep the original crt_LHS without making it symmetric.
+(Revert the operation, LHS is not symmetric now 0214)
+2. Furthermore, it is now doubtable to simply set Nenr=0 for the standard 
+nodes in the tip elements. Or am I making a mistake in how to un-enrich the 
+nodes on the edge where the crack tip lies on? It seems others are doing the
+same. Perhaps, the partially enriched tip element will not be a big deal to
+the whole equation system because it is just two elements. Discuss later.
+3. How to properly assign boundary condition(like given fracture pressure)
+to the discontinuity "boundary" modeled by XFEM enriched elements?
+    a. It is worthy to note that f_uenr^ext and q_penr^ext in Khoei's work
+    originates from the integration of external traction or external flow, 
+    which should be decreased zero in the platform of cohesive crack as the
+    two nodes on the tip edge are not enriched. Also, it is usually the case
+    that discontinuity cracks do not allign with the external boundary.
+    b. Purpose-built algorithm should be developed to apply such "boundary"
+    condition. One way is to link the fracture pressure to the nodal pressure
+    (including standard and enriched) explicitly.
+
+02/21/2019
+1. The Jacobian matrix is singular (rcond number is zero) and the solution
+becomes NaN. MOST SEVERE FLAW.
+    a. First, double checked the dimension of input parameters to be consistent
+    and MPa/MN is used for mechanical parameters, and accordingly the permeability
+    coefficient has the unit of m^2/(MPa.s). Currently, the difference
+    in the order of magnitude in the Jacobian matrix is about 8. One way to
+    alleviate the difference is to use GPa/GN as the unit. Then Delastic 
+    go down by 3 orders while permeabiliy coefficient can raise 3 orders(0221).
+    b. If the problem still exists later on, regularization technique should
+    be adopted.(using the "regu" package).
+    c. Stabilized XFEM/GFEM should be learned first(Babuska and Banerjeee, 2012;
+    Gupta et al. 2013). Also, the preconditioning technique or diagonal scaling
+    may also serve the purpose.
+
+02/22/2019
+1. The Jacobian matrix is still singular even after doing (a) in 02212019. 
+2. The plate mesh was changed from uniform to non-uniform, the problem remains.
+3. The plate mesh was used by the standard HM code (without enrichment), the
+crtLHS_old method and crtLHS were also carefully checked (the same mechanism),
+however, the singularity problem does not exist here. Now, it is confirmed 
+that the singularity can be ascribed to the introduction of enriched dofs.
+4. With the units changed from MPa to GPa, it is not obvious that the condition
+number is decreased(tested in the standard HM code). However, I am confident
+in this step to bring some benefits.
+5. Time to use the "regu" package.
+
+02/24/2019
+1. Relook at the second question raised on 02142019:
+Instead of simply removing the nodes for enrichment, it is better to keep all
+the interacted nodes but put the detected ndoes in a separate list,'standard'.
+Later on, the enriched dofs associated with these standard nodes are directly
+set to zero by "Dirichlet" boundary condition.
+This is how the "blocking" works for the detected standard nodes and the nodes
+on the edge where the tips lie on.(Enlightened by Henning et al.2012)
+2. Upon this revision, the stiffness matrix for the partially enriched elements
+will be symmetric. The first problem raised on 02142019 will be solved. And 
+the global symmetry can be maintained again as 02062019.
+3. FIRST LOOK AT MY LINEAR SOLVER: TURNS OUT MLDIVIDE IS NOT MEANT FOR THE 
+LINEAR EQUATION SYSTEM THAT IS LARGE AND SPARSE. Instead, we should use
+iterative solver as mentioned multiple times in the XFEM papers
+(Menk, A. and S. P. A. Bordas 2011; Béchet, E., et al.,2005).
+
+02/27/2019
+1. Preconditioning (ILU(0)) + MINRES or GMRES is recommended for the large sparse
+coefficient matrix (n=10000~1e8). Otherwise, direct method may be still useful.
+2. regularization may also be needed if the cond number is really too large
+3. However, before any operation is adopted to improve the solver, closer look
+into the jacobian matrix is needed: 
+    a) The times 1E30 method to apply dirichlet boundary condition may not
+be good. Especially for the zero predofs.
+    b) Check why there exist a lot of near-zero components in the global 
+Jacobian matrix while they do not exist in elemental matrix. Check if they
+can be treated as zero.
+4. Check if the linear dependency in the Jacobian matrix comes from the special
+location of crack against the mesh, it is now right in the middle of elements.
+Maybe a different mesh can improve this, or a different subdomain method can 
+resolve such problem.
+
+03/03/2019-03/04/2019
+1. Finished the appbound_v4 based on the generalized direct method 
+(zero and non-zero conditions)
+2. Updated the Linsyscrt.solve method to accomadate different situations:
+direct solver for small size and iterative solver (preconditioned GMRES) for 
+large size. 
+3. Added the bilinearsoftening traction law.
+
+03/07/2019-03/09/2019
+1. Think about the verification for the stationary crack problem. Ended up
+with the same solution by Cheng and Detournay in 1991. However, I did found
+more promising analytical solution for the growing cracks in permeable rocks
+with the consideration of rock toughness, fluid viscosity and leak-off 
+(Dontsov 2017; Hu and Garagash 2010).
+2. Thinking about the approach to apply fracture pressure using Lagragian 
+multiplier method or penalty method.
+
+03/10-0311
+1. Establish the need to programm a method to update the enriched crack item
+at the end of each time increment. "EnrichItem.update_enrich" not realised.
+2. Programmed a method to do postprocessing of the EnrCrackBody in order to
+obtain the practical information about the crack, like aperture, fracture
+pressure and fracture volume, etc.
+3. Examined the current approach to consider the crack fluid flow and the 
+interfacial fluid transfer (leak-off volume). 
+    a. The fluid flow within the discontinuity is treated the similar way as 
+the porous volume by changing the permeability from that of porous media to 
+an equivalent permeability to lubrication flow by the cubic law, discarding 
+the Biot's coefficient and simplifying 1/Q to 1/Kf. In this way, the fluid
+compressiblity is also considered. 
+    However, I kinda doubt if this approach is appropriate because the FEM
+platform may have not limit the crack flow to 1D. (should be alright, see
+eq. 28 in local form)
+    b. The leak-off volume is not explictly shown in the governing equations
+using either the carter's model or the Dracy's law. Instead, it is implictly
+solved from the fluid flow continuity equation after applying the XFEM 
+formulation. Note the interfacial flow is the combination of q_p^int and
+q_penr^int. Futhermore, the interfacial flow although integrated along the 
+crack is actually distributed to the nodes of the enriched elements. 
+Under the FEM scheme, the proper way seems to add them up along the whole 
+crack to determine the whole leak-off volume.
+    c. This also brings up a question: is this approach good? What if we generate
+real nodes (with additional dofs, not like now interpolated from the FEM nodes)
+at the intersections? Would it be better to treat the leak-off explicitly?
+
+0313-0314
+Tried to develop a technique to apply known fracture pressure by spliting it
+to standard pressure dofs and enriched dofs. The split was governed by a devised
+model which can account for skin effects and transmissibility. However, such
+strong application is indeed limiting the possibility and may render unrealistic
+results for the simulation. Abandoned.
+
+03/15-0318
+1. Finished the code to give cohesion traction but not traction force.
+2. The external flux to enriched element edge has been always ignored by me 
+because I thought even at the crack mouth the injected fluid to the 
+external boundary has no integral length along the crack. However, 
+it was lately realized that the flow was integrated along the element edge but
+not the crack. So it should have some nonzero value and cannot be simply ignored.
+3. Finished the code to apply flux to crack mouth. EnrCrackBody.cal_qextenr.
+The corresponding boundary condtion table LinSysCreater.BCTableqEn should be 
+specified manually. Actually, it is easy {[crack_id, normal flwo q, nodes along
+the edge, (optional) coordinates of injection point ],[],...}.
+
+03262019
+1. Static 
+a. density rho should be zero
+b. the time integration scheme for u and p should be GN11 newmark
+2. Dynamic
+a. density rho should not be zero
+b. the time integration scheme for u is GN22 and p should is GN11 newmark
+
+03302019
+1. Fixed the integration over enriched element by changing the gauss weights
+in the subdomains with the actual area of subtriangles. See "subdomain."
+
+0401-0402
+1. Spot a series of bugs in crtstif_enriched related to qint
+2. Spot and corrected a typo in loadps,ifstd_enrich
+3. The code can run and give reasonable results for cracks over multiple time
+increments when the crack is made traction free.
+
+04/03/2019
+1. Change due to Due to update traction and cohesion force
+2. However, the code is not now able to determine a proper initial crack 
+opening. The problem is when the first increment gives a crack opening larger
+than the lcr, the calculation of traction will be out of range. There are
+problems about this issue. (NOT FIXED) (fixed by 0415)
+
+04042019
+1. Tried to determine a proper initial crack opening using lcr and dcr
+2. Tried to initialize the intial traction and cohesion force, however, 
+divergence occurs even for the first increment.
+3. Based on current observations, to include nonzero tmax for cohesive 
+behavior still need more efforts. Perphaps, the full newton-raphson scheme 
+is needed to replace the current modified scheme.
+
+0412-04152019
+Fixed several problems involved with the cohesive traction
+1. By keeping the traction force from previous step, the convergence can be 
+obtained usually in two iterations for cohesive cracks. It is done by setting
+the Due in the upconf_trial as zero.
+2. Key modification is that the Jacobian matrix should not include Kc in the 
+first iteration. 
+3. Added another mechanism to ensure the cohesive traction update within a
+acceptable range: in the ifstd_enriched,cut the time increment if the trial
+traction exceeds the cohesive strength of the crack.
+4. In the EnfHeaviside object add Nuenrplus and Nuenrminus right above and 
+below the crack so that the displacement Uc+, Uc- can be calculated in the 
+EnrichItem.postprocess. Later on, the deformed crack can be plot using fill
+plot method.
+
+04/16/2019
+1. Tried to apply fluid flow through the crack center. The BCTableqEn was
+properly added to the linsyscrt from the enrichitem (from domain.updatedofarray
+_enriched)so that the fluid injection to the enriched dof can be realized. 
+However, it was later realized that the point/line fluid source at arbitrary
+location is not available for standard dofs yet.(To be done) (Fixed on 0423)
+
+04/23/2019.
+1.Finalized the sign convention:
+For stress component, tensile is positive, comprssive is negative.
+For pore water pressure (scalar),negative value means suction. 
+For traction (vector), the vector direction is determined by the stress and
+the outward unit vector.
+For external flow, the outward flow from the boundary is positive.
+For crack injection in encrackbody.postprocess, SOURCE is positive.
+For interficial flow, qint, the flow from the crack to porous media is positive.
+2. Finished the flow along arbitrary line to the domain through:
+   a. Set QTable_node in the main file by taking advantage of Toolpack.OpenGeo
+   b. Assign QTable_node to Preprocessor
+   c. Write a new function of domain, assign_arbitrary_flow to transform
+     the QTable_node to the form of BCTableF_flow
+   d. Call this new function inside domain.crtlinsys.
+   e. Then, Linsys.crtRHS_UP can readily calculate the flow boundary condition
+3.Remember that for enriched qext, encrack.Qtable should also be assigned
+separately, in such fashion, [encrack.Id,q,locnode1,localnode2,x_coord,y_coord]
+if the line source is intersected with the cracks.
+
+04/24/2019
+1. Finished the correction inside cal_qextenr
+2. Noticed one important deficiency of the current method to model the fluid
+flow inside the crack and the leakoff volume:
+    It seems like fluid injection can not be directly applied to the crack.
+Instead, it is still through injection into the porous media. Although the 
+permeability along the crack seems several magnitude higher than the 
+surrounding rock, the direction of leakoff is always from porous media to
+the crack as we see negative leakoff all the time. (NOT FIXED), on 0430 
+correction, the leakoff volume becomes positive.
+Follow-UP:
+note that the current crack permeability is lower than that of the porous 
+medium, which should be the reason why we observe opposite direction of 
+leak-off when injecting fluid to the crack. The problem mentioned in No.2
+should be partially answered. However, how to directly inject fluid into the
+crack remain unsolved.
+ 
+04/25/2019-04/30/2019
+1.Now the encrack.cal_qextenr method not only calculate the Np_enr*q but also
+Np_std*q. Therefore, if the applied injection is only to the enriched element,
+QTable_node should be empty for the preprocessor. 
+2.From the calculation point of view, the leakoff volume is corrected by 
+subtracting the fluid injection into the enriched element (calculated in 
+encrack.cal_qextenr). 
+3.The current leakoff model based on Khoei et al. is inserted to the porous
+medium by explicitly applying boundary condition. In this way, the qint force
+vector has two components, qint_std and qint_enr. Correspondingly, the 
+injection (to the crack) to the enriched element is also decomposed to two
+parts and applied to the standard pdof and enriched pdofs respectively. The 
+outcome seems okay so far.
+4. However, it seems to me that the qint is essentially the fluid from the 
+crack to the surrounding porous medium and should be only applied to the 
+enriched pdofs. I derived the FEM formulation based on the ridge enriched
+shape function, it is likely that the qint only appears in the equation for
+enriched pdofs as the derivative of ridge function is discontinuous across
+the fracture. The expression of qint is the same as the current form. The
+new formulation has not been programmed nor tested. (04302019)
+5. Solely apply the combined qext_enr and qext_std to the enriched pdofs
+has been tested and erroneous results were observed: very high penr and
+negative pstd occur for the element where the injection is applied. It is
+believed that it is because qint_std is still applied to the standard dofs.
+
+Updates about qext on 09/12/2019
+Solely applying the qext_enr to the enriched pdofs give similar results that 
+negative pstd is seen along the crack although the resulted pfrack is positive.
+After long term injection, the surrounding pore pressure is still negative,
+which makes no sense. It is believed that the approach that have qext 
+decomposed to two parts is more reasonable.
+In the FEM scheme, all external loads are essentially extrapolated to the nodes
+of finite elements. Therefore, it is not helpful by making injection length
+a portion of element length. Also, manipulating the proportion of qext_enr
+and qext_std is not deemed right.
+Actually, reducing the edge length of the enriched element and assigning 
+considerablely large initial crack opening will lead the qext more like 
+concentrated flow.
+Furthermore, it is worthy thinking again if qext_enr is necessary. Even q
+is applied to the cross-sectional edge of the enriched element, so what?
+As experience showed, apply only qext_std to the third equation also leads
+to reasonable results in terms of Pfrack and crack aperture. 
+
+Later on, it is noticed that only applying qext_std will give a pfrack that 
+is lower than pressure at nearby nodes, which is not desired. So, it is the
+current form that we keep applying qext-enr to the fourth equation. 
+
+6. The cohesive traction model is still questionable as 
+	a. so many incrementcuts are encountered(resolved 0507); 
+	b. big shearing traction is observed after several steps (resolved 0507);
+	c. compressive contact behavior is not modeled nor prevented.
+
+05062019-05072019
+1. Noticed that in the crtstif_enriched the Kc should depend on the type of 
+heaviside enrichement. One fix is to use 1/2 multiplier for the type 2.
+2. Upon change 1, there is no need to update crack displacement based on 
+enrichment type and so is that in the ifstd_enriched and matctu for force
+updating.
+3. Did the separation check for cohesive update only when iitr>1 because
+the first iteration is just a trial iteration.
+4. Defined a new function for gausspnt_cohesive, called matctu, to
+update traction within the ifstd_enriched. In this new method, when it is
+about to change separation stage, double mechanisms will be triggered:
+    a. call tractionLaw.givepeakTangent if tractionO is bigger than 0.99*
+    peaktraction
+    b. reduce the timestep if tractionO is less than 0.99*peaktraction
+
+05/08/2019
+1. Test the theory that qint is only applied to enriched pdofs by doing:
+    a. change crtstif_enriched Jmatrix
+    b. move qintps to loadpe in ifstd_enriched
+    c. use fetot and locararrayenr in the cal_qextenr.
+The results are still erroneous. This attempt will be revisited later.
+So far, it seems the concentrated crack injection can only be achieved by
+applying q to both standard pdofs and enriched pdofs. The ridge function
+will generate the pressure ridge. The leak-off is applied explicitly in
+two parts, one to crack body (qint) and one to crack mouth cal_qextenr.
+
+05/09/2019
+1. Retried the approach in 0508, still failed to converge.
+2. Noticed one bug in the encrack.postprocess for leakoff volume calucation.
+fixed by summing the cinjection and leakoff at the end. Now the code does
+generate almost identical crack volume and leakoff volume for the top_tension
+loading case.
+
+05/16/2019-05/17/2019
+1. (effective )stress update at normal gaussian points: gauss.matsu
+2. principal effective stress calculation from the stress tensor
+3. prepared for stress update at the crack tip using the gaussian weight 
+average by completing a new class: Enrichpack.EnrCrackTip, which is now 
+a composition of EnrCrackBody because it is easier to track each crack.
+
+05/20/2019-05/23/2019
+1. Finished the stress update for standard elements
+2. stress extrapolation from conventional gaussian points to any points in 
+an element, including the nodes and element centroid. Done in element level
+3. nodal stress averaging in the domain.storage (not finished).
+4. Debugged the above mentioned stress calculation codes from 0516.
+
+05/28/2019
+1. How to update the stress within enriched elements? 
+	a. use matsu_enriched to obtain the stresses at gaussian points in 
+	sub-triangles, which are most accurate at these points
+	b. Direct method based on local gauss coordinates of nodes
+	c. Extrapolating from the four conventional gaussian points is not good
+	considering the discontinuity for displacements and stress field
+	d. Disregard the enriched element when evaluating the stress at nodes
+	e. Averaging the stress from the values at closest gaussian points 
+    (selected). 
+
+06/04/2019 -06/15/2019
+1. Working on the crack propagation: threshold, grow direction laws specific
+to cohesive zone models.
+2. Importantly from Ferte et al. (2015), it is learned that the for the 
+penalized(explicit) law for cohesive zone has some problems for large 
+adherent zone scenairo :
+internal  parameter lambda_cr marking the transition from adherent zone to 
+cohesive  zone should be not too large to avoid non-physical opening or 
+interpenetration, nor too small to avoid spurious oscillation of traction 
+in the adherent zone. 
+3. Am I using the penalized law? Do I have a large adherent zone?
+Should I worry about these problems?
+Yes, a penalized law is the cohesive traction-separation law with a initial
+linear elastic range to model the adherent zone behavior and avoid surface
+interpenetration.
+Perhaps, we can break the rule of small crack opening within adherent zone
+then a so-called non-physical opening related to a high lambda_cr would not
+be a big problem but a favor to our devised Kerogen-rich shale.
+4. To this work, it is deemed that the large critical opening (dc) would 
+better suit the need of kerogen rich shale. How about a high lambda_cr? 
+NOW, it may be more reasonable to use a high lambda_cr to represent the 
+effects of strongly elastic kerogens in the shale. The Question becomes does
+a high-lambda_cr implies a large adherent zone? Not necessarily if the 
+threshold for the adherent zone is not extremely low. Ferte et al have a
+pre-selected large adherent zone is in place (to determine the crack growth).
+
+06/07/2019-06/14/2019
+1. Advance the crack front: one element per increment? or multiple elements
+at once? Multiple trial positions? Do I need recheck the equilibrium after
+advancing the crack front at the same time stamp? While it seems one element
+per increment is more accurate, it is indeed more favorable to have larger
+crack growth for the sake of efficiency as time step can be larger as well.
+The question becomes how to ensure a better accuracy when we want to have 
+new crack front cross multiple elements? 
+    a. recheck(rerun) the equilibrium equation system. Perhaps, when the 
+	intitial opening for adherent zone is zero, and the energy required
+	is null, the equilibrium of the system is not disturbed so that 
+	multiple elements can be enriched after one increment.
+    b. Or when the crack is deemed more stable and multiple segments insert_
+    is not wanted, the time increment should be cut back.
+    c. Multiple trial positions are usually used in implicit crack tracking.
+
+
+2. Transfering history variable from old Gauss points to new Gauss points 
+after element partitioning can bring some problems: no guarantee that these
+transferred quantities satisfy the governing equations. Therefore:
+    a. delay the enrichement/partition when the element just exceed the 
+    cohesive strength of the rock matrix and enter the adherent zone. 
+    b. This is not important as of now, and I don't see the necessity of
+    transferring any histroy variable from old gauss points to new gauss  
+    points for the linear material. The u and p at nodes should be untouched
+    after the enrichement.
+
+3. Consideration of CFL(Courant Friedrichs Lewy) condition on the time step 
+for stability of coupled elasto-hydrodynamics systems: dt< h^3/E'/D
+where h is the reference mesh size, E is the effective Young's modulus, and
+D=w^3/mu. A conclusion is that the permissive time step can be as low as
+1e-6s for explicit time marching, therefore, an implicit time stepping scheme
+such as backward Euler is clearly favored. After a double check, the current
+code does follow a backward Euler like time stepping method.
+3. My strategy will be Implicit hydo-mechanics solver + explicit crack front
+tracking, which is a dominant approach nowadays because of its efficiency
+and ease of implementation. Nevertheless, an implicit crack front tracking 
+remains an option. 
+
+06/17/2019-06/23/2019
+1. Abandon the GrowIncrementLaw class as it seems redundant and necessary 
+functions can be more conveniently achieved directly within the Tip class.
+2. Realized one error in calculating the signed distance using the function
+distance2curve because distance is the shortest distance from plist to the 
+curve (excluding the extension of the curve, so that many xy will be the 
+endpoint if plist cannot find its normal projection within the curve).
+    a. Mygeo.initiate_2nd need to corrected.
+    b. The EnrCrackTip.elementincrement need also pay attention to this.
+3. The intersection method may also need to corrected(refined) as the signed
+distance function may not be universally used to calculate the intersections
+if the crack segements are not straight across the element edge. However, 
+it is just a refinement.As for the growing, where the kinks are common, the
+intersection to the front of the crack growing direction is always accurately
+calculated using the phi values because the extension of the segment is
+straight.
+Note that the updated tip location after Mygeo.Toedge should be used for the
+element partioning not the ones got from Mygeo.intersection. Eventually, if
+the tip element uses segment extensions to calculate phi and calucate inter-
+sections, all these problems will be automatically resolved.
+4. Linsys.update or Domain.updatelinsys are needed for updatedofarray_enriched
+
+06/27/19-06/30/19
+1. Take out stressp as function input for these two classes (growcheck and 
+growdirection).
+2. Add growcheck and growdirection constructing lines inside of tip.initiate
+or explicitly added in the main script.
+3. Domain.updatedofarray_enrichedare finished so that the enriched dof are 
+added for the new interacted nodes and dofarrary are updated for the newly
+added elements.
+4. Domain.updatelinsys are also updated so that the change in size can be
+reflected in the linear equation system. Obj.Drow, obj.Dcol and converged
+results are those affected. Note that the updatelinsys are done after the 
+switching which is easier.
+5. Fixing OpenGeo.initiate_2nd about inaccurate distances of tip nodes to curve
+by calculating the distance again to the extended curve.  This method should
+entail less effort than recalculating the distance manually for the detected
+Rtipnodes in the end. Because one do not need update the phi from already 
+store obj.Phi, do not need update the intersections either.
+
+07/01/2019
+1. Pay attention to the step-wise crack advancement. Although it has been
+observed in speically designed experiments, indicated from field experiences,
+the numerical simulation of this phenomenon is still tightly bonded with the
+spatial and temporal discretization. Therefore, some special decoupling work
+is needed more convincingly study the stepwise behavior from numericla 
+simulations. First the model is better mesh-independent; second, the 
+advancement is better to be implicitly solved.
+
+For my current model, at least it is known that:
+an adequately refiend mesh is necessary so that the time step can be more
+flexible (as long as it is less than the minimum consolidation time after
+one crack advancement because CFL condition is always fulfilled because of
+the implicit time stepping). This is important because the presure may endure
+some perturbation after crack advancement. A proper consolidation time is
+needed to more accurately reflect the reality. Otherwise, a big time step
+may lead to very unstable crack growth after the previous crack growth. The 
+adversity will accumulate over time.
+
+Also, the element-wise/increment-wise advancement of 
+crack should be able to repeat per time step until the growing criterion is
+no longer fulfilled.
+As inferred in the Abaqus manual, enabling the multiple elements growth at 
+the same load/time step in actual numerical simulation can be get into a 
+new step with a very tiny load/time increment to check and advance again 
+until the threshold is no longer met. (07092019)
+
+07/04/2019-07/05/2019
+1. Rederived the tangent matrix for linear softening cohesive model based
+on the concept of effective displacement. It turns out to be mathematically
+correct. However, it is realized that this model cannot stably gives negative
+stiffness especially when shear displacement is not exactly zero. 
+Probably, it is better to adopt a model which treat normal
+and tangent behavior separately. The effective displacement method is not
+optimal.
+(Need to fix!!!) 
+
+0707-0709/2019
+1. Debugging through EnrCrackBody.update_enrich.
+2. Think about what happens after the insertion of crack segment. It seems
+different approachs co-exist in the XFEM based cohesive zone simulation.
+    a. As some researchers(Khoei et al. 2013, Wencheng Jin et al.2019) have 
+    mentioned a remapping method, which seems to mean a transfer of state
+    variable from old set of gaussian points to the newly generated set after
+    element partition. However, I think some part is missing for this method
+    as I don't understand why this is necessary to be done. Instead, it seems
+    that the insertion of the crack, whether traction free or not, will lead
+    to a stress jump in the surrounding elements if not the whole domain at
+    the time-being. In numerical simulation, the insertion is done after the
+    solution of u,p and the strain/stress updating at the old gaussian points. 
+    A direct remapping of strain/stress will not really reflect what is going
+    on, thus, the subsequent check of if the crack will grow into another 
+    element is not accurate. All in all, it seems the remapping is either
+    inaccurate or incomplete for me to implement.
+    b. Rerun the equation system to achieve equilibrium state. (Not known
+    for sure how this would work)
+    c. Run the equation system with a tiny time/load increment to pretend 
+    that the on-going crack growth is allowed to extend to multiple elements
+    at the same time/load step.
+3. Continue debugging to see if the equation system will converge as fine 
+as it should be after the propagation of crack in the previous step.
+
+07/10-07/14
+1. The equation system converges after the propagation of the crack in the 
+previous step when it is modeled as stress-free crack.
+2.Realized that an exit mechanism is necessary to quit the program early if
+the crack already extends its two tips to the domain boundaries before the
+required run time. (Done)
+3. Unstable crack growth need to be handled. (Done)
+4. An error handling mechanism is needed in order to save the postprocessor.
+5. Debugged the autoincrem method and add an independent validateinc method
+for the newraphson class within which the unique function was replaced by
+uniquetol function so that minor numerical disturbance to the incarray will
+be dropped.
+
+07/15/2019
+1. Improved the autoincrem method so that the cutting method is more reliable
+with the consideration of predefined Steps info.
+2. Refined the Maxpscheck method 
+3. It is noticed that the stress in the obj.NextElem stays constant/ insensi-
+tive to the loading. Check if there is anything wrong.
+4. In the running method,"==" is replaced by ismembertol method when checking
+if the current increment need to saved to postprocessor because "==" or 
+ismember do the exact comparison while ismembertol has a tolerance. In the 
+numerical analysis, tolerance is preferred. The same applies to the uniquetol
+vs. unique in the formentioned validateinc method.
+
+07/16/2019
+1. Fixed a bug in level set calculation for new elements (ahead of tip 2)
+2. Generate a standard copy with comments for release.
+
+07/26/2019-07/28/2019
+1. Verified the cohesive tangent matrix based on the current TSL law. It is 
+found that it does give large positive normal tangent when delta_n is very
+small and vice versa. (not fixed)
+2. bilinear tsl, givepeaktangent is not right on the dshear and dnormal. 
+It is ok for Mode I dominated but not good for mixed mode (not fixed).
+3. In GaussPnt_Cohesive.matctu, change obj.CrackDisp to obj.Nu*Due.
+
+4. In ifstd_enrich, realized that it may not be right to use matctu to calculate
+traction force for the first iteration and assign traction to lg.Traction
+because the first iteration assumes that the traction in the current iteration
+inherit from the last increment. Perhaps, it is better to directly use
+lg.TractionO for the intforcer update after the first iteration.
+It turns out okay and faster to use matctu after the first iteration as it
+will need 3 iterations instead of 2 if lg.TractionO is used instead to get
+convergence.
+5. Note that the current formulation still does not know how to treat negative
+normal crack displacement (compression is not handled).
+6. matct is only calculated once in the crtstif_enrich in one increment 
+despite that crackopening is actually changing during calculation. This 
+is kinda a drawback of modified newton-raphson scheme that is adotped now.
+
+07/29/2019
+1. Start Adding compressive mode to the TractionLaw_linearsoftening. It is
+realized that Due may not be correctly calcuated if the last increment has 
+encountered negative normal crack displacements.
+Currently, it is a mess to do matctu with initial cohesion.
+
+07/30/2019
+1.% A fully Newton_Raphson scheme is required to handle the
+% complicated TSL. The current form is only okay as of monotonic loading or
+% unloading. As long as the cohesive tangent matrix changes abruptly from
+% during calcultion, it is hard to reach convergence. Here, no matter how
+% the cohesion is updated, the Kc in the linear equaiton system is not
+% changed. That is the problem of the modified Newton-Raphson scheme.
+% However, it is usually the case of monotonic loading for hydraulic
+% fracturing process so the scheme is not changed to full NR scheme yet.
+
+08/01/2019
+1. SO far, the code is not able to reasonably run for initially bonded crack
+with large initial cohesion. As the initial cohesion will lead to a compressive 
+state usually at the first increment, unless we allow a large initial time
+step.
+2. Is the code good enough to handle interpenetration during calculation
+except case with large initial cohesion and large compressive in-situ stress?
+Should be.
+
+08/04-08/11/2019
+1. Started testing the injection to crack with cohesion
+   a. The injection to initially bonded crack does not show the strong impact
+   as the initial crack width is minal.
+   b. The injeciton to initially perforated crack shows that the flow along
+   the crack is much faster than that in the domain.
+2. Started testing the code for tilted crack propagation.
+   a. The code runs okay without cohesion now after fixing a bug in 
+    tip.calstress_nonlocal as the enriched elements do not calculate stress
+     at conventional gaussian points. We can either eliminate enriched 
+     elements in the calculation or use guassian points at partitioned 
+     triangles to do the calculation.
+     Current fix:the enriched element is simply eliminated.
+   b. For the crack with cohesion, the code ran into trouble. Thus, the  
+     direct reason is related to the tangent matrix initiation/update and 
+     the traction initiation/update. (Not fixed.) 
+   c. It is noticed that the plotcrack method use uplus and uminus without
+    considering the minimalopening for the perforated crack. (Not fixed,
+     or no need to fix).
+3.  Change obj.Stressp to obj.NextElem.Stressp to determin the crack grow
+    direction cracktip.realgrow.
+    Actually, it should dependent on whichever the stressp is maximized.
+    (partially fixed on 08132019 by accounting for all Maxpscheck.Theta)
+
+0813/2019
+1. Updated the Maxpscheck and Maxpsdirection
+2. The check should be dependent on the obj.Mode and the parameters will
+play a significant role in how the crack would propagate, and how the code
+can proceed.
+3. tolerances also matters a lot.
+
+08/14/2019-08/15/2019
+1. Initiated a wide model under the top tension, the tilted crack propagates
+like an attenuate wave.
+2. It is noted that the compressive mode is not tackled in the LEFM mode,
+a separate parameter should be used to replace obj.PeakTraction to define 
+the compressive tangent matrix.
+(Despite successful run by parameters: 'center',tol=0.2,sum(f)>length(f)*0.99)
+3. Fixed #2 by using a set of independent parameter to model the stiffness
+in contact mode.
+4. Adding cohesion to the tilted crack...
+    a. The major reason why so many iterations are needed to reach equilibrium
+    when there is cohesion for tilted crack is that the cohesive tangent mat
+    is significantly different from the initial setting(zero crack disp) as
+    here shear separation is no longer minimal and the tangent matrix becomes
+    largely positive.
+    b. The same also goes to the initial setting of cohesive traction. 
+    c. Trid to initialize crack disp, opening, traction to mkae the opening
+    mode to have more consistent tangent matrix.
+
+08/16/2019
+1. Corrected an important bug in the crack propagation direction. The theta
+is already the actual direction of propagation. It is not the deflection angle
+from the current crack tip as the stress used to determine principal stress
+is not in local tip system but in global coordinate system. Care should be
+given the second tip as tip.Omega and the theta angle are defined in different
+system.  tip.Omega use atan2--[-pi,pi] while theta uses atan--[-pi/2,pi/2].
+2. BUG: the findnextelem did not correctly find the next elem along gtheta 
+because the next elem may not be the immediate neighboring element of the 
+tip edge. Fixed.
+
+08/19/19-08/20/19
+1. Successfully debugged the findnextelem
+2. Successully ran the "main_0820_tilted_cohesive.m" with linear softening model
+3. Completed the comparison betweeen cohesive model and the cohesion-free model
+"main_0811_tilted.m"
+
+08/23/19-08/25/19
+1. Tried to see how the critical opening, dcr, affect the simulation. 
+    a. In theory, reducing the dcr will speed up damaging and crack opening.
+    however, it is realized that by reducing dcr from 1e-4 to 1e-5 leads to
+    a negative opening in the first step, without changing the rest parameters.
+    By comparing the JMat.WJnew, it is noticed that they are not exactly the
+    same. The relative differences in Jpeue may not be as small as in Jusus
+    that can be ignored. It is not thorouly clear how dcr affect the results
+    so effectively. 
+    b. It is worthy to note that dcr cannot be too small given the current
+    conditions.
+    c. To make the test doable, dcr is reduced from 1e-4 to 4e-5. 
+    The code runs okay so far.
+2.   Add +obj.IniCrackDisp to Uplus so that the final crackdisp and the 
+crackopening also accounts for the initial setting crack aperture inside
+crackbody.postprocess. 
+    DO NOT DO IT INSIDE gausspnt_cohesive.updatecrackopening!
+3. Adding the corresponding changes to the bilinear cohesive traction law.
+    Perforated, Inicrackopening, Inicohesion, Normalc, etc
+4. Add Cohesive('linear', 'bilinear') to the encrack so that the cohesive
+traction-separation law can be specified from the interface.
+5. To Update the matsu for the gausspnt_cohesive class.
+
+08/28/19-08/29/19
+1. After literature research, it is confirmed that normal cohesive models
+do have the initial ascending range to offer a dummy large elastic stiffness
+as required by most interface FEM. (See Rene de Borst 2003; Wncheng Jin et al.
+2019;Kyoungsoo Park et al. 2011)
+2. However, for XFEM based cohesive models, the elastic stiffness is not
+needed as the elastic behavior is modeled by the finite element before
+crack feature is activated. 
+3. This make my approach that added the ascending stage (hardening phase) 
+unique and novel to the XFEM model. It is not demanding in developing but
+significant in explaining the physics, especially when the ductile material
+is of interest.
+4. The treatment of initial stress and initial notch. To avoid the inital large
+compressive contact modeling (interpenetration), the initial defect can be
+modeled by a notch but not a enriched crack. Alternatively, the model can be
+intact. For both options, a criterion to detect the initiation of crack is needed.
+
+08/30/2019
+1. The handling of the in-situ stress for the in-place crack: first thing is
+that the initial crack should be short. The optimal situation is the double 
+initial enriched elements so that four out of six nodes have zero enriched 
+dofs. Only the central two nodes can have non-zero enriched dofs including 
+pore pressure.
+    a. Fix the outer boundary and assign the initial stress
+    b. Apply the in-situ stress as fixed loads to the outer boundaries
+For both approaches, the initial configuration of  tangent matrix should be
+done: the tangent matrix should be derived from the contact mode.
+For the first approach, negative cohesive traction derived from in-situ stress 
+should not be assigned (T=sigma*Ntaud), Ntaud is the unit normal vector.
+
+2. Use option a and perforated mode to treat the initially in-place crack 
+will be much easier.
+
+09/06/2019
+The initial state should be equilibrium, all nodes including
+the nodes of enriched elements should have the in-situ stress, all displacement
+including the enriched dofs are controlled to be zero at initial state. The
+contact force to the crack surface does exist.
+However, this contract force will be immediately drop to zero as the crack
+opens which can be initialized(by setting obj.Perforated) or induced by a very
+short period of loading. It is not worthy to spend much effort to modify
+the code to do the initial configuration of tangent matrix and contact force.
+
+Conclusion: Just use perforated mode(stress free state for the crack surface)
+and option a.
+
+0909-0911/2019
+1. Developing two schemes to adjust the leakoff coefficient of the cracks by
+adding a skin factor to the leakoff(qint) related Jacobian matrix components
+    a. unsymmetric: make the change only to the qint directly related terms,
+whereas Qintueps and Qintuepe are not multiplied by skin factor. As Jueps and
+Jpsue are no longer the same, the symmetry is not maintained and more itera-
+tions (from 1 to 8) are required to converge. 
+
+    (09222019 UPDATE), the reason for many iteration should be the enforced
+    symmetry done at the end of Linsyscrt.crtLHS_UP. (need to be tested).
+    (09232019 UPDATE), only one iteration is needed after deleting the 
+    enforced symmetry. 
+
+    b. symmetric: In additon,apply the change to Qintueps and Qintuepe. 
+The symmetry is maintained and the efficiency is the same. 
+2. After comprehensive comparison, it is found that both schemes can adjust the
+leakoff flux and other relevant simulation response, like the fracture pressure
+and crack aperture. However, they differ from each other somehow.
+By setting the skin factor to 0.9 (less leakoff):
+    a. First of all, the symmetric method is more significant in changing 
+pfrack in thevicinity of injection zone. But the unsymmetric method is not 
+considerably different from the symmetric method.
+    b. When it comes to the change in crack aperture, the unsymmetric method 
+is the most significant in the vicinity of the injection zone while the sym
+method changes the crack aperture more significantly awary the injection zone.
+    c. The direct leakoff flux is more sensitive the skin factor by using 
+the symmetric method.
+3. In conclusion, the current platform adopts the symmetric approach as two
+methods can give similar results while the symmetric method is more efficient.
+4. The calibration of the skin factor:
+
+09/12/2019
+1. Fixed a bug in crackopening update of gausscohesive, do not repeat adding
+mincrack opening as the inicrackdisp is already added to the crackdisp.
+This bug is not difficult to fix, yet it may have interupted the results 
+considerably because of the doubled crackopening. 
+
+2. Continue the calibration of the skin factor.
+
+3. Note the application of fluid injection to the crack mouth and its actual
+meaning in the current numerical scheme.
+    a. qext may not need to be decomposed into two parts, qext_std and qext_enr. 
+    Testing...
+    According the comparison, the decomposing method renders more reasonable
+    results as the fracture pressure is larger than the nodes pressure near
+    the injection zone. On the contrary, solely applying qext_std will lead
+    to opposite results.
+    As a result, we keep using the decomposed formula to model qext.
+    b. Reduce the cross-sectional length of the enriched element where injection
+    is to be applied and leave considerably large initial crack opening to
+    mimic concentrated injection.
+4. In the calculation of leakoff, should we consider the injection point?
+   How about ignoring the the results on the injection nodes?
+   Testing: the absolute magnitude of leakoff flux and leakoff volume show
+   almost linear relationship with the skin factor. But not perfect linear.
+   In addition, the relationship is obtained via accumulated flux or volume
+   at 1s. The specific formula is not obtained as it is definitely a function
+   of time. Also note that the injected flux is not changed through this
+   skin vector. Not sure if it is needed and how to do. (not finished)
+
+09/15/2019
+1. The injection rate becomes injection volume (m^2 in 2d), so ds is not
+needed in Enrcrackbody.cal_qextenr. Otherwise, the actual injeciton volume
+will be dependent on the element size.
+Note this is only for the cal_qextenr function. For other injection boundary
+q should be the injection rate (m/s) as it is defined on certain length of
+boundary.
+
+09/18/2019
+1. New interpretation of the skin factor or storage factor: ratio of effective 
+crack width to the whole width. Effective width: the part usable for tangential
+flow and the rest of the width is like a permeable storage layer. Then,
+The fluid flow continuity equation within the discontinuity 
+q_normal+ q_tangent+volume_change=0 can be modified as
+q_tangent_eff=s^4*q_tangent
+volume_change_eff=s*volume_change
+Outcome: this version of skin factor will significantly descrease the condu-
+ctivity of tangential flow and lead to a high ridge in the injection zone.
+(not good)
+
+2. Continue to modify the definition of skin factor: ratio of crack volume
+that should be counted in the continuity equation, the rest is seen as a 
+storage/reservoir that do not contribute to the real leakoff. 
+The storage layers (parallel to the crack faces) mainly control the fluid 
+exchange rate in normal direction but may not alter the flow in tangential
+direction. 
+Note that the fluid pressure is not wholely applied to the crack surface, 
+instead, the skin factor (working like a Biot coefficient) 
+should be mulitplied. That is why Q_up^int also contains the skin factor. 
+This is done in part tomaintain the symmetry of the Jacobian matrix.
+
+3. For the #2 scheme, the change of pure magnitude of the final leakoff 
+volume depends on the relative magnitude of the (volume change) and the 
+q_tangent. The signs of these two parts also matter, and may reverse
+the desired outcome. (Not good)
+
+4. The next scheme and its interpretation:
+q_storage+q_normal+ q_tangent+volume_change=0 
+q_storage=skin*q_normal; the portion that q_normal(leakoff flux) is not 
+immediately exchanging between the fracture and the rock domain. Note skin is
+generally positive with a filter cake or damaged crack surface. As of the 
+acid assisted stimulation, the skin can be a negative value. 
+then, q_normal = 1/(1+skin)* (q_tangent+volume_change). Note the mass balance
+equation is still satisfied. 
+
+5. From the derivation point of view  (page 1256 on Mohammadnegad et al. 2013)
+
+
+
+09/22/2019-09/23
+On the way to optimize the performance of the current version:
+1. Avoid the use of global variables/constants. 
+    a.Tried to set up a constant class and store all the frequently used 
+parameters in the class as consant properties. It turns out the construction
+of object frequently also takes time and the used dependent properties, 
+together with get method takes even longer. ToolPack.GlobalInput
+    The time to run 10 steps reduce from 19s to 46s.
+    b.Tried to store all the prameters inside a function: assembleglobalinputs
+It turns out calling this function is much more efficient. However, as the 
+constants are mostly used in crtstif.m and matsu.m which will be called 
+thounsands of time during a simulation. It is not that efficient to call this
+function just to recall some parameters. Therefore, these parameters 
+encapsulated in a struct array by assembleglobalinputs.m is stored in the
+gauss classes, or passed to crtstif.m as input parameter from linsyscrt.
+    The time to run 10 steps reduce from 19s to <16s.
+
+2. Optimize the call of matsu.m
+    a. The matsu.m was called inside ifstd.m in every iteration. However, 
+it is obviously unnecessary because this is a linear elastic code and stress
+update for all nodes is not essential if not for storing or crack growth 
+detection. 
+    The time to run 10 steps reduce from 16s to <6s when we use save mode 2
+by 5.
+
+3. Optimizing the crtLHS_UP.m 
+    a. the order of nested loop: change from by row to by column.
+    b. try to only change the matrix using the enriched elements
+4. Avoid unnecessary calculations, like obsolete calculations in crtstif.m
+
+09/23/2019
+1. Tried the unsymmetric method to apply skin factor after fixing the enforced
+symmetry inside crtLHS_UP. The convergence is achieved within one iteration.
+The resulted crack growth is faster than the symmetric skin method because
+the resultant fluid pressure to the crack surface is larger than before.
+
+09/27/2019
+1. DETECTED AN IMPORTANT BUG IN STRESS UPDATING FOR CRACK GROW CHECK
+The stress in the Elemahead is not updated every increment if the savemode
+is not 1.
+Why and how to fix?
+Although ifstd and ifstd_enriched have been called for the elements around 
+the cracktip, they just update stress at gauss points while elem.calstress
+does the extrapolation of stress to nodes and element center. Unfortunately,
+maxpscheck only read the stress at the center for mode "center." This is why
+we see principal stress stay constant and jump every several increments in 
+previous run, even before I did the optimization to the code on 09/23/2019.
+
+THE FIX IS ACTUALLY EASY, JUST CALL ELEM.CALSTRESS WITHIN THE MAXPSCHECK AND
+IT WOULD NOT AFFECT THE FINAL POSTPROCESSING IN DOMAIN.STORAGE AS THE CLEAN 
+SLATE IS RECOVERED LATER IN LINSYSCRT.CALELEMSTRESS.
+
+2. Implement the newly derived "Tractionlaw_unified" into the platform. 
+Noticed that lambdae also appear in the denominator so that a tiny lambdae
+is manually inserted to avoid infinite tangent matrix for the initialization
+of gauss_cohesive.matct. Note the obj.Lambdaini is not changed. The above 
+operation is just a numerical trick which does not do much change to the code.
+And the assumption for unified traction law remains that the new inserted 
+cohesive crack segment has initially non-zero traction at the same magnitude
+of rock tensile strength and initial crack separation is assumed zero.
+
+3. Bug 2:  The stress update within linsys.calelemstress sometimes may 
+encounter emepty ue and pe for newly enriched elements.
+Note that the newly enriched element does not have valid enriched dofs
+Cannot use calstress_enriched to update stress. (Fixed)
+
+09/30/2019
+1. Calculate the reaction force applied to the object when the loading is
+constant displacement rate but not constant load.
+    a. The reaction force vector is actually the converged IntLoadVec/(-a1).
+    Just need to store it inside the postprocessor. (Done)
+    b. Change the loading condition from known load to known displacement 
+    rate. (No rush to finish as it is not needed for current stage)
+
+10/27/2019
+1. Reran the 1022 model and recovered the results for stationary comparison,
+it is found that the actual time steps used are different given same dimensionless size.
+step=[0.01,0.001;0.1,0.01;1,0.1];          % dimensionless increment size
+When I initially run the comparison around 04102019,  the total time is 1000s
+the resutls obtained at 1s is around -7.731 MPa
+When I ran the model on 1022 and 0530, the total time was 100s, the results are
+all -8.310 MPa.
+The current stage is still rough comparison. At least we know the code is still
+consistent with the stationary version and time increment size does matter.
+
+10/28/2019
+1. #This move is subject be reversed.#
+A easy change to adapt to Abaqus setting, make GaussPnt_Cohesive.Mincrack
+opening =2e-4. Now the cohesive tangent is updated solely based on the crack
+disp which does not include the Mincrackopening. The crackopening update has
+Mincrackopening and will feed the elem.crtstif_enriched.
+
+
+10/29/2019
+1. Change the ds from 1 to 1/2 in cal_qextenr as the rate is evenly distributed
+to two nodes in this calculation. If weight=2, ds=1, then the actual rate is
+doubled. Note the current q=-0.0001m^2/s is much larger than before when qline
+is used to time ds of actual center element. 
+2. Discard the previous trick to avoid infinity at the initial zero separatin
+Instead, take the critical value of Tss at dn=0, and that of Tnn at ds=0.
+This is already applied to both the "linear" and "unified" TSL.
+
+
+11/06/2019
+1. The grow direction may not be correctly determined. 
+Now it just gives a global 
+theta value for coordinate system rotation where the maximum principal stress 
+is obtained. The maximum principal stress may be 90 degree from the current
+tip direction, but the gtheta we obtained is still zero.
+In other words, the current method assumes that the principal stress component
+is always in the same order. For example, it is always close to sigmayy.
+The reason why it is noticed is that I put all zero in-situ stress. 
+
+How to fix? Calculate the n*sigma*n
+
+2. It is noticed that the unloading is sometimes triggerred and the stagechange
+flag can be triggerred as well for "linear" softening traction law. For now,
+the stagechange flag check is masked as tmax is set to zero, it does not matter.
+(not yet fixed!!!) 
+For now, just keep theta=0.
+
+on 11/18/19, the bug is fixed by determining from which axis the principal stress 
+component obtained by rotation. The new method called psu_exact has not been
+incorporated into the platform yet.
+
+on 12/01/2019, the bug detection was reversed as it is genearlly not likely
+to have a crack deflection to pi/2 in one step, the theta angle is adjusted
+from step to step. Therefore, even when we have the principal stress direction
+changed from x to y, we should not manually add another pi/2 to theta.
+Just keep using theta calculated from the original definition.
+
+
+3. Keep in mind that:
+    a. Do not make pincallowed=0.0085 too small, or too many increment cut
+    b. Do not forget to make sure the crack is normal to the minimum in-situ
+    stress.
+    c. For now, add minimum aperture in the crack disp so that we do not track
+    negative opening and we do not observe compressive behavior.
+    d. It is now using 'tip' stress to determine the crack growth and direction
+    Later on, we can change the tip radius for stress calculation or change
+    the criterion to "center".
+
+11/10/2019
+1. Detected and fixed a bug in Toedge1, intvec=pfind-ends(1,:) should be
+intvec=pfind-ends(2,:); because ends(2,:) is the tip coordinates, ends(1,:)
+is the point right behind the tip.
+2. Change the tip radius to 3*min(elemlength) and calculate the tip stress
+using all gaussian points within the radius, including those behind the tip 
+to see the influence. Reduce the element size in x direction and increase the
+dense zone in y direction to ensure the elements within radius have fined
+mesh.
+It is found that the tip stress is now consistent with the value in the 
+elemahead.
+
+11/17/2019
+
+1. Noticed one important bug: the current crack flow  was 2D flow, the flow
+conductivitly kd should use square but not cubic. The wellknown cubic law was 
+derived for 1D case. So that it is better to change the kd from (wd)^3/12/muf/f
+to(wd)^2/12/muf/f. (fixed, but not tested.)
+
+Alternatively, I can go ahead and use 1D law. Furthermore, the compressiblity term S
+can be also ignored as it does not contribute much any way. 
+Temperorarily modified the crtstif_enriched function and saved as "crtstif_
+enriched_1Dflow". Will test out the changes.
+
+11/21/2019
+
+1. Confirmed that KGD solution should use Q for one single wing. The Q used
+in the analytical solution should be half of the rate for the center model.
+
+2. The storage factor was not working as expected. It's realized that after 
+setting a 0.5 storage factor, the crack volume also increased by 50%. This 
+strongly indicates this approach is not right.
+
+3. The alternative method is to adjust the permeability of enriched elements
+(or including the surrounding elements) to mimic the change in transmissibility
+of the crack wall from the formation permeability.
+
+11/24/2019
+1. To better mimic the condition of modified KGD solution, do the following:
+    a. reduce the poisson's ratio, (0.2->0.12)more brittle
+    b. reduce the porosity, (0.19->0.09), more brittle
+    c. reduce the permeability even more (1->0.02 md)
+    d. Increase the tip search radius from 2 to 3.
+    e. Reduce the fracture conductivity by increasing f from 1 to 1.24
+
+12/03/2019
+1. When we use 'linear' cohseive model, the initial tangent matrix can contain
+very large positive numbers as the initial crack disp can be very small. To
+this reason, the initial tangent matrix is set to -scr/dcr when lambdae<0.05.
+
+2. When we use 'unified' cohesive model, we can turn on the traction correction
+feature in the matctu. It is not needed for 'linear' TSL. For simiplicity and
+unwanted large positive tangent matrix, the loading and unloading in the 
+hardening zone are treated the same.
+
+3. Most of the troubles met in matctu and convergence issues can be solved
+by full Newton-Raphson scheme. It is not done yet because it involves many 
+layers. Let's get back to this when I have more free time. For now, by manually
+changing some features inside givetangent and matctu, the code can work fine.
+
+
+12/04/2019
+1. Realized that the drastic drop in stress at the crack center may attribute
+to the traction free setting or the injection point. I am not 100% sure why
+it is like that, but for now, I don't need care about it(not fixed). Move on
+
+
+01/07/20-01/10/20
+1. Developed a scheme to import mesh from any other mesh generator like Abaqus
+and Ansys which is capable to give p(nodes) and EToV (connection).
+    a. Read nodefile and elemfile using readmatrix function from .txt. 
+    b.Confirmed that the current framework only requires the ordering of nodes
+    within an element to be counter-clockwise. The starting node in an element 
+    can be arbitrary. This greatly increases the adaptivity of the framework 
+    to standard mesh file from external mesher. How did I confirmed? Running
+    without syntax error? 
+    Abaqus guarantee the order is counterclockwise.
+    
+    c. updated boundedges2.m in the utility pack to be more versatile.
+
+UPDATE: the current framework assumes a certain local order of nodes within
+each element. 020920 Fixed.
+
+2. Adopted consistent material properties in assembleglobalinputs.m with 
+the models in Carrier et al. 2012. Especially, the biot modulus is set to a
+very small number 0.0687 GPa to mimic highly compressible fluid phase. In other
+words, the setting is made to treat the porous media as pure solid phase.
+
+Update: the very small Biot modulus is killing the crack propagation. The 
+leakoff result is insanely high (95% of total injection goes to domain).
+
+01/11/2020
+1. The current encrack.BCTableqEn assumes a priorly known order of nodes of
+element to assign crack inflow, which may be contradictory to the mesh file.
+Fix: Use only coordinates of the injection point to determine the node(s) to
+assign q within the mouth element.
+
+01/12/2020
+1. Realized that the small height of crack element is cruicial to mimic the
+concentrated fluid injection into crack. Refined the mesh. This further backs
+the theory proposed on 09/12/19
+2. Think  if I can make the crack allign with the mesh (element edge),
+so that the injection point can be identical to a node: concentrated 
+injection. 
+    a. For now, it is not easy to change as it is related to the enrichment
+element detection and element subdomain section.
+    b. However, it should be possible to finish because I can add feature to
+detect two neighboring elements as enrichement element. And there is no need
+to make subdomain for this kind of enrichment element when the crack is coinciding
+with the element edge.(not fixed)
+3. However, the refined mesh still gives very high leakoff even at the begining
+stage. The crack growth is too slow as a result.
+
+1/13/2020
+1. Go back to elem.crtstif_enriched from 1Dflow as it is easier to adjust 
+skin factor to the enrichment element only. It should be okay to work with 
+1Dflow but not fixed now.
+2.Realized that the comparison is not easy to go along with Carrier's parameters.
+Not 100% sure what are causing the problem of 5% leakoff and slower crack 
+propagation. 
+The reasons can be:
+    a. The current code does not allow real concentrated injection to crack 
+    only. (increase initial crack gap, increase storage factor)
+    b. The Biot modulus is not consistent with Carrier et al. 2.1GPa is good
+    enough, as it is learned that 3GPa does not show considerable impacts.
+    Is it possible to make the poroelastic material behave like pure elastic
+    material while not killing the crack growth using small Biot modulus?
+    c. The crack propagation criterion is somehow lagged although the effective
+    normal stress has exceeded the tension limit near the tip zone.
+
+
+1/14/20
+1. Also note that the tip behavior is also a critical part of the simulation:
+    a. The stress calculation near the tip and at the elemahead is critical
+    to determine the onset of crack propagation. The delay of propagation 
+    will lead to a wider and shorter crack as we have seen.
+    b. The criterion relis on the center of the elemahead may also delay the
+    propagation. Instead, one can check if any gaussian points has already
+    exceeded the tension limit.
+    (update on 1/15) tried the "all" gaussian points criterion, did see a
+    big improvement of fracture length from 8.4m to 9.8m.
+
+2. Actually, we can already see that the allleakvf at the crack mouth is 
+largely negative at a similar magnitude of injection, indicating that the
+current code does direct most of fluid into the crack. The slow crack growth
+may not mainly attribute to the approximation of concentrated flow injection,
+like the 2D diffusion process, and tip behavior and the poroelastic behavior.
+    a. Reduce the ky, what will happen? The leakoff rate is significantly 
+    decreased when ky is reduced to 1/10 kx. However, the final crack length
+    is only slightly affected as the leak-off ratio changes from 4% to 1.4%.
+    leak-off is not a key issue now.
+    b. See bullet point 1.
+
+    c. Is it possible to make the poroelastic material behave like pure elastic
+    material while not killing the crack growth using small Biot modulus?
+	why did Mohammadnegad also include density for the solid and fluid phases?
+	Did they use dynamic solution to compare with Carrier's solution? 
+	All in all, it seems like they have hided a lot info in their comparatitve
+	study, especially the missing  fluid phase bulk modulus.
+	
+	Update on 02/11/20: testing the dynamic solution: crack not much changed 
+    but the domain results looks more unstable.
+
+01/15/2020
+
+1.Try to make everything comparable to Carrier's model:
+    a. Use only sigmah as the in-situ stress and change the boundary condition
+    from fixed displacement to fix in-situ stress. May yield a little bit 
+    difference as the top boundary is now able to move when the boundary size
+    may not be infinitively large. 
+    Fracture Length increases from 9.8m to 9.9m and crack aperture decreases
+    a little bit. Also, the model run faster.
+
+    b. Check why the normal effective stress is not zero along created crack.
+    (not fixed)
+
+    c.We can just keep the Biot_modulus big for the elements around the crack
+    (enrich elements) to allow sensitive pressure coupling and largely reduce
+    the Biot_modulus for the rest of the domain to mimic the elastic behavior.
+    need to write additional codes to find the blending elements to set the 
+    independent biot_modulus and permeability because only changing properties
+    of enriched elements is not working. (not fixed)
+    
+    d. Uncoupled solution can be artificially sought by setting biot_alpha
+    to zero in assembleglobalinputs.m
+
+01/16/2020
+1. Check the Np and Npenr for the linegaussian points as the pore pressure 
+at enriched domain gaussian points and linegaussian points mismatched.
+
+Figured out how the mismatch was caused: 
+The pore pressure at the linegaussian points are stored in encrack.pfrack
+everytime step. The pore pressure of enriched domain gaussian points should
+be updated every timestep when tip.calstress_nonlocal is called. Yet, the 
+tip_calstress_nonlocal only affect the elements within the search radius. 
+Plus, elem.calstress_enriched and elem.calstress (elem.extraplstress)
+ called from domain.storage incorrectly set a 
+condition to screen out enrichelements to update stress once there has been 
+stressp values at that enriched domain gaussian points, this would cause the
+great mismatch of pore pressure results seen in the enriched elements near
+crack mouth. (Fixed)
+
+01/19/2020
+1. Try to obtain the stress at edge points of the element_ahead using 
+the extrapolation method within calstress. And use the maximum normal effective
+stress in the Maxpscheck method. 
+Results: The length is increased to 10.8 m, however, the crack injection pressure
+is way too low. Note Fig 10 in Carrier's paper is net fluid injection pressure.
+
+2. Rechecked the elem.crtstif_enriched formulation, it is consistent with 
+Khoei et al, 2018 with the changes made on my printed notes. When the sign
+of Qintuepe or ps are flipped, the crack closes, proving the right sign of
+application of fracture pressure.
+
+01/20/20
+1. The drastic pressure drop right ahead of the propagating crack tip may be
+a conern. The greatly negative pressure can prevent the crack propagation.
+From Khoei and other researchers' work, the pressure drop may have been
+limited to a certain value.(not fixed) 
+
+Update on 02/11/20.
+The pressure drop may attribute to a) the boundary condition I put over
+enriched pore pressure dofs at the tip edge nodes; b) the large Biot_mod I used
+for the host rock matrix. Actually, the drop is not that significant when 0.0687
+GPa was used later on.
+
+Plan:
+1. Try to use different limiting scheme for the comparison study.
+2. Increase the kx within blending elements to see if the drastic pressure drop
+would get remediated.
+3. Try to understand why the current crack profile is short and wide, while
+the fracture pressure is low! Because it is wider?
+Update 0214: because the fracture pressure shown is net injection pressure due
+to the setting of non-zero initial stress state.
+
+4. Compare with Abaqus as the final attempt.
+
+01/21/2020
+1. In linsys.upbctableen(obj) add the locarray of ux_enr of two nodes on the 
+left edge. Manually.
+% this is specific to mesh-elemfile_01132020_carrier.txt, to ensure the
+% ux_enr on the left edge also equals to zero. 01212020
+ 
+2. Using element stress plot, we see that the unstable stress/pressure recovery in 
+the vicinity of the crack tip may be the major problem why the crack growth
+is not right. Within the tip element, the normal stress can change from -4MPa
+to 4MPa, it is not gonna be ok to use it to determine the crack growth.
+The pore pressure shows descending trend. The decrease in normal effective
+stress and pore pressure continues to elements ahead of the tip.
+
+But what is causing the drastic change? 
+
+3. After correcting the mistake in elem.extraplstress, the postprocessing
+finally makes more sense. Bug fixed
+Pore pressure dissipation into the domain is much stronger than previously 
+thought.
+
+01/22/2020
+1. Realized that the boundary condition for fracture flow was not correctly 
+applied: at the crack mouth the flow rate equals to the injection rate; and
+at the crack tip, the fracture flow rate should be set as zero although it is
+observed that the drastic pressure drop occurs only in the first one or two 
+elements ahead of the crack tip. 
+
+The core problem is still the same: how to apply a concentrated flow to the
+crack mouth!!!
+
+For now, we can only decrease the permeability of neighboring elements to the
+injection element; the permeability of crack mouth is already huge comparing to
+the rock matrix. In this way, we can direct most fluid into the crack even in the
+long run.
+
+2. For constantly loaded boundary and the load is equal to the in-situ stress,
+in our model, there is no need to specifically assign additional boundary condtion
+in the bctable, just leave it to 0 in the first, second and fourth column.
+
+3. The current save mode 2 use an interval of 10, so that the initial high
+water pressure range was not saved and plotted. Note it.
+
+4. The drastic pore pressure change, stress change, all occur at the two 
+elements close to the crack tip, including the INTELEM(end) and tip.NextElem.
+The pore pressure at the tip element is greater than the fracture pressure.
+
+5. The effective normal stress along the crack line is close to -3.7MPa,
+similar to the value of in-situ effective stress. Think how it happens and
+if the pore pressure is also the effective pore pressure.
+
+The tip element always show great change in effective stress from -4. to
+postive 4 something.
+
+6. The way to apply insitu stress may be wrong. The results of total normal
+stress and pore pressure all seems like the insitu stress is zero or the 
+pressure value is net fluid pressure.
+
+7. The initial pore pressure and initial far-field stress in Carrier's model
+is still unclear. Now, it is confirmed that the initial pore pressure is zero.
+
+01/23/2020
+1. It is highly possible that the enrichment function and their derivatives
+have mistakes. The epsilon value in EnFHeavisde function may be too small.
+Chang from 0.001*minelength to 0.2*minelength so that some gaussian points
+within the enriched element can present the discontinuity in strain or stress.
+
+The exact value for the epsilon need to be checked, should be great enough
+to include several enriched gaussian points within the enrichment element.
+
+2. Rechecking the derivative of Nuenr and Npenr:
+The derivation was correct. And the formula is correctly input into the
+code.
+
+01/26/2020
+The summary of findings in the debugging and plan for the next step
+Summary: current crack profile is short and wide, while the fracture 
+pressure is low.
+
+1. After debugging two errors in elem.calstress_enriched and elem.calstress 
+(elem.extraplstress), the results of strain and stress field to the non-enriched
+domain finally makes sense. 
+2. The way to add confining layers of elements with different permeability 
+may be beneficial to adjust the fluid leak-off, however, it is not the real
+reason why the current framework is far off in the comparison study.
+3. Rechecked the formulation of Jacobian matrix for the coupled XFEM framework
+by cross checking with two consistent papers. No mistake were found in the current
+code. Reversing the sign of pfrack will leak to a derease of crack width,
+indicating the long worried sign of leak-off and pfrack are correct.
+In elem.crtstif and eleme.crtstif_enriched.
+4. In more than one literature, the fracture fluid flow rate should be set to zero
+at the crack tip. It may cause a problem in the comparison. But I do not know how
+to enforce this condition now; and I do not think this is the main reason of 
+current discrepancy.
+5. Recall that the first comparison of this poroelastic code, and the first 
+stationary crack test, the code for basic poroelastic function must be correct.
+The potential errors must lie in the modules generating concentrated frack flow
+and applying crack pressure to the lips. The sophisticated tip behaviors may attribute
+to the discrepancy but should not be the major source of error.
+
+
+Plan:
+1. For now, we can only decrease the permeability of neighboring elements to the
+injection element; the permeability of crack mouth is already huge comparing to
+the rock matrix. In this way, we can direct most fluid into the crack even in the
+long run. (fixed on 01/29/20)
+
+2. The new additions to the coupled XFEM framework after the previous comparisons
+are the tip stress determination and crack propagation criteria.  But I must also
+realize that the current comparsion study is different from last stationary crack
+in the sense of loading: last one the loading is mechanically added to the top of
+the domain; yet the current one is real fluid injection induced load directly to the
+crack lip. As we already know the sign of pfrack is correct and the rest of formulas
+of the Jacobian matrix have been triple checked in elem.crtstif_enriched. The remaining
+work should be checking the enrichment functions, figuring out if the discontinuity
+of pore pressure, displacement, and strain stress field have been properly included.
+
+3. Start checking the formulation of Nuenr and Npenr, especially their derivative.
+In addition, check if the numerical implementation has some bugs.
+
+01/27/2020
+1. Use 0.2 as the current epsilon value for EnfHeaviside and see a great
+increase in tensile stress near the crack. But the leakoff ratio is very
+high (6600%).
+2. Make the formation Biot modulus consistent with Carrier's model, 68.7MPa,
+but the crack growth is again killed as the leakoff ratio is insanely high.
+Later on, it is increased to 0.687GPa and 6.87GPa. They do not work well, 
+change back to consistent Biot_mod (9.1GPa) calculated by Kf=2.1GPa.
+2. Add back the isolation layer, mygeo.findblending(1).
+3. Delete the mygeo.findblending() inside the tip.realgrow so that the blending
+elements are only detected once for the initial crack profile.
+4. Perhaps, when the epsilon is changed, the position to calculate crack 
+opening and crack displacement and all related traction also need to change.
+
+5. IMPORTANT BUG ABOUT SMOOTHED HEAVISIDE FUNCTION: 012720
+Need to rewrite the function to determine epsilon so that it is dependent
+on the shortest distance of subdomain gaussian points to the discontinuity.
+For now, we are using 0.045*elem.minlength. 
+
+Update: reverse the call of bug. 01312020 The derivative of shifted heaviside
+function does not exist at all. No need to worry about this.
+
+01/28/20
+1. The so-called bug about epsilon and derivative of Heaviside function should
+be revoked as it is later on found that the results turn to be chaos and the
+book by Khoei also ignored the dirac delta function, page 56.
+
+01/29/20
+1. In linsys.upbctableen, try to eliminate the pore pressure dofs. 
+This may be a good practice because it increases the pressure gradient in
+the normal direction within the enrichment element.
+However, it is further realized the two standard nodes should not be enriched
+at all. The way I treat standard nodes may be incorrect. Previously, I have 
+the enriched pressure dof maintained at zero. Is it the same as unenriched??
+No, it is not the same!! That dof should not be existing. Now, I can explain
+why there is always a drop of pore pressure behind crack tip and another drop
+ahead of crack tip.
+
+2. opengeo.findblending was modified so that the blending elements are located
+within a ellipse centered at the injection point. The previous method was not
+good as it found too many elements around the crack, including the elements
+ahead of the crack tip. The old method would limit the pressure feedback from
+surrounding elements ahead of crack tip, which may answer why the pressure
+drop ahead of the tip is so severe.
+The drastic drop is not remediated but the leak-off ratio is greatly decreased
+to 0.1% by applying the new isolation technique, which is also a good sign.
+
+3. It is now believed that enriched elements should use the same kmat_crack
+as those blending elements. This way, the leakoff rate will be limited smaller.
+
+01/30/20
+1. Skip applying the boundary condition at the tip element to see the effects.
+comment the last two commands in domain.updatedofarray_enriched.m
+
+01/31/2020
+1.Check what the stress is really like at the crack line guassian points.
+It is instable to use Bmatenr to recover strain at the crack lip, and the 
+obtained stress is huge, indicating that the current postprocessing approach
+does not show the real stress or effective stress along the crack lip. It is
+by the formulation that the real normal stress at the crack lip equals to 
+the fracture pressure.
+Now, it is time to think if the fracture pressure was also not properly 
+visualized by the current postprocessing method.
+2.It was right to exclude the line gaussian points into the 
+tip.calstress_nonlocal.
+
+3. Retesting the small Biot_mod for porous media as the new isolation technique
+is in place. not much progress.
+Update 020120:
+
+If using the large Biot_mod for the isolation blending elements, and use
+small Biot_mod for the rest of domain, including newly propagated enriched
+elements, the crack can keep growing(6.2m at last). It is much better than 
+before when the crack propagation almost get killed. After checking the leak-
+off ratio, it is found that the final leak-off ratio is too large, nearly 75%.
+This run used large kmat_crack for newly enriched elements?
+
+On 0202, try to use small kmat_crack and large Biot_mod for the newly enriched
+elements. It is found that the leak-off rate get perfectly constrained, 
+actually, it is almost -0.2% in the first 1 sec, and slowly increasing to a
+small positive number, like 0.04%. The neighboring elements to the
+crack have very low pore pressure generated as of the small Biot_mod. 
+It is also
+found that small Biot_mod for enriched elements does not work as well as 
+large Biot_mod. The isolation technique is mygeo.findblending(10), the short
+axis is the initial crack length, the longaxis is 10 times of it.
+
+Finally, the crack length is 8.55m, the CMOD increases to 1.04mm, and the 
+fracture pressure is still a little bit above 0.6 MPa.
+
+4. After various attempts to adjust the isolation and kmat, kmat_crack,
+back and forth, it is still not promissing. I need come back and take a really
+good look at the crack tip element, and the element ahead of the tip element,
+to see how to unenrich the two nodes of the edge where tip intersects and check
+if blending technique is needed for the nextelem.
+This would be my last attempt before going to compare with Abaqus results.
+
+02/02/20
+1. Keep the current setting of Biot_mod and Biot_mod_crack for the verification
+study. (use small kmat_crack and large Biot_mod for the newly enriched
+elements along with the updated isolation technique: the short 
+axis is the initial crack length, the longaxis is 10 times of it.)
+
+2. FIGURE OUT HOW TO UNENRICH THE TWO TIP NODES, RIGOROUSLY.
+According to my current understanding of Well and Sluys paper, do not enrich
+the two standard nodes entails that we should ignore the shape functions 
+together with the enchanced basis terms associated with the two (standard) 
+nodes. The tip element should still be enriched, but partially. The previous
+attempt that trying to ignore enriching the whole tip element was not correct.
+
+This will require a lot of changes in the current enrichment solutions, including
+the two enrichgauss functions, the crtstif_enriched, the ifstd_enriched, postprocess,
+etc. Also, special care need to be taken when a tip element becomes a body element.
+Thus, the current encrack.update_enrich method should also be corrected as it has
+skipped updating the tip element and tip nodes.
+
+02/05/20
+1. Deleted the isempty(Jmat.Kusue) in elem.crtstif_enriched because it is not
+general anymore when we are dealing tipelement. 
+2. Finishing the new enrichment for elements with standard nodes.
+
+02/06/20
+1. We should change the dimension of matrices in elem.crtstif_enriched.
+2. Specially, for the line integral, Qintuepe and Qintueps should use Nu_part
+corresponding to the enriched nodes. 
+
+02/07/20
+
+1. Divide crackbody.update_enrich into two methods: grow_check and update_enrich
+and move update_enrich after crack.postprocessing. 
+2. Remove the filter in elem.setenrich so that standard nodes can be updated
+correctly for previous Rtipelement.
+3. Change the setting of perforated in encrack.update_enrich so that the 
+perforated flag is only updated for newly added Rtipelement.
+4. Inside encrack.postprocess, the leak-off are calculated for all mygeo.nodes
+although its summation is separated for regular nodes and enriched nodes.
+
+Now the code can run smoothly for propagation, free of syntax error.
+However, high leakoff into the domain through standard dof of the tip edge
+nodes (qintps of the mygeo.stdnodes) is noticed. 
+Don't understand why and Not fixed! 
+
+02/08/20
+
+1. The results of hydraulic fracture propagation is not so different from
+previously obtained when standard nodes are still enriched. 
+However, the pore pressure distribution along the crack, especially near
+the tip is largely affected. The fracture pressure is increasing along the 
+crack, which should be reversed.
+
+Update on 0212: use small or zero initial crack apperture can do this.
+
+2. Added another mode to update blending element while updating crack geo.
+need more attention.
+
+3. Realized that the high leakoff through standard dof of the tip edge nodes
+should attribute from the absense of zero flux condition at the tip.
+
+02/09/20
+1. Apply the zero fluid flux condition at standard pdofs of tip edge nodes.
+Did not figured how to implement this condition. Maybe, it is already applied
+because the internal flux are all zeros by default. (not fixed)
+update: make the initial crack aperture zero and enforce zero udofenr on
+the tip edge nodes-> zero aperture at the crack tip -> zero crack fluid flow.
+
+
+2. Realized that the order of nodes within an element may not be consistent
+with that of gaussian points, which may have lead to wrong calculations of 
+N, Nu, Np, Bmat, DNp, etc. 
+The opengeo.intersection, elem.linegauss
+and elem.subdomain method may also need corrected!
+Try to reorder the nodes within each element following the same fashion that
+the gaussian points are ordered. Can be done within mesher. (Fixed)
+
+Alternatively,use ordinary mesh to check the results.
+
+02/10/20
+1. Reduce the tolerance in cracktip.initiate
+2. Use "all" criterion to check crack growth
+3. Use 0.0687 as the biot modulus for the whole domain except for the enriched
+elements. Use the same small kmat for the whole domain: 1e-20 m^2. As we are
+trying to mimic near K scheme anyway.
+Results: The pore pressure away from the crack is extremely small, due to the
+small biot modulus and small kmat. The fracture pressure is declining along
+the crack from mouth to tip in a smoother way, not like the previous case 
+with high Biot_mod. However, the crack pressure is still way too small.
+And the increased crack length of 9.74 should mainly attibute to the "all" 
+criterion used.
+
+4. Redo the test of zero feenr by cancelling it in crack.cal_qextenr.
+5. Debugged linsys.calelemstress as the newelems now include Rtipelements,
+but this is only pertaining the postprocess, should not affect much.
+
+Updated on 021220, newelems should only be the Rtipelements, and the update_enrich
+is moved after domain.storage in domain.running method.
+
+02/11/20
+1. Go back to the previous tip enrichment scheme, where udofs and pdofs of the
+tip edge nodes are enriched. But only udofs are enforced to be zero.
+After a second thought, this may be more reasonable because the gradient of 
+pore pressure in the tip element is still discontinuous. When we do not have
+enriched pdofs, the pore pressure at the two nodes tend to have the same high
+pressure as the internal crack, which will require a high positive leakoff.
+
+2. Adding mesh.reorder to the old scheme.
+
+3. Testing the dynamic solution where the density is needed.
+The crack still grows as usual, however, the pore pressure results for the rest
+of domain becomes irregular. Actually, when the surf plot is made, the pressure
+for the whole domain is almost zero. Not good.
+
+
+Plan:
+1. Try to make the domain biot_alpha zero to see how the uncoupled solution 
+looks like. My top concern is to make the crack narrower and longer.
+2. Make only the initial existing enriched elements have large Biot_mod, 
+assign the rest domain small Biot_mod and zero Biot_alpha.
+
+When the whole domain have zero Biot_alpha.
+Not much changed to the real results that we cared about, L, CMP and CMOD.
+But it is found that the pore pressure of the rest of the domain are almost
+zero. Not sure if it should attribute to zero Biot_alpha or small Biot_mod for
+enriched elements.
+
+Try the zero Biot_alpha again with Big Bito_mod for enriched elements.
+Still, the pore pressure of the rest of the domain are almost zero. Then, we 
+can conclude that it is result of zero Biot_alpha.
+
+3. Really don't know what goes wrong...
+
+02/12/20
+1. Only set Biot_alpha to zero within Enriched elements 
+	a. Tried on old scheme, when using big Biot_mod for all enriched elements
+	the run become very slow and there are negative pore pressure in the tip
+	element, all the time.
+	b. Tried on old scheme, when using small Biot_mod for enriched elements
+	except for those near the injection point. Did not finish.
+	c. On the new scheme, trying small Biot_mod for enriched elements
+	except for those near the injection point, zero Biot_alpha for all enriched
+	elements. Also note that the obj.minaperture is set to zero to mimic zero
+	crack flow at the tip.
+	saved as "zero_enriched_biot_alpha_0212.mat" in Exciting results.
+	
+2. Fix linsys.calelemstress: newelems should not be filtered out because 
+enrich_item.update_enrich is moved after domain.storage in domain.running
+method. Otherwise, there will incommpatible Bmat_enr and ue for old tip 
+elements.
+
+3. Start over from real analytical solution but not Carrier's solution.
+
+02/13/2020
+
+1. After a night of second thought, the way the problem is defined may be 
+different from Carrier's. In my model, I set the initial stress as -3.7 MPa
+but either the fixed displacement or fixed load boundary condition does not 
+let the model know it is subject to a constant load. But the crack growth has
+to overcome a initial stress state of -3.7 MPa. For now, I don't know if I
+have mistakes in understanding geostatic state. But I do know Carrier et al.
+did not put a initial stress state but applyed a constant load to the top of
+-3.7 MPa. These two problems are different. Their model have a zero initial
+stress state.
+Therefore, I can view my output of pressure as net fluid injection pressure
+pf-sigma0.
+
+2. Try to model Carrier's problem with load and zero initial stress state.
+BCmat_line=[1,1,1,0;0,0,1,0;0,0,1,4;1,0,0,0];
+imbalancedbound=3;     % Neumann boundary is the 3rd boundary, top edge             
+predof=[0,0,0;0,0,0;0,0,0;0,0,0]; 
+curloads3m=[0,-3.7e-3];   % [Tx,Ty] are the current traction to the top side, GPa 
+
+In new scheme of tip element enrichment, no enrdofs on standard nodes.
+First run with consistent kmat of 1e-16 and small biot_mod in enriched elements,
+the fracture length is greatly decreased as the leak-off is too large. But
+I observed the pore pressure increased to a high value.
+
+Second run, use 1e-22 and large biot_mod for all enriched elements, also change
+the criterion to element edge. The run is too slow as the tolerance is too
+small and leakoff is still significant. But it is promissing.
+
+Third run, use 1e-22 but small biot_mod: very long run and the results are
+closer but not good. The last second leakoff is still around 40% and the 
+initial leakoff is almost 95%. saved as "active_top_load_0213_standard nodes"
+
+If not good, move back to old scheme, where leak-off are better controlled.
+
+3. step=[0.005,0.0002;0.3,0.003;1,0.009];
+Runing the first test: use 1e-20 but small biot_mod for the nonblending 
+enriched elements, cut ratio of 0.55 works well for first 50 increemnts
+The first 50 increments observes higher leakoff ratio than before, 34%.
+
+Then for the second stage [0.3,0.003], the cut ratio can be lowered to 0.4
+The results are much better, the crack mouth pressure is now good, the length
+is 9.9 m but the crack width is still larger than the analytical solution.
+small biot_mod and small kmat for newly enriched elements
+saved as "active_top_load_0213_old scheme_small k", OK
+
+4. Try to use large kmat for all elements but the elements close to the crack
+mouth to see if the leakoff can be maintained low and aperture can be decreased.
+small biot_mod is also used for the rest of elements. The only change in this
+run is the large kmat. I also monitored the realtime leakoff through discrete
+nodes. Let's see if I can use regression analysis to recover the real Carter's
+leak-off coefficient.
+
+Large kmat lead to very slow crack growth due to large leakoff
+small biot_mod and large kmat for newly enriched elements
+saved as "active_top_load_0213_old scheme_large k", not OK
+
+5. How about large Biot_mod for all enriched elements?
+Different from the lesson learned on 02/02.
+
+large Biot_mod and small kmat: not OK.
+The length is only 8.45 m, the aperture is very high, the pressure is not 
+far off though. However, the run is extremely long, like 3hrs. Maybe, the 
+reason is that the pressure change too dramatically near the crack tip due
+to the setting of large Biot_mod and small kmat.
+
+large Biot_mod and large kmat for newly enriched elements: not OK. 
+The leak-off is insanely high and the crack growth is too slow.
+
+Finally, let's come to an end: use small biot_mod and small kmat for newly 
+enriched elements. 
+
+
+6. Try to run with the extreme criterion of crack growth: right at the tip.
+this run has small biot_mod (68.7MPa) and small kmat=[1,0;0,1]*1e-20 for newly
+enriched elements. 
+The crack length is 10.63-0.05 m, the final aperture is 800 um, the crack 
+mouth pressure decreases to around 4.0 MPa. The final leakoff ratio is 5.19%.
+
+All in all, this is the best run so far. 
+"active_top_load_0214_small k_small_M_edgecriterion_full.mat"
+Exciting PHD- Heavy stuff\HFXFEM-debugging-02032020
+\Organized results\Carrier-nearK, and the fitting CL=1.47e-5
+
+But remember, my leakoff ratio maybe too low and the final crack mouth opening
+is 200 um wider than the analytical solution, which means, a good amount of
+fluid is stored inside of the crack channel due to the small setting of kmat.
+The kmat should be turned to normal but there must be a reason holding back
+the crack growth. If the crack growth can be faster, everything should work
+fine. 
+
+What is it?
+
+02/14/20 Summary
+1. Do not enforce any condition on the enriched pore dofs of tip edge nodes.
+In other words, the old scheme outperforms the new scheme of tip with stand-
+ard nodes.
+
+2. Do not preassign large initial aperture to the newly extended crack segment
+because it will violate the zero tip flow condition.
+Make the initial crack aperture zero and enforce zero udofenr on
+the tip edge nodes-> zero aperture at the crack tip -> zero crack fluid flow.
+
+3. The boundary condition always matters. My model of nonzero initial stress
+to the far field is different from applying a nonzero active load to the far
+field which is actually modelled by Carrier et al. Therefore, when I apply
+nonzero in-situ stress to model and control constant load to the far field,
+my results of p are actually incremental or so-called net injection pressure.
+But this way, the leakoff may not be correctly calculated.
+
+4. The current model can mimic concentrated load by using very small height
+of the injection element (around scale of 1e-3); give nonzero perfaperture;
+and assign large Biot_mod for the initial enriched elements. For the newly
+enriched elements, use the same Biot_mod with the domain. Nowadays, I do
+not apply isolation layer to the newly enriched elements.
+
+5. Understanding why I need small kmat for newly enriched elements to 
+control leak-off.  Don't really understand. But from comparative study, I can
+use smaller kmat for enriched elements to better control the fracture
+flow within the crack plane, it may be reversed to domain kmat when
+viscosity is relatively high.
+For more rigorous study, I can use monitorred leak-off rate to back calculate
+Carter's leakoff coefficient to see if the code does give reasonable results.
+
+02/16/20
+1. Making the initial stress zero and decreases the kmat_crack even more to
+[1,0;0,1]*1e-22 to simulate the near-K scheme with even lower leakoff rate.
+However, the final crack length is only extended to 9.95 m with the edge
+criterion. The net injection pressure is still ok but I noticed that the 
+pressure profile near the tip is irregular, not ridged. The final aperture 
+comes to 900 um. From this run, we can learn that 
+    a. The crack length is almos the same when the crack criterion is the same.
+    b. The aperture is a function of leakoff, the larger leakoff the narrower
+    but it cannot be too large as the crack growth maybe killed.
+
+2. How about trying it on the new tip enrichment scheme with fixed in-situ
+stress,i.e., non active load. kmat_crack still equals to 1e-20.
+Running: small biot_mod and small kmat_crack of 1e-20. This run also changes
+Kf=1.1 GPa and allow compressible fluid S term in crtstif_enriched.
+The crack length is finally at 10.48m, CMOD=848um, net pressure a little bit
+higher (0.42MPa > 0.3 MPa) than analytical solution; the final leak-off ratio
+is around 3.5%
+saved as "in-situstress_0216_small k_small_M_edgecriterion_full_standard.mat"
+
+2. How about trying a little bit higher permeability? 
+    a.stop using large biot_mod for the initial enriched elements. 
+    b. obj.kmat_crack=[100,0;0,1]*1e-18/obj.muf;
+    See what's happening.
+The L decreases a little bit to 10.07 m, CMOD decreases to 809 um, and net 
+pressure is still a little bit higher (0.42 MPa >0.3 MPa). The leak-off ratio
+is now around 10%.
+saved as "in-situstress_0216_increased k_small_M_edgecriterion_standard.mat"
+
+3. BUG in postprocessing: In linsys.calelemstress, delete the fiter to find 
+newelems because now the update enrich is moved after domain.storage.
+
+4. Running another zero in-situ stress case using the new standard tip 
+element with even larger permeability [1,0;0,1]*1e-16 so that the whole domain
+is of the same permeability except for the isolation zone near the 
+crack mouth. Furthermore, the whole domain has the same Biot_mod of 68.7MPa.
+Also in this run, I set zero Biot_alpha for the whole domain. Let's see 
+what will happen.
+not good: length is 7.8m, aperture is around 700um, and pressure around 0.45.
+but the trends of these plot are kinda distorted in the middle.
+And the crack shapes are not concave anymore. It is suddenly narrow near the
+tip.
+saved as "zero_in-situstress_0216_consistent k and M_gecriterion_standard.mat"
+
+02/17/20
+The last day before moving to a different propagation regime. Time's up.
+
+1. Try the larger kmat_crack for the old tip enrichement scheme. In this run,
+also use uniform Biot_mod for the whole domain including enriched elements, and
+blending elements. kmat_crack=[1,0;0,1]*1e-18/obj.muf; This run uses fixed 
+in-situ stress (-3.7MPa) as boundary condition, the crack pressure is treated 
+as net injection pressure. This test also aimed to see if the total stress but
+not effective stress will speed up the crack propagation. It turns out that 
+they are almost the same as the pore pressure at the tip.NextElem is close to
+zero.
+This run is similar to the second run yesterday. However, the crack width is 
+839 um, wider than the previous runs ("in-situstress_0216_increased 
+k_small_M_edgecriterion_standard.mat" and "active_top_load_0214_small 
+k_small_M_edgecriterion_full.mat")
+saved as: "in-situstress_0217_increased k_small_M_edgecriterion_oldscheme.mat"
+
+2. It is realized that applying active load will lead to narrower crack.
+So, let's do a final test based on the best run so far "active_top_load_0214_small 
+k_small_M_edgecriterion_full.mat". 
+In this modified run, change kmat_crack=[0.01,0;0,1]*1e-18/obj.muf, to simulate
+1D dissipation as we see leak-off is a still a concern. For a reminder, 
+[0.01,0;0,10]*1e-18 was tried but not finished. The blending standard elements 
+have kmat=[1,0;0,10]*1e-19. The minaperture is set to zero and perfaperture=1e-6.
+The total stress in the elemahead is used for the crack growth checking. 
+I expect a little bit shorter crack and narrower crack. If that's the case, it is
+good to call it a verification.
+"active_load_0217_increased k_small_M_edgecriterion_oldscheme.mat"
+see decreased width and length, the net pressure always fit. Not optimal but OK.
+used to generate outputs saved in Exciting PHD- Heavy stuff\HFXFEM-debugging-02032020
+\Organized results\Carrier-nearK, and the fitting CL=3.47e-5
+MOVE ON.
+
+02/18/20
+1. A rather consistent parameter settings for M-regime show rather good comparison.
+mu=50cp, Tmax=0.5MPa, kmat=1e-16, kmat_crack=1e-18, sigmah=3MPa
+The recovered Cl was very low, e-7 or e-8. The dimensionless leakoff is 4.7e-3.
+saved as "insitu_stress_customized_parameters_old_0219.mat" it was also adopted by then.
+
+
+Update on 02/27
+1. mu=100cp, Tmax=0.5MPa, kmat=5e-16, kmat_crack=kmat, sigmah=3MPa, criterion euqals
+'center' in the begining 0.544s, and changed to 'tip' (1.5). Run for 30secs.
+saved as "insitu_stress_k-5e-16_u-100_old_0227_full_tipcriterion.mat"
+The results are similar to the previous run with 50cp and 1e-16 kmat.
+
+2. Try to see if uncoupled solution would be different.
+set agl.Biot_alpha=0. No noticeable changes.
+
+3. Later on, the kmat is reduced to 1e-16, no strong changes. The results are not as
+good as the adopted on 0219 with different kmat and kmat_crack.
+saved as: "insitu_stress_k-1e-16_u-100_old_0228_coupled-centercriterion"
+
+03/01/20:Try to see uncoupled
+saved as "insitu_stress_k-1e-16_u-100_old_0302_uncoupled-centercriterion"
+
+4. Use consistent kmat and kmat_crack of 1e-17, with mu=100cp, the fitted Cl was reduced
+to 7.8e-7, and the dimensionless leakoff is as low as 4.7 e-3. The comparison are as good
+as 0219.
+
+
+02/19/20
+1. In @TractionLaw_linearsoftening, turned off all shear components and focus only on
+mode 1 to verify with near K mode. Failed to converge. Stoped on 02/20
+
+02/20/20
+1. Try to simulate Leak-off-viscosity dominated regime, M~
+a. 1D uncoupled? 
+active load.
+mu=50cp, Tmax=0.5MPa, kmat=[1e-17,1e-14], kmat_crack=kmat,alpha=0,sigmah=5MPa
+This run has minaperture of 1e-4.
+edge criterion and near crack mouth isolation [1,0;0,1]*1e-18 applied.
+saved as "1Duncoupled-0220.mat"
+
+b. 1D coupled
+This run has minaperture of 1e-5.
+The length is good matched but the width is lower. Try to incorportate biot_alpha. 
+this time use center criterion.
+not perfect
+
+c. 2D coupled. This run has minaperture of 1e-5.
+mu=50cp, Tmax=0.5MPa, kmat=[1e-14,1e-14], kmat_crack=kmat,alpha=0.75,sigmah=5MPa
+good.
+
+
+02/21/20
+1. Simulate Leak-off toughness dominated regime, K~
+a. 2D coupled: 
+mu=0.5cp, Tmax=1.5MPa, kmat=[2e-16,2e-16], kmat_crack=kmat,alpha=0.75,sigmah=5MPa
+The Cl from regression analysis is around 1.97 e-4. 
+In the first 40 secs the crack length is noticeably underestimated , the CMOD and net 
+CMP are perfectly matched. But after 40 secs, the crack growth becomes unstable,
+the crack pressure and CMOD are not moving along certain trend anymore. I guess it
+is because big leak-off almost killed crack growth.
+
+b. 1D -uncoupled:
+mu=0.5cp, Tmax=1.5MPa, kmat=[1e-19,1e-16], kmat_crack=kmat,alpha=0,sigmah=5MPa
+The crack growth is much more smooth, indicating that the leak-off is not too high.
+In this run, the recovered leak-off coefficient is around 1.58 e-4, and the crack
+length is slightly underestimated while the CMOD is more significantly overestimated.
+The crack mouth pressure is perfectly matched.
+
+c. 1D coupled
+mu=0.5cp, Tmax=1.5MPa, kmat=[1e-19,2e-16], kmat_crack=kmat,alpha=0.75,sigmah=5MPa
+The results resembles the 2D coupled case.
+
+d. modified 2D coupled
+mu=0.5cp, Tmax=1.5MPa, kmat=[1e-16,1e-16], kmat_crack=kmat,alpha=0.75,sigmah=5MPa
+The Cl from regression analysis is around 1.56 e-4. 
+The results are much better.
+saved as "adopted-activeload-2Dcoupled-0222-cl-1.56e-4.mat"
+
+02/29/20
+1. Start runing the simulation with the tested parameters on 
+standard tip enrichment scheme. To see if there are surprises.
+a. M scheme: storage-viscosity dominated scheme
+mu=100cp, Tmax=0.5MPa, kmat=1e-17, sigmah=3MPa
+
+03/03/2020
+1.For M-regime, finished several runs with consistent parameters like listed in Carrier's
+paper, mu=100cp, kmat=1e-15, tmax=1.25Mpa, coupled and uncoupled.
+The uncoupled results for insitu stress mode are pretty close to Carrier's. Coupled not run.
+The coupled results at active-load mode yields shorter crack length and narrower width.
+2.Did finish the 1Duncoupled run for M~ regime with consistent miniaperture after
+the runs on 02/20.
+3. Start running M~ regime with mu=100cp and kmat=5e-12 m2, tmax=1.25 MPa
+a. 1D uncoupled kmat=[0.0001,0;0,5]*1e-12/obj.muf;, Biot_alpha=0
+The leakoff is too high, and the crack growth is almost killed.
+b. 1D coupled
+Again, the leakoff is too high.
+
+c. 1D coupled with different kmat_crack: [1,0;0,1]*1e-14/obj.muf;
+
+03/04/20
+Summary:
+1. The current code takes a different approach to simulate fracture flow and leakoff, which
+tends to yield higher leak-off than the independent fracture flow models (Carrier; Salimzadeh)
+and the analytical solutions. The difference are rather small when the matrix permeability is
+adequately small and fluid viscosity is big, like the common case for real hydraulic fracturing. 
+
+That is why we have generally good comparison for M regime and M~ regime.
+For the K and K~ regimes with small viscosity, we may try to use higher minaperture to boost the
+crack conductivity and reduce the leakoff rate. perhaps, we will see longer and narrower crack.
+The isolation approach by reducing the kmat of enriched elements or adding additional blending
+elements may boost the crack length and the crack aperture at the same time.
+
+2. The effects of initial crack aperture may be noticed. 
+	a. Using larger minaperture (1e-4 comparing to 1e-5) may result in longer and narrower crack profile.
+		Seen in M~ regime runs on 0221.
+	b. Comparing M (8e-5) and M~ regime (1e-5), longer and narrower crack profile are more noticeable in M.
+	c. Then we may try to increase the minaperture for K and K~ regime and use small values for M and M~.
+
+03/08/20:
+Update on the impacts of minaperture and needed difference in magnitudes between kcrack_ini and kmat
+1. It is confirmed that larger initial aperture (acts as a boost in kcrack_ini) can induce a longer
+and narrower crack in all regimes. The net CMP will be also lower together with the fitted carter's 
+leakoff coefficient. However, the K-regime is not very sensitive to this parameter
+according to experiments so far.
+
+2. The difference in order of magnitudes between kcrack_ini and kmat are dependent on the
+propagation regimes. 
+	a. M-regime		: [3-7]
+	b. Mtilde-regime: [3-4]
+	w0= zero to 1e-5 m
+	c. K-regime		: [7
+	d. Ktilde-regime: [5
+	w0=1e-4~2e-4 m
+	
+3. So far, the anisotropic kmat do not play significant roles in Ktilde-regime and Mtilde-regime.
+4. so far, the uncoupled simulation do not have strong impacts according to experiments.
+
+03/15-03/19/20
+ Try to use real Biot-modulus for porous media, like 12.46 GPa not 68.7MPa
+1. For the new run, the old "center" criterion (considering both tip stress and 
+stress at the next element center) caused some problems initially because 
+either one may be exceeding the threshold, so sometimes the crack may propa-
+gate too abruptly and cause large negative crack opening. Then the cohesive
+traction can go above the max traction.
+2. To accomadate this change, I need to reactivate the traction update inside
+gauss_cohesive.matctu. This time I used current crack opening as the conditional
+but not last crack opening. To avoid the inconsistent tangent matrix, the 
+tangent matrix should be also updated inside matctu. Furthermore, I also 
+shut down the tip stress calculation inside crack.update_enrich.
+It worked for Comparison-0315.
+3. The 0315 run using center stress is okay but requires too many increment
+cut as the center stress can change very sharply. To accomadate this change,
+in 0319 run, I instead used only "tip" criterion, which worked more continuously.
+However, for the first several crack propagations, "tip" criterion may be 
+stucked. Therefore, I need to manually change the criterion from "center" to
+"tip" in this run. Need to fix.
+
+
+03/20/20
+I-- Abaqus:
+1. Realized that this initial run has a matrix permeability of 4.9E-7 m/s
+which corresponds to 5E-12 m^2 but not 5E-15 when the fluid viscosity is 100cp.
+This run was saved as "Comparison-MATLAB-poroelastic-0315.odb"
+At 30 sec, L=9.78m; CMOD=2.1mm; net CMP=1.5MPa; 
+2. Then the matrix permeability was reduced to 4.9E-10 m/s, the leakoff 
+coefficient was kept at 9.8E-8. The results were saved in "poroelastic-0315-
+correctedperm.odb". The crack length and CMOD are almost the same as the 
+first run, but the crack pressure was about 1.7 MPa higher than before.
+3. Then, I tried to increase the initial gap from zero to 2e-3. The results
+changed dramatically: Length increases from 9.78 to 13.46m, width becomes
+(2+1.45)mm, the pressure droped to 5.44 MPa.
+4. Another attempt was to increase the leakoff coefficient to 1.96e-6 while 
+the permeability is still 4.9e-10. The run was saved as: "poroelastic-0315-
+corrperm-increasedleakoff.odb". The results were not so different from 
+"poroelastic-0315-correctedperm.odb".
+5. The last run  is saved in "Comparison-MATLAB-poroelastic-0315-increasedc",
+where the only difference from the initial run is leakoff coeff of 4.9E-7.
+(resutls...)
+
+From these runs, some temperary conclusions can be drawn:
+    a. The crack leakoff coefficient is only significant when it
+    is not greater than the matrix permeability. Then it is like a 
+    filter cake, which will reduce the leakoff volume. 
+    b. The initial gap does have effects on the crack propagation, similar
+    to what I have observed in my Matlab code: the larger the minaperture,
+    the longer L, smaller smaller CMOD and smaller net CMP.
+
+II- Matlab:
+1. In gauss_cohesive.matctu, completely use current crack opening but not
+last crack opening to check how the traction should be updated. For the 
+postive crack opening, the traction was corrected in site by manually dividing
+the peaktraction into the shear and normal components, which is different
+from previous way to use "stagechange" flag, which is not very practical for
+the linear cohesive law because this only occurs in the begining of crack 
+extention where the previous run has negative crack opening.
+"
+if traction_eff>obj.TractionLaw.PeakTraction*1.1
+      traction_normal=obj.TractionLaw.PeakTraction*calcrackopening/norm(CrackDisp);
+      traction_shear=obj.TractionLaw.PeakTraction*shearopening/norm(CrackDisp);
+      traction=Amat'*[traction_shear;traction_normal];
+      return;
+end
+"
+2. Try to mimic the run in Abaqus: "Comparison-MATLAB-poroelastic-0315.odb"
+where the fracturing fluid viscosity is 100 cp but the leakoff fluid viscosity
+is only 0.1 cp. The first run was using obj.kmat_crack=[5,0;0,5]*1e-15/obj.muf,
+which tries to reduce the leakoff, the results are comparable with Abaqus
+results, especially for crack length and net CMP. Yet, the CMOD is smaller.
+The run was saved as: "M-regime-k-5e-15-mu-100-mul-0.1.mat". Note this is
+no longer M regime, the name was improper.
+
+3. Second run uses obj.kmat_crack=[5,0;0,5]*1e-15/obj.mulf, and the results
+will be saved in "consistentkmat-k-5e-15-mu-100-mul-0.1.mat".
+It is expected to have even larger leakoff and smaller CMOD. Yes, it is confirmed.
+
+4. If that is the case, we may use a little bit smaller kmat_crack, like
+[5,0;0,5]*1e-16/obj.muf. The method indeed result in slightly wider crack 
+opening and higher CMP, without changing the crack length noticeably.
+Adopted as: "k-5e-15-mu-100-mul-0.1-0321.mat"
+
+5. Or I can try to use the blending elements again. According to the tests,
+adding blending layer on 032120 has caused very unstable cohesive traction
+during matctu and very slow programm running. Therefore, it is not finished.
+Go back to the suggestion #4.
+
+03/2220-03/23/20
+1. Tried to run another comparison case with smaller fracking fluid viscosity,
+like 10cp. 
+The first matlab model used the same intrisic matrix permeability
+of 5e-15, and intrinsic enrich element permeability of 5e-16, increased the
+insitu stress from 3MPa to 5MPa. Specifically, the loading regime used the
+same in-situ stress method but not active loading, so that the pore pressure
+calculated and reported are excess pore water pressure.
+This run was saved as: "insitu-k-5e-15-mu-10-mul-0.1-0322.mat"
+The counterpart in Abaqus used the same fluid conductivity for the rock 
+matrix as the viscosity of the leakoff fluid is not changed, the fracking
+fluid viscosity is decreased to 1e-8 (GPa.s), the leakoff coefficient is kept
+as 4.9e-7; and the insitu stress is increased to 5MPa. 
+This run was saved as:"Comparison-MATLAB-poroelastic-0322.odb"
+
+The two results matched but not perfectly: length ok (both are around 14m)
+abaqus width is larger(shifted to the above)and the abaqus CMP decrease is 
+delayed (shifted to the right).
+
+2. For the second run, a fine tuning is made in Abaqus by increasing the 
+leakoff coefficient from 4.9e-7 to 2.45e-6 by multiplying 5.
+The results were saved in "Comparison-MATLAB-poroelastic-0323.odb"
+ 
+In matlab, I wanted to see how the active loading mode will affect the results.
+The results were saved in 'activeload-k-5e-15-mu-10-mul-0.1-0323.mat'
+It turned out that the leakoff is too high, and crack length is largely
+decreased to 5.3m.
+It is very much confirmed that "active" loading mode will greatly increase
+the induced leakoff from MATLAB code as the total pore pressure is used byt
+not excess pore pressre.
+
+04/03/2020
+1. Set up a new mesh file: "04032020_Dontsov" where the enriched elements can
+have increased element height. The new mesh can serve for several purposes:
+    a. Mesh convergence test
+    b. If the current leakoff performance is attributed to the very narrow
+    element height.
+    c. Improve the computation efficiency as previous mesh waste too much  
+    resouce in the middling zone.
+2. The pioneer runs:
+    a. When the new mesh was used for the "Matlab_Abaqus-comparison-0315" 
+    parameter setting, where k=5e-15, and mu=100, w0=1e-5, the results are 
+    almost the same results. The expected change in net-CMP did not show up.
+    saved as "insitu-k-5e-15-mu-100-mu-100-mesh0403.mat"
+    b. When it comes to the rerun where k_crack=5e-16, k=5e-15, mu=100, 
+    mul=0.1, the resulted leakoff was actually higher than previously obtained
+    and the crack length shrunk from 9.6 to 8.98.
+    saved as "insitu-k-5e-15-mu-100-mu-0.1-mesh0403-1.mat"
+    c. Now, it is confirmed that the k_crack is dependent on the mesh to 
+    adjust the leakoff performance. Trying to reduce k_crack to 5e-17. 
+    It turns out the leakoff is reduced a little bit, yet the crack length
+    is also decreased, to 8.88m. 
+    saved as "insitu-k-5e-15-mu-100-mu-0.1-mesh0403-2.mat"
+    d. How about k_crack = 5e-15? In the parameter setting with highly viscous
+    fracking fluid, what will it lead to?
+    The crack length increased to 9.19m, however, the CMOD decreased to 2.02mm.
+    The results are OK, I am sure by adjusting w0 we can achieve better results.
+    But it is not necessary now.
+3. Temporary findings:
+    a. Mesh was not the core problem contributing to the relative larger 
+    leakoff obtained by the Matlab code. Specifically, when the widened mesh
+    was used, the resulted leakoff is actually higher for the mu-100-mul-0.1
+    parameter combination.
+    b. Mesh does have some influence in the crack results and the influences
+    are not the same for different parameter setting. More study are needed
+    to be clearer.
+    c. For now, at least we have achieved the three goals listed in item 1.
+
+
+05/27/2020
+
+1. Running the parametric study using Dontsov_medium mesh with parallel
+4 workers.
+2. Notes on the parallel computation in local machine:
+    a. Guarantee transparent coding
+    b. Use full name of classes with package names to ensure accessibility
+    c. Do not use save within parfor, but use matfile function to save.
+    d. Suppress all low level screen outputs:
+        newton.running; newton.iterating; newton.autoincrem;
+        encrack.update_enrich;
+    e. Add high level screen outputs to indicate progress.
+    f. use a new class Par to profile the parfor loops
+
+06/02/2020
+1. Commented the unloading cohesive tangent in TractionLaw.givetangent
+2. In matctu, realized that the traction update based on current crack 
+displacement is better as the traction profile is smoothier. 
+3. In TractionLaw, realized that the current code had an error that assuming
+that Tkrg is no less than Tini. The error has been fixed in TractionLaw and 
+its givetangent method.
+4. Moreover, the check of stagechange in matctu is also
+updated. The new method now compares the difference between Teff-Tini and
+Tkrg-Tini given significant Tkrg-Tini to check if stagechange checking is
+necessary. This new method now truly applied to the unified TSL formulation
+and boost the efficiency. Lastly, the contact mode is not updated.
+
+06/04/2020
+1. Try to investigate into the impacts of poroelastic properties on the fracture length
+	a. Change Ks will effectively change Biot_alpha, while Biot_mod is little changed	.
+	Case 47-58.
+	b. Change Kf will change Biot_mod effectively, yet the current code also use Kf in
+	crtstif_enriched as the compressibility of fracturing fluid, which is not what I want.
+	Case 59-70.
+	c. I could change the code of crtstif_enriched, rather, I chose to change porosity
+	becasue it only changes Biot_mod and it is well-known that shale may have large porosity.
+	Case 71-82.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
