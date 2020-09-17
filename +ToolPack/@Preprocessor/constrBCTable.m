@@ -33,6 +33,7 @@ while size(obj.BCTable_line,1)~=size(obj.BoundEdge,1)
     end
 end
 %% construct the imbalanced external boundary for linsyscreater.initialRHS
+% Neumann boundary condition
 imbalance=[];
 if ~isempty(obj.Imbalanced)
     for im=1:length(obj.Imbalanced)

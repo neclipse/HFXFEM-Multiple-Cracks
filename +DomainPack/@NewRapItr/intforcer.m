@@ -22,6 +22,7 @@ for ielem=1:length(edict)
         % At the preliminary stage, there will be at most one enrich item in
         % one element, so this works. Later on, when there can be more enrich
         % items in one element, it has to be changed. 11/22/2018
+        % To change 091120
         if stagecheck
             [load,stagechangeflag]=elem.ifstd_enriched(obj.Newmark,ienrich,stagecheck,calstress,gbinp);
             if stagechangeflag

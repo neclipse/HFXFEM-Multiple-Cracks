@@ -1,0 +1,170 @@
+Actions Tags: 
+To change -- Definitely need to be changed
+To watch -- From what I predict on paper, there is no need for immediate 
+chang. Yet, changes may be required later on.
+To improve -- Not quite related to the extension for multiple cracks. 
+But the code has some noticed drawbacks.
+
+Log: 09/09/20 
+1.Main file started
++DomainPack
+2.Domain class finished
+3.LinSysCreater class finished.
+Log: 09/11/20
+4.NewRapltr class finished.
++ToolPack
+5.Preprocessor class initiated.
+Log: 09/12/20
+5. Preprocessor class finished.
+Log: 09/16/20
+6. Geometry and OpenGeo class initiated
+
+
+List:
+A. How to handle branches?
+
+1. Initiate multiple intersecting opengeo objects in the main file and we may
+only allow one Rtip for some opengeo objects for simplicity. 
+For each enrichItem, even they intersected each other within in one element,
+there will be separate enriched dofs, even for the intersected element.
+2. Or enable the junction enrichment function, so that the branching can be 
+simulated in anther fashion.
+The junction enrichemnt function belongs to the minor crack/branch crack.
+The jucnction enrichment function only applies to the junction element where
+the major crack has its own enrichment functions and dofs. The rest of the
+branch crack will have the same enrichment technique as heaviside function
+of level set value.
+
+
+B. Places where previous assumption of single enrichemnt item has been implied. 
+and there are loops over all enrichitems
+1. Domain.updatedofarray_enriched. This method add enriched dofs for every
+enrichitem at initialization in the main file. In addition, it add new
+enriched dofs for newly propagated elements for every time increment. 
+The repeated initialization for all old enriched elements may be unncessary.
+(To improve)
+The new element for some enrichitem may be already enriched by other item. 
+yet, the new element need to be specifically enriched for this item. But, 
+attention should be paid to see if this is a crossed intersection or a arrested
+(To watch)
+T-shape junction.
+2.Domain.EnrichItems should be updated within the running method. 
+By default, the domain.updatelinsys will copy these items into linsys, too.
+(To watch)
+3. LinSysCreater.
+    crtLHS_UP: the blending elements.loop Should be OK.
+    switching: loop should be OK.
+    upbctableen(obj): loop should be OK.
+    upconf and upconf_trial: loops should be OK.
+4. NewRapItr.
+    iterating:line 105--.EnrichItems{ienr}.update_enrich one by one, 
+after the loop, the configuration of the crack network should be checked
+once again to see if there will be tip annihilation or other interaction.
+Probably, we need another method to do the supervision. (To change)
+    line--127. EnrichItems{ienr}.postprocess. The update will be only for the
+specified {ienr}, and the total update should account for every enrich item
+within the interacted element. Think if I need loop over elements or loop over
+enrichItems, I suppose we should still go with items as there are fewer of 
+them. The question left becomes how to obtain the comprehensive changes 
+for one element when there are more than one enriched item. (To change)
+    intforcer: the elem.ifstd_enriched was only run for the first enrich 
+item for simplicity. Now when we have two or more enerich items, the method
+ifstd_enriched should account for all involved enrich items within one element.
+There may be loops over jacobian matrices for every item. (To change)
+    checksize_porepressure: this was used to apply some criterion for auto-
+increment size control. Some updates may be needed when fracturing is simul-
+ated. (To watch)
+5.Geometry (Simple) does not need to be changed because we are not proposing
+a DFN-based geometry. One single line is one independent object.
+6. OpenGeo class was the only concrete Geometry class in the current code.
+It is a simple two-end segment defined either by a function handle or a 
+series of discrete points. As the fracture network will be modelled by a
+series of simple EnrichItems, we are not proposing new OpenGeo class as of
+now. However, it can be added later on if we will comfortable with multi-layer
+branch tracking from the root. 
+
+OpenGeo
+    .Rtips may be redefined. Previously, the Rtips are the tips that are not 
+intersecting the domain boundaries. 
+Now, we may use obj.ACTIVETIPS to differentiate the actual real tips that are
+able to propagate from the dead tips; Alternatively, we redefine Rtips so that
+it also exclude the tip that is arrested by another crack (or deactivated
+to simplify the junction function). I prefer to update the get.Rtips method
+because we don't need to change the rest of the codes using OpenGeo.Rtips.
+(To change)
+    .initiate_2nd: Do not extend the tip to element edge if junction method 
+is adopted.(To change) Toedge1 and Toedge2 (To watch)
+    .findelems: option 1if the junction method is enabled. (To watch)
+    .intersection: do I need different set of seeds for each EnrichItem? 
+If two discrete enrichitems are used but not junction enrichment, I do not
+see the need to change this function for this purpose and good element 
+purpose. (To watch). But if the junction method was to be used, I think
+this method also need to be changed.
+    
+
+
+ 
+
+    
+    
+
+C. How to handle initial cohesive tractions?
+Use new approach to initiate the cohesive traction: Alpha in main file and
+in linegauss, and in GaussPnd_cohesive.
+
+
+D. Put a question mark over the implementation of initial stress and intial
+pore pressure. 
+1. For example, if the initial stress state 3MPa in compression. When we say
+the initial pore water pressure is zero, do we mean total pore pressure or
+excess pore water pressure ? Okay, we can have two implications. But at 
+equilibrium, the excess pore water pressure must be zero but the total pore
+water pressure depends on the boundary condition. When the boundary are per-
+meable and connects to zero pressure aquifer, the whole domain should also
+have total zero pore water pressure. Note the biot effective stress is dependent
+on the total pore water pressure.
+2. If we have -3MPa insitu stress specified in the assembleglobalinputs, and
+have all Dirichelet type boundaries and keep imbalanced empty, what does
+this imply?
+The Linsys.initialRHS will be skipped and the domain is essentially at zero
+stress state and all boundaries are fixed. The stress state calculated are
+essentially change of stress. The initial stress state are only added to the
+change to mathematically return the total stress in gauss.matsu. Anything 
+wrong here? If the initial stress state and initial pore water pressure is 
+the condition, I think my code is all right at this.
+3. If we have -3MPa insitu stress specified both in assembleglobalinputs and 
+the main file as curload, and have Neumann type boundaries and then specify 
+the boundary in the preprocess.Imbalanced, what does this imply?
+The Linsys.initialRHS will calculate the load vector INI implied by the inital
+stress and the curload will be used in linsys.crtRHS for FFG. These two load
+vector are the same actually so the resultant linsys.RHS=FFG-INI will be zero.
+As the u and p are zero after linsys.switching(3), the internal load vector
+should also be zero. Therefore, the implied domain is also essentially at 
+zero stress state but now all boundaries are free of load but not free of
+displacements. The rest are the same as the above implementation.
+
+4. What really becomes different may be the loading in the simulation done 
+in papers like Carrier 2012. There is no initial stress state but initial 
+loading. In other words, we have zero in-situ stress state and zero pore 
+pressure initially. Then they have active load of 3MPa applied at the boundary.
+This is what I later realized 02/13/2020. The following are excerpt from
+XFEM developing log_merged.txt:
+" After a night of second thought, the way the problem is defined may be 
+different from Carrier's. In my model, I set the initial stress as -3.7 MPa
+but either the fixed displacement or fixed load boundary condition does not 
+let the model know it is subject to a constant load. But the crack growth has
+to overcome a initial stress state of -3.7 MPa. For now, I don't know if I
+have mistakes in understanding geostatic state. But I do know Carrier et al.
+did not put a initial stress state but applyed a constant load to the top of
+-3.7 MPa. These two problems are different. Their model have a zero initial
+stress state.
+Therefore, I can view my output of pressure as net fluid injection pressure
+pf-sigma0."
+
+5. Think abou the implications on the modeling fluid leak-off.
+Following item 2-3 in this thread, we are getting the net fluid injection 
+pressure. Also, the fluid leak-off is based on the net fluid pressure. 
+Does it mean we are gonna have a smaller pressure gradient?
+The base pressure is zero for the equilibrium state as modeled by item 2-3,
+The base pressure is around 3MPa for the active load by item 4. The pressure
+gradient in the normal direction of the fracture should be similar.

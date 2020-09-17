@@ -1,4 +1,5 @@
 function  update( obj )
+% Not used in the current build 09/16/20
 % Updated calculation of signed distance of nodes within the narrow
 % band arond the open geometry
 %   1. This method will first use enough discrete points along the crack

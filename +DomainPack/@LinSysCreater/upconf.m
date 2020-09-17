@@ -11,7 +11,7 @@ function  upconf( obj,newmark)
     % ERROR ON THE UPDATE OF OBJ.U AND OBJ.P, noticed on 6/4, not fixed
     obj.U=obj.U+du;                 % U_sup(n+1)_sub(i+1), displacement
     DU=obj.U-obj.UO;                % incremental change in displacment.
-    obj.P=obj.P+dp;                 % p_sup(n+1)_sub(i+1), excess pore water pressure
+    obj.P=obj.P+dp;                 % p_sup(n+1)_sub(i+1), current excess pore water pressure
     nm=newmark;                     % newmark parameters in struct array
 %   calculate the time derivatives of the updated U and P using newmark method
     obj.Ut1=nm.a1*(obj.U-obj.UO)-nm.a3*obj.UOt1-nm.a5*obj.UOt2;

@@ -11,7 +11,7 @@ dirac=[1;1;0;1];
 obj.Strainc=obj.Bmat*disp;
 stresspc=obj.GBINP.Delastic*obj.Strainc;      % relative effective stress change comparing to the initial state
 obj.Stressp=stresspc+obj.GBINP.inistressp;
-obj.P=obj.Np*p+obj.GBINP.inipore;     % current total pore pressure
+obj.P=obj.Np*p+obj.GBINP.inipore;     % current total pore pressure=current excess pressure + initial total pore pressure
 obj.Stress=obj.Stressp-obj.GBINP.Biot_alpha*dirac*obj.P;
 end
 

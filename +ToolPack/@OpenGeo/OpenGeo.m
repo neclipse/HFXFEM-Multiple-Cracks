@@ -14,7 +14,7 @@ classdef OpenGeo < ToolPack.Geometry
         Intelements                                                          % All Enriched elements={bodyelements,rtipelements}
         Bodyelements                                                         % indices of the crack body elements
         Rtipelements                                                         % indices of the tip elements
-        Blendingelems                                                        % Elements around the enriched elements meeting certain criterion
+        Blendingelems                                                        % Elements around the enriched elements meeting certain criterion, for different permeability settings.
         Nodes                                                                % All interacted within the interacted elements
         Bodynodes                                                            % All Nodes in Bodyelements
         Rtipnodes                                                            % All Nodes in Rtipelements 

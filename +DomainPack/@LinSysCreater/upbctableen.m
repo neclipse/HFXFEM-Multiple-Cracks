@@ -1,13 +1,14 @@
 function upbctableen(obj)
+%% Ensure the ux_enr on the tip edge nodes(stdnodes) equals to zero. 
+% EnrDofArray{id}(1:2)are the displacement dofs of the stdnodes.
 % should be called for every time step after updating the crack
 % geometry (now in domain.updatedofarray_enriched,0301)
 % Format of BCTableEn:
 % 1st column: The index of dof
 % 2nd column: The prescribed displacement or pressure value
-% BCTableEn=[35227,0;35230,0];                            % start over, do not appendix on the old BCTableEn.
+% start over, do not appendix on the old BCTableEn.
 BCTableEn=[];
-% this is specific to mesh-elemfile_01132020_carrier.txt, to ensure the
-% ux_enr on the left edge also equals to zero. 01212020
+
 for iEnrich=1:length(obj.EnrichItems)
     enrichitem=obj.EnrichItems{iEnrich};
     id=enrichitem.Id;
