@@ -4,7 +4,7 @@ classdef Elem_2d_UP < handle
         Type                    % Element type reheritated from the class Domain
         MatType
         NodList                 % Global order of the nodes in the element
-        NodstdList=cell(1,10);              % local order of the standard nodes in the element
+        NodstdList=cell(1,10);  % local order of the standard nodes in the element,not necessary after 022619
         NodDict
         GaussPntDictM;                 % object array of class standard GaussPnt
         LineGaussDict=cell(1,10);      % object array of the GaussPnt for line integral only
@@ -92,9 +92,12 @@ classdef Elem_2d_UP < handle
                obj.JacobianMatDict=JMatDict;
            end
            if all(L)
-               obj.Enrich(id)=id;
+               % the indexing is not good 092820, to change
+               obj.Enrich(id)=id; 
+               obj.JacobianMatDict(id)=FEPack.JacobianMat(id);
+               
                % NOT necessary after the revision on 02262019, stdnodes are
-               % stored in the "mygeo" of the encrack.
+               % now stored in the "mygeo" of the encrack.
 %                stdnodes=1:length(obj.NodList);
 %                L=false(1,length(obj.NodList));
 %                for iN=1:length(obj.NodList)
@@ -104,7 +107,6 @@ classdef Elem_2d_UP < handle
 %                end
 %                stdnodeslist=stdnodes(L);
 %                obj.NodstdList{id}=stdnodeslist;
-               obj.JacobianMatDict(id)=FEPack.JacobianMat(id);
            end
         end
         

@@ -79,7 +79,7 @@ classdef EnrCrackBody < EnrichPack.EnrichItem
            for iE=1:length(elems)
                % set enrich flag and find the standard nodes within the
                % element
-               obj.Elemdict(elems(iE)).setenrich(obj.Id);
+               obj.Elemdict(elems(iE)).setenrich(obj.Id);   
                % divide the element into triangular subdomains for 2d
                % integral
                obj.Elemdict(elems(iE)).subdomain(obj.Id);
@@ -117,6 +117,7 @@ classdef EnrCrackBody < EnrichPack.EnrichItem
            end
        end
        % function prototyping
+       
        [fe,locarray_enr]=cal_qextenr(obj,q,varargin);
        [unstablegrow,cutflag]=update_enrich(obj,varargin);
        showme( obj,typex,varargin );

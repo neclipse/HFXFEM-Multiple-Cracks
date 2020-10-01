@@ -95,9 +95,12 @@ classdef EnFHeaviside < EnrichPack.EnrichFun
        end
        
        function enrichelem(obj,elem,id,varargin)
+           %% Enrich the elem for the id crack object. The core is obj.enrichgauss
+           % can provide the nodes_phi directly
            if ~isempty(varargin)
                nodes_phi=varargin{1};
            else
+               % obtain the nodes_phi from obj.Lsv.
                % enrich the gauss points inside
                nodes=elem.NodList;
                %            stdnodes=elem.NodstdList;
@@ -194,12 +197,13 @@ classdef EnFHeaviside < EnrichPack.EnrichFun
                N_y=Bmat(2,2:2:end);
                % The dirac delta function is usually zero because the gauss
                % integration points are designed to be away from the
-               % crack.03282019. MAY BE WRONG
+               % crack.03282019.
                %% IMPORTANT BUG: THE PHISHIFT_XDER OR YDER PART SHOULD NOT 
                %MANUALLY DROPPED, IT MAY BE MASKED WHEN GAUSSIAN POINTS ARE
                %TRULY FAR AWAY FROM THE DISCONTINUITY, BUT IT MAY HAVE AN
                %IMPACT WHEN GAUSSIAN POINTS ARE CLOSE TO THE DISCONTINUITY.
-               %012420
+               %012420. However, the gaussian points should not be too
+               %close to the discontinuity.
                phishift_xder=phi_der*N_x*nodes_phi;
                phishift_yder=phi_der*N_y*nodes_phi;
                N_xenr=N_x.*Phishift'+N*phishift_xder;

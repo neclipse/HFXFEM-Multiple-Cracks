@@ -31,6 +31,7 @@ end
 nnodes=obj.NoNodes;
 r1=2*nnodes;
 r2=nnodes;
+%% May only need one final JacobianMat, no need for discrete crack. 092920.
 JMat=obj.JacobianMatDict(id);
 if isempty(JMat.Kusue) % stays constant over the simulation                                 
     % preallocate the displacement vector for crack opening calculation
@@ -58,6 +59,7 @@ if isempty(JMat.Kusue) % stays constant over the simulation
     Speps=zeros(r2,r2);  
     Spepe=zeros(r2,r2);
     m=[1;1;0;1];                                % Kroneck delta in vector form
+    %% Need to obtain Nuenr, Npenr, DNpenr, etc for every involved crack. 092920
     GaussPnt=obj.EnrichGaussDict{id};
     numgauss=length(GaussPnt);
     %% Area Integral over the element
@@ -129,6 +131,9 @@ if isempty(JMat.Kusue) % stays constant over the simulation
     JMat.Spepe=Spepe;
 end
 %% Line integral along the crack, changes every increment
+% It seems better to store the line integral for each encrackitem
+% separately if the leakoff calculation for each crackitem is needed.
+% 10/01/20
     % coehsive force
     Kc=zeros(r1,r1);
     % fluid pressure to the crack
@@ -153,7 +158,10 @@ end
         ntaud=linegauss(igauss).Ntaud*ds;
         Mtaud=linegauss(igauss).Mtaud;
         Md=Mtaud*Mtaud';
-        % Preparation
+        % Preparation, the Npenr, DNpenr, should contain all enrichitems.
+        % although the linegauss points are only on the current crack. The
+        % number of cracks determines the repetitions of line integrals.
+        % 10/01/20.
         Nu=linegauss(igauss).Nu;
 %         Nuenr=linegauss(igauss).Nuenr;    
 %         % Nuenr and Benr are not used in the current version 03282019

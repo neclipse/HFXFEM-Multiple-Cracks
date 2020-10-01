@@ -32,6 +32,7 @@ if obj.Isactive
     gausspool=[];
     for ie=1:length(elempool)
         if any(obj.Elemdict(elempool(ie)).Enrich)     % Enriched elements
+            % HERE ONLY ONE ENRCRACK IS ASSUMED. TO CHANGE. 09/18/20
             ienrich= find(obj.Elemdict(elempool(ie)).Enrich,1);
             obj.Elemdict(elempool(ie)).ifstd_enriched(newmark,ienrich,stagecheck,calstress,gbinp);
             gausspool=[gausspool,obj.Elemdict(elempool(ie)).EnrichGaussDict{1}];
