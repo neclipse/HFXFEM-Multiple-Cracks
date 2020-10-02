@@ -23,9 +23,11 @@ else
     Cstar=gbinp.Cstar;          % use consistent domain Biot_mod
 end
 muf=gbinp.muf;
-if obj.Enrich(id)==0
-	error('The element does not interact with the specified enrichement item')
-end
+% use logical array id to relieve the single index id. 10/02/20
+id=obj.Enrich==id;
+% if obj.Enrich(id)==0
+% 	error('The element does not interact with the specified enrichement item')
+% end
 % initialization of JacobianMatDict(id): Compute all components for the
 % first increment after being Enriched, only initialize for once.
 nnodes=obj.NoNodes;

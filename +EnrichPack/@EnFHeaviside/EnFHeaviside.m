@@ -114,16 +114,17 @@ classdef EnFHeaviside < EnrichPack.EnrichFun
                nodes_phi=phipool(Lcob);
            end
            % loop over all Gauss points for the current enrcrack(id)
-           GaussPnt_domain=obj.enrichgauss(nodes_phi,elem.EnrichGaussDict{id});
-           GaussPnt_line=obj.enrichgauss(nodes_phi,elem.LineGaussDict{id});
+           k=elem.Enrich==id;
+           GaussPnt_domain=obj.enrichgauss(nodes_phi,elem.EnrichGaussDict{k});
+           GaussPnt_line=obj.enrichgauss(nodes_phi,elem.LineGaussDict{k});
            % Because gausspnt is an data object, hard copy is required
-           elem.EnrichGaussDict{id}=GaussPnt_domain;
-           elem.LineGaussDict{id}=GaussPnt_line;
+           elem.EnrichGaussDict{k}=GaussPnt_domain;
+           elem.LineGaussDict{k}=GaussPnt_line;
        end
        
-       function addnodedofs(~,node,id,varargin)
+       function addnodedofs(~,node,varargin)
            % enrich the node object by adding corresponding dof and
-           % dofarray
+           % dofarray, not necessary after 10/02/20
            if ~isempty(varargin)
               upindicator=varargin{1};
            else
@@ -134,7 +135,7 @@ classdef EnFHeaviside < EnrichPack.EnrichFun
            elseif upindicator==2
                node.NoPenrDofs=1;
            end
-           node.NoEnrDofs(id)=node.NoUenrDofs(id)+node.NoPenrDofs(id);
+           node.NoEnrDofs=node.NoUenrDofs+node.NoPenrDofs;
        end
        
        function [GaussPnt,Nuenrplus,Nuenrminus]=enrichgauss(obj,nodes_phi,GaussPnt)

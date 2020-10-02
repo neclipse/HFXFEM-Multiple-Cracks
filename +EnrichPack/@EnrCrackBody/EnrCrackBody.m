@@ -90,14 +90,16 @@ classdef EnrCrackBody < EnrichPack.EnrichItem
                obj.Elemdict(elems(iE)).linegauss(obj.Id,obj.Cohesive,obj.Perforated,obj.Alpha);
            end
            %% initial enrich all nodes inside the enriched elements
+           % no need to have these after 10/02/20 as udof==2, pdof==1,
+           % dofs==3, always.
            % the standard nodes have the enriched dofs but keep zero
-           for iN=1:length(obj.Enrichednode)
-              node=obj.Enrichednode(iN);
-              for ienf=1:length(obj.Myenfs)
-                  myenf=obj.Myenfs{ienf};
-                  myenf.addnodedofs(obj.Nodedict(node),obj.Id);
-              end
-           end
+%            for iN=1:length(obj.Enrichednode)
+%               node=obj.Enrichednode(iN);
+%               for ienf=1:length(obj.Myenfs)
+%                   myenf=obj.Myenfs{ienf};
+%                   myenf.addnodedofs(obj.Nodedict(node),obj.Id);
+%               end
+%            end
            %% initial enrich elemdict
            for iE=1:length(elems)
                elem=elems(iE);

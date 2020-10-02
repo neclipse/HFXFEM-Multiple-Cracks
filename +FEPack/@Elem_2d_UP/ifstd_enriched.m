@@ -1,11 +1,14 @@
-function [IntLoadAll,stagechangeflag]=ifstd_enriched( obj,newmark,id,stagecheck,calstress,gbinp)
+function [IntLoadAll,stagechangeflag]=ifstd_enriched( obj,newmark,id,stagecheck,calstress)
 % internal force vector calculation and the stress update
 % global skin;
 % skin=gbinp.skin;
 	% Enrichement screening
-	if obj.Enrich(id)==0
-		error('The element does not interact with the specified enrichement item\n')
-	end 
+% 	if obj.Enrich(id)==0
+% 		error('The element does not interact with the specified enrichement item\n')
+% 	end 
+    % use logical array id to relieve the single index id. 10/02/20
+    id=obj.Enrich==id;
+    
 	% Standard Dofs
     us=obj.Un2i;      % elemental iterative total displacement vector, u_sup(n+1)_sub(i+1)
     ps=obj.Pn2i;      % elemental iterative total pore pressure vector, p_sup(n+1)_sub(i+1)

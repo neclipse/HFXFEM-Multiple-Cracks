@@ -48,6 +48,9 @@ Log: 09/28/20
 Log: 10/01/20
 9. Elem_2d_UP class and JocianMat class finished. Important milestone!
 
+Log: 10/02/20
+10. Fixed the indexing and querying of enrichitem in elem, node
+11. GuassPnt_LE_UP class initiated.
 
 
 List:
@@ -280,6 +283,12 @@ stored in corresponding JacobianMat.
 function only need minor change. Note currently all enriched dofs are stored
 in the first JacobianMatDict. It should be changed to the comprehensive
 Jacobian Matrix. (To change)
+    .calstress_enriched: only the first enrichitem is used. (To change)
+
+10. Details on Github: 
+https://github.com/neclipse/HFXFEM-Verified-Singlecrack/issues/1
+
+11. 
 
 
 

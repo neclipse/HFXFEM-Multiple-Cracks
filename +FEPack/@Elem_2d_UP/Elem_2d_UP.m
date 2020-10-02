@@ -4,11 +4,11 @@ classdef Elem_2d_UP < handle
         Type                    % Element type reheritated from the class Domain
         MatType
         NodList                 % Global order of the nodes in the element
-        NodstdList=cell(1,10);  % local order of the standard nodes in the element,not necessary after 022619
+        NodstdList=cell(1,3);  % local order of the standard nodes in the element,not necessary after 022619
         NodDict
         GaussPntDictM;                 % object array of class standard GaussPnt
-        LineGaussDict=cell(1,10);      % object array of the GaussPnt for line integral only
-        EnrichGaussDict=cell(1,10);    % object array of GaussPnt for enriched element 2d integral
+        LineGaussDict=cell(1,3);      % object array of the GaussPnt for line integral only
+        EnrichGaussDict=cell(1,3);    % object array of GaussPnt for enriched element 2d integral
         X
         Y
         Area
@@ -37,10 +37,11 @@ classdef Elem_2d_UP < handle
         Pn2t1
         Stress                 % Total stresses at the element centroid
         Stressp                % Effective stresses at the element centroid
-        Enrich=zeros(1,10);    % Enrichment flags: special structure:[id1,id2,id3...]
-        Seeds=cell(1,10);      % seeds points to create triangular subdomain
-        LocalInt=cell(1,10);   % local coordinates of the intersections   
-        GlobalInt=cell(1,10);  % global coordinates of the intersections
+        EnrichNum=0;          % The total involved enriched items in this element
+        Enrich=zeros(1,3);    % Enrichment flags: special structure:[id1,id2,id3...]
+        Seeds=cell(1,3);      % seeds points to create triangular subdomain
+        LocalInt=cell(1,3);   % local coordinates of the intersections   
+        GlobalInt=cell(1,3);  % global coordinates of the intersections
         JacobianMatDict        % Enriched Jacobian matrix for the enriched element, objects of FEPack.JacobianMat
     end
     
@@ -88,16 +89,18 @@ classdef Elem_2d_UP < handle
                % preallocate the Jacobian matrices for potential cracks
                % CHANGE SEMICOLON TO COMMA AS SEMICOLON WOULD GIVE A DICTIONARY OF ALL
                 % REPEATED HANDLE 11/16/2018.
-               JMatDict(1,10)=FEPack.JacobianMat();
+               JMatDict(1,3)=FEPack.JacobianMat();
                obj.JacobianMatDict=JMatDict;
            end
            if all(L)
                % the indexing is not good 092820, to change
-               obj.Enrich(id)=id; 
-               obj.JacobianMatDict(id)=FEPack.JacobianMat(id);
+               % Changed on 10/02/20
+               obj.EnrichNum=obj.EnrichNum+1; 
+               obj.Enrich(obj.EnrichNum)=id; 
+               obj.JacobianMatDict(obj.EnrichNum)=FEPack.JacobianMat(id);
                
-               % NOT necessary after the revision on 02262019, stdnodes are
-               % now stored in the "mygeo" of the encrack.
+%                NOT necessary after the revision on 02262019, stdnodes are
+%                now stored in the "mygeo" of the encrack.
 %                stdnodes=1:length(obj.NodList);
 %                L=false(1,length(obj.NodList));
 %                for iN=1:length(obj.NodList)
@@ -117,7 +120,7 @@ classdef Elem_2d_UP < handle
         givelocarray(obj,varargin);
         givelocarray_enriched(obj,crackid,varargin);
 		load=ifstd(obj,newmark , calstress);     			% compute internal force vectors; call listra and matsu
-        [IntLoadAll,stagechangeflag]=ifstd_enriched( obj,newmark,id, stagecheck , calstress, gbinp);
+        [IntLoadAll,stagechangeflag]=ifstd_enriched( obj,newmark,id, stagecheck , calstress);
         calarea(obj);
         flag=isinside(obj,x,y);				% check if point(x,y) is inside or on the edge of the element
 		[flagie,flagi,flage,flagoe,area] = isinside_vec(obj,plist);

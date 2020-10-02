@@ -18,6 +18,8 @@ end
 % triangles note seeds_all is still a cell array because obj.Seeds has two
 % levels: first level is the crack id and the second level is the
 % subdomains for triangulation 03282019
+% use logical array id to relieve the single index id. 10/02/20
+id=obj.Enrich==id;
 seeds_all=obj.Seeds{id};    % all subpolygons for current crack id
 GNcoord=[obj.X,obj.Y];      % global coordinates of the nodes of the element
 GP=zeros(60,2); % preallocate

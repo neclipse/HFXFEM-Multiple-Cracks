@@ -24,6 +24,8 @@ lini=gbinp.lini;
 tini=gbinp.threshold;
 minaperture=gbinp.minaperture;
 perfaperture=gbinp.perfaperture;
+% use logical array id to relieve the single index id. 10/02/20
+id=obj.Enrich==id;
 localint=obj.LocalInt{id}; % elemental local coordinates of the intersections [xi,eta]
 [ksi,lw]=GaussQuad(p);% parent segment [-1,1]
 Nline=[1-ksi,1+ksi]/2;

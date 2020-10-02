@@ -5,11 +5,11 @@ classdef Node_UP < handle
        X
        Y
        DofArray      % global dof index array
-       EnrDofArray=cell(1,3);  % global enrdof index array
+       EnrDofArray=cell(1,5);  % global enrdof index array
        UArray        % global disp dof index array
-       UenrArray=cell(1,3);     % a cell array, same structure as the Enf
+       UenrArray=cell(1,5);     % a cell array, same structure as the Enf
        PArray        % global pressure dof index array
-       PenrArray=cell(1,3);     % a cell array, same structure as the Enf
+       PenrArray=cell(1,5);     % a cell array, same structure as the Enf
        pressure      % calculated pressure by the linear system creater
        ItrDispList   % Iterative values of dofs in corresponding order as DofArray, column array
        IncDispList   % Incremental values of dofs in corresponding order as DofArray,column array
@@ -17,16 +17,17 @@ classdef Node_UP < handle
        NoDofs
        NoUDofs
        NoPDofs
-       NoEnrDofs;    %  array, same structure as the Enrich
-       NoUenrDofs;    
-       NoPenrDofs;
+       % on 10/02/20 Relieve NoEnrDofs by NoDofs
+%        NoEnrDofs=zeros(1,3);    %  array, same structure as the Enrich
+%        NoUenrDofs=zeros(1,3);    
+%        NoPenrDofs=zeros(1,3);
        Stress=zeros(5,1)         % Total stresses vector [repetition,sx,sy,sxy,sz]
        Stressp=zeros(5,1)        % Effective stresses vector [rep,sx,sy,sxy,sz]
        Leakoff=0;                % Leakoff rate
        ALeakoff=0;               % Accumulated leakoff volume
        CInjection=0;             % Concentrated injection to this node, calculated from encrack.cal_qextenr
-       Enrich=zeros(1,3);       % Enrich item id,[nan,id1,id2,...]
-       EnrichNum=0;              % The number of enriched items involved
+       Enrich=zeros(1,5);       % Enrich item id,[nan,id1,id2,...]
+       EnrichNum=0;              % The number of all enriched items involved
    end
    
    methods
@@ -41,16 +42,6 @@ classdef Node_UP < handle
            obj.NoDofs=3;
            end
        end
-%        function NoPDofs=get.NoPDofs(obj)
-%            if obj.Type==1
-%                NoPDofs=1;
-%            elseif obj.Type==2
-%                NoPDofs=0;
-%            end
-%        end
-%        function NoDofs=get.NoDofs(obj)
-%                NoDofs=obj.NoUDof+obj.NoPDofs;
-%        end
         function setenrich(obj,id)
             % obj.Enrich stores all the ids of involved enrichitem with
             % this element
@@ -70,7 +61,6 @@ classdef Node_UP < handle
            totudof=totudof+obj.NoUDofs;
            totpdof=totpdof+obj.NoPDofs;
        end
-
        % enriched dof array is assigned by the Enf.addnodedofs and EnrichItem.updatedofarray function
        % because different ENF may assign different number of dofs and
        % there may exist multiple EnrichItems

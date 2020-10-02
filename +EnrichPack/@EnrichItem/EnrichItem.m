@@ -81,19 +81,24 @@ classdef EnrichItem < matlab.mixin.Copyable
            % The initial input of totnenrdof is the number of all standard
            % dofs, i.e., the enriched dofs are indexed after all standard
            % dofs.
-           id=obj.Id;
+  
            % THE ORDER MAY MATTER BECAUSE THE ENRICHED JACOBIAN MATRIX IS 
            % NOT UPDATED BUT THE LOCARRAY MAY CHANGE 11/16/2018
            % NEED TO MAKE SURE THE ADDED NODES ARE APPENDED AT THE END
            % AFTER CRACK UPDATE
            for iN=1:length(obj.NewNodes)
                node=obj.Nodedict(obj.NewNodes(iN));
-               node.EnrDofArray{id}=totnenrdof+1:totnenrdof+node.NoEnrDofs(id);
-               node.UenrArray{id}=totuenrdof+1:totuenrdof+node.NoUenrDofs(id);
-               node.PenrArray{id}=totpenrdof+1:totpenrdof+node.NoPenrDofs(id);
-               totnenrdof=totnenrdof+node.NoEnrDofs(id);
-               totuenrdof=totuenrdof+node.NoUenrDofs(id);
-               totpenrdof=totpenrdof+node.NoPenrDofs(id);
+               % obtain the index where id crack is stored in this
+               % element.10/02/20
+               k=node.Enrich==obj.Id;
+               node.EnrDofArray{k}=totnenrdof+1:totnenrdof+node.NoDofs;
+               node.UenrArray{k}=totuenrdof+1:totuenrdof+node.NoUDofs;
+               node.PenrArray{k}=totpenrdof+1:totpenrdof+node.NoPDofs;
+               % Relieve node.NoEnrDofs and so on by NoDofs because this is
+               % not crack-dependent. 10/02/20
+               totnenrdof=totnenrdof+node.NoDofs;
+               totuenrdof=totuenrdof+node.NoUDofs;
+               totpenrdof=totpenrdof+node.NoPDofs;
            end
        end
    end

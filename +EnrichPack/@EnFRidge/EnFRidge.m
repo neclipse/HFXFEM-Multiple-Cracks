@@ -30,15 +30,16 @@ classdef EnFRidge < EnrichPack.EnrichFun
                nodes_phi=phipool(Lcob);
            end
            % loop over all Gauss points for the current enrcrack(id)
-           GaussPnt_domain=obj.enrichgauss(nodes_phi,elem.EnrichGaussDict{id});
-           GaussPnt_line=obj.enrichgauss(nodes_phi,elem.LineGaussDict{id});
+           k=elem.Enrich==id;
+           GaussPnt_domain=obj.enrichgauss(nodes_phi,elem.EnrichGaussDict{k});
+           GaussPnt_line=obj.enrichgauss(nodes_phi,elem.LineGaussDict{k});
            % Because gausspnt is an data object, hard copy is required
-           elem.EnrichGaussDict{id}=GaussPnt_domain;
-           elem.LineGaussDict{id}=GaussPnt_line;
+           elem.EnrichGaussDict{k}=GaussPnt_domain;
+           elem.LineGaussDict{k}=GaussPnt_line;
        end
        function addnodedofs(~,node,id,varargin)
            % enrich the node object by adding corresponding dof and
-           % dofarray
+           % dofarray, not necessary after 10/02/20
            if ~isempty(varargin)
               upindicator=varargin{1};
            else
