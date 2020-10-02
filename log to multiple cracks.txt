@@ -3,7 +3,7 @@ To change -- Definitely need to be changed
 To watch -- From what I predict on paper, there is no need for immediate 
 chang. Yet, changes may be required later on.
 To improve -- Not quite related to the extension for multiple cracks. 
-But the code has some noticed drawbacks and should be improved.
+But the code has some noticed drawbacks.
 
 Overall Strategy: 
 1. only take care of multiple enrichitem in the domain, the interacting 
@@ -46,7 +46,9 @@ Log: 09/25/20
 Log: 09/28/20
 9. Elem_2d_UP class and JocianMat class initiated.
 Log: 10/01/20
-9. Elem_2d_UP class and JocianMat class finished. Important milestone!
+9. Elem_2d_UP class and JocianMat class finished. Important!
+
+
 
 
 
@@ -149,9 +151,7 @@ for each EnrCrackBody object? if so, no need to change for this assignment.
     node.setenrich(obj.Id): It already accounts for multiple cracks in cells.
     elem.setenrich(obj.Id): It already accounts for multiple cracks in cells.
     elem.subdomain(obj.Id): It depends on the OpenGeo.intersection method.
-    However the indexing and querying should be changed.(To change)
-
-    Are we using the same set of seeds for intersecting cracks? Are the seeds
+Are we using the same set of seeds for intersecting cracks? Are the seeds
 created with the consideration of multiple cracks? Are we creating the dense
 square seeds instead of the gaussian seeds within regenerated triangles? 
 If it does not matter whethere different crack item are using different set
@@ -230,9 +230,8 @@ is stored at the id position in the obj.Enrich array, which is not necessary
 and may cause problems when there are more enrichitems in the whole domain
 than the length of initialized obj.Enrich. The same also applies to the
 obj.JacobianMatDict(id). Accordingly, the way I used to query the indexed
-crack in other functions should be changed, like .crtstif_enriched, 
-.givelocarry_enriched, .subdomain, .linegauss, enf.addnodedof, enf.enrichelem,
-Node.EnrDofArray, etc..  (To change)
+crack in other functions should be changed, like crtstif_enriched, 
+givelocarry_enriched, subdomain, Node.EnrDofArray, etc..  (To change)
     .givelocarray_enriched: like what is mentioned above, the query of 
 specified crackid should be changed as the idcrack is not stored in the id
 position within the JacobianMatDict array. It is easy to fix, however, caution

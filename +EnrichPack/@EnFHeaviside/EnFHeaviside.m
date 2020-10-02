@@ -130,9 +130,9 @@ classdef EnFHeaviside < EnrichPack.EnrichFun
                upindicator=1;           % u indicator
            end
            if upindicator==1
-               node.NoUenrDofs=2;
+               node.NoUenrDofs(id)=2;
            elseif upindicator==2
-               node.NoPenrDofs=1;
+               node.NoPenrDofs(id)=1;
            end
            node.NoEnrDofs(id)=node.NoUenrDofs(id)+node.NoPenrDofs(id);
        end
