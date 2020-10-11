@@ -27,13 +27,17 @@ yg=[obj.EnrichGaussDict{1}.Y];
     end
 % end
 % Store the results to corresponding nodes
+% May use the nearest three gaussian points instead of the nearest two to
+% approximate the stress value 10/06/20. After Khoei 2015 (section 5.6.5.2)
 for in=1:obj.NoNodes
     dist=sqrt((xg-obj.X(in)).^2+(yg-obj.Y(in)).^2);
     [~,I]=sort(dist);   % assended order
     stressp=(obj.EnrichGaussDict{1}(I(1)).Stressp+...
-        obj.EnrichGaussDict{1}(I(2)).Stressp)/2;
+        obj.EnrichGaussDict{1}(I(2)).Stressp+...
+        obj.EnrichGaussDict{1}(I(3)).Stressp)/3;
     stress=(obj.EnrichGaussDict{1}(I(1)).Stress+...
-        obj.EnrichGaussDict{1}(I(2)).Stress)/2;
+        obj.EnrichGaussDict{1}(I(2)).Stress+...
+        obj.EnrichGaussDict{1}(I(3)).Stress)/3;
     % column stress vector: [rep;sx;sy;sxy;sz] 
     obj.NodDict(in).Stressp=obj.NodDict(in).Stressp+[1;stressp];
     obj.NodDict(in).Stress=obj.NodDict(in).Stress+[1;stress];

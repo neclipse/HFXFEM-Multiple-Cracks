@@ -5,14 +5,14 @@ classdef GaussPnt_Cohesive < FEPack.GaussPnt_LE_UP
        IniCrackDisp;
        MinCrackOpening  % for perforated initial notch, 10282019 also used to compare with Abaqus (2e-3 m)
        CrackOpening;
-       Uplus
-       Uminus
+       Uplus            % displacement at the positive face of the crack, positive means the signed distance function is positive
+       Uminus           % displacement at the negative face of the crack
        Nuenrplus        % enriched shape function right above the crack Nuenr+
        Nuenrminus       % enriched shape function right beneath the crack Nuenr-
-       FractureP
+       FractureP        % Fracture pressure interpolated from standard pdof and all penrdofs at the element nodes
        Ds               % The interval length for integral
-       Ntaud
-       Mtaud
+       Ntaud            % unit normal vector
+       Mtaud            % unit tangent vector
        TractionO;       % Converged traction 
        Traction;        % Traction (MPa), [tx,ty] 
        TractionLaw      % An object of TractionLaw
@@ -63,6 +63,9 @@ classdef GaussPnt_Cohesive < FEPack.GaussPnt_LE_UP
           % 2d-Coordinate transformation matrix from global to the local;
           Amat=[lxl,mxl;lyl,myl];
           if ~obj.Perforated        % Initially Bonded mode
+              % The initraction can also be directly calculated from the 
+              % stress states at the linegauss points given the linegauss
+              % points are predefined. 10/06/20
               switch obj.TractionLaw.Type
                   case 'linear'
                   initraction=(1-obj.TractionLaw.Lambdaini)*obj.TractionLaw.PeakTraction;

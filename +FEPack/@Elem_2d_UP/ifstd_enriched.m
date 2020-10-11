@@ -60,10 +60,6 @@ function [IntLoadAll,stagechangeflag]=ifstd_enriched( obj,newmark,id,stagecheck,
             %for the first iteration, the traction can inherit from the
             %last increment. 07272019. (Not 100% sure, changed back after trial)
             traction=lg.matctu(us,ue,Due);
-%             traction=lg.TractionO;
-            % For the new increment, do not assign traction to lg.Traction
-            % yet. (does not matter now, because lg.Traction is updated based
-            % on lg.TractionO and Due inside lg.matctu).
         end
         lg.Traction=traction;
         F_coh_i=F_coh_i+lg.H*lg.Nu'*lg.Traction*lg.Ds;

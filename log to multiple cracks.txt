@@ -50,7 +50,7 @@ Log: 10/01/20
 
 Log: 10/02/20
 10. Fixed the indexing and querying of enrichitem in elem, node
-11. GuassPnt_LE_UP class initiated.
+11. GuassPnt_LE_UP class pending.
 
 
 List:
@@ -174,13 +174,19 @@ But obj.Alpha may be updated when new traction initiation method is used.
 by every enf. Therefore, if the junction enrichment function only belongs
 to the junction element, we had better make sure the junction enrichment 
 function does not add enr dofs to the rest section of the branch crack. 
-(To change) If the junction is not adopted, then it is okay to go.  
+(To change) If the junction is not adopted, then it is okay to go. 
+This function is discarded in the fix of issue 1.
+
     Myenrfs.enrichelem(elemobj,obj.Id):Enrich the elem for the id crack 
 object. The core is obj.enrichgauss and the enrichment is applied to the
 elem.EnrichGaussDict{id}. Different crack items yield separate subdomain
 and EnrichGaussDict{id}. The enrichment belongs to the specific enrcrackbody.
 If junction enrichment function is not adopted, no changes seem necessary.
-(To watch)
+(To watch). According to my recent thoughts on enrichment strategy, we had
+better enrich the element consistently for the same gaussian points. All 
+EnrichEnfs belonging to all enriched items should apply to all gaussian points
+including the subdomain gaussian points and the line gaussian points specific
+to each crack. (To change 10/09/20) 
     .checkactive(): now it use .Mygeo.Rtips to determine if it's active.
 Considering that the potential tip annihilation with other crack, this method
 may need to be updated with OpenGeo.ACTIVETIPS.Because the arrested crack tip
@@ -204,6 +210,9 @@ of the ue2 for the crack opening of (1) is actually zero. (To watch).
     .postprocess-- this is largely related to the Jocabian matrix. Whether
 a single comprehesive Jacobian matrix or a independent Jacobian matrix will
 be used depends on the exact implementation in +FEPack. (To change)
+The leakoff calculation, pfcrack, for each separate crack item can also be 
+obtained if the line integrals are separately stored in corresponding 
+JacobianMat. 
     myenf.enrichelem(obj.Elemdict(elem),obj.Id): the enrichment function 
 should be selected based on the interaction criterion in stage 2-3.(To change)
 
@@ -275,9 +284,8 @@ because qint exist for both items. In the end, the two repetions (of the
 same dimension) can be added together and combined into the comprehensive
 elemental Jacobian matrix. This is done for easier connection with other 
 existing functions, like ifstd_enriched. The leakoff calculation, pfcrack,
- for each
-separate crack item can also be obtained if the line integrals are separately
-stored in corresponding JacobianMat. 
+for each separate crack item can also be obtained if the line integrals are 
+separately stored in corresponding JacobianMat. 
 
     .ifstd_enriched: if the comprehensive Jacobian Matrix is available. The
 function only need minor change. Note currently all enriched dofs are stored
@@ -296,25 +304,18 @@ https://github.com/neclipse/HFXFEM-Verified-Singlecrack/issues/1
 
 
 
-    
-    
-
-    
-
-
-
-
-    
-    
-    
-   
 
     
     
 
 C. How to handle initial cohesive tractions?
 Use new approach to initiate the cohesive traction: Alpha in main file and
-in linegauss, and in GaussPnd_cohesive.
+in linegauss, and in GaussPnd_cohesive. 
+The thoughts to use stress states at linegaussian points to initialize the
+cohesive traction may not be feasible. Because there is no linegauss points
+prior to the enrichment. Yet, one can seek to transfer the stress states from
+standard gaussian points to these newly generated line gaussian points by
+interpolation. It is not clear if the work is worthy.
 
 
 D. Put a question mark over the implementation of initial stress and intial

@@ -8,7 +8,7 @@ classdef Elem_2d_UP < handle
         NodDict
         GaussPntDictM;                 % object array of class standard GaussPnt
         LineGaussDict=cell(1,3);      % object array of the GaussPnt for line integral only
-        EnrichGaussDict=cell(1,3);    % object array of GaussPnt for enriched element 2d integral
+        EnrichGaussDict;    % object array of GaussPnt for enriched element 2d integral
         X
         Y
         Area
@@ -21,10 +21,6 @@ classdef Elem_2d_UP < handle
         Q
         H
         S
-        JM11
-        JM12
-        JM21
-        JM22
 		Length             		% length of each side
         Locarray                % global location array of mixed dofs,[ux,uy,p]
         LocarrayU               % global location array of only U, [ux,uy]
@@ -42,7 +38,8 @@ classdef Elem_2d_UP < handle
         Seeds=cell(1,3);      % seeds points to create triangular subdomain
         LocalInt=cell(1,3);   % local coordinates of the intersections   
         GlobalInt=cell(1,3);  % global coordinates of the intersections
-        JacobianMatDict        % Enriched Jacobian matrix for the enriched element, objects of FEPack.JacobianMat
+        JacobianMat           % The comprehensive elemental JocobianMat, object of FEPack.JacobianMat
+        JacobianMatDict       % Enriched Jacobian matrix for the enriched element, objects of FEPack.JacobianMat
     end
     
     
@@ -91,6 +88,8 @@ classdef Elem_2d_UP < handle
                 % REPEATED HANDLE 11/16/2018.
                JMatDict(1,3)=FEPack.JacobianMat();
                obj.JacobianMatDict=JMatDict;
+               % prepare the assembled elemental Jacobian matrix 
+               obj.JacobianMat=FEPack.JacobianMat();
            end
            if all(L)
                % the indexing is not good 092820, to change
