@@ -8,11 +8,12 @@ totpenrdof=obj.NoPDofs+obj.NoPenrDofs;
 % loop over all EnrichItems
 BCTableqEn=[];
 % BCTableqEn=cell(length(obj.EnrichItems));
+% First loop to update doflocarray by the storage order in obj.EnrichItem
 for iEnrich=1:length(obj.EnrichItems)
    enrichitem=obj.EnrichItems{iEnrich};
    % update the dofs indices for all the interacted nodes
    [totnenrdof, totuenrdof, totpenrdof]=updatedofarray(enrichitem,totnenrdof, totuenrdof, totpenrdof);
-   % update the locarray within the enriched elements
+   % update the crack specific locarrayenr within the enriched elements
    id=enrichitem.Id;
    for ielem=1:length(enrichitem.NewElems)
        obj.ElemDict(enrichitem.NewElems(ielem)).givelocarray_enriched(id);
@@ -21,6 +22,15 @@ for iEnrich=1:length(obj.EnrichItems)
       BCTableqEn{iEnrich}=enrichitem.Qtable;
    end
 end
+% Second loop to concatenate the crack-specific locarrayenr stored in
+% JacobianMatDict together and store in JacobianMat. 10/12/20
+for iEnrich=1:length(obj.EnrichItems)
+    enrichitem=obj.EnrichItems{iEnrich};
+    for ielem=1:length(enrichitem.NewElems)
+       obj.ElemDict(enrichitem.NewElems(ielem)).assemble_locarry;
+   end
+end
+
 % BCTableqEn=BCTableqEn(~isempty(BCTableqEn));
 obj.NoEnrDofs=totnenrdof-obj.NoDofs;                % number of total enriched dofs
 obj.NoUenrDofs=totuenrdof-obj.NoUDofs;              % number of total enriched displacement dofs

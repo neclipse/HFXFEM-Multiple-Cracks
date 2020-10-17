@@ -43,7 +43,7 @@ classdef GaussPnt_LE_UP
        obj=matsu_enriched(obj,us,ue,ps,pe);
        obj=psu(obj);
        obj=preparing(obj,X,Y);
-       obj=enriching(obj);                  % preparing the enrichment matrices, Bmatenr,Nuenr,Npenr
+       obj=enriching(obj);                  % not implemented here though. See Enr.enrichgauss.
        matct(obj);
    end
     

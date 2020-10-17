@@ -31,7 +31,7 @@ nnodes=obj.NoNodes;
 r1=2*nnodes;
 r2=nnodes;
 %% May only need one final JacobianMat, no need for discrete crack. 092920.
-JMat=obj.JacobianMatDict(id);
+JMat=obj.JacobianMat;
 if isempty(JMat.Kusue) % stays constant over the simulation                                 
     % preallocate the displacement vector for crack opening calculation
     % 02/01/2019
@@ -59,7 +59,7 @@ if isempty(JMat.Kusue) % stays constant over the simulation
     Spepe=zeros(r2,r2);
     m=[1;1;0;1];                                % Kroneck delta in vector form
     %% Need to obtain Nuenr, Npenr, DNpenr, etc for every involved crack. 092920
-    GaussPnt=obj.EnrichGaussDict{id};
+    GaussPnt=obj.EnrichGauss;
     numgauss=length(GaussPnt);
     %% Area Integral over the element
     for igauss=1:numgauss
@@ -105,9 +105,9 @@ if isempty(JMat.Kusue) % stays constant over the simulation
         Spepe=Spepe+H*dJ*Npenr'*Cstar*Npenr;
     end
     % store the constant values to the JacobianMat(id)
-    JMat.Locarray=obj.Locarray;
-    JMat.LocarrayU=obj.LocarrayU;
-    JMat.LocarrayP=obj.LocarrayP;
+%     JMat.Locarray=obj.Locarray;
+%     JMat.LocarrayU=obj.LocarrayU;
+%     JMat.LocarrayP=obj.LocarrayP;
     JMat.Musus=Musus;
     JMat.Musue=Musue;
     JMat.Mueus=Mueus;

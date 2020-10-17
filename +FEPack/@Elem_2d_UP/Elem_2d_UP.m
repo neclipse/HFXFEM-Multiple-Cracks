@@ -8,7 +8,8 @@ classdef Elem_2d_UP < handle
         NodDict
         GaussPntDictM;                 % object array of class standard GaussPnt
         LineGaussDict=cell(1,3);      % object array of the GaussPnt for line integral only
-        EnrichGaussDict;    % object array of GaussPnt for enriched element 2d integral
+        EnrichGauss;                  % The EnrichGauss points with assembled Nuenr, Npenr, and their derivatives
+        EnrichGaussDict=cell(1,3);    % object array of GaussPnt for enriched element 2d integral, specific to each enritem
         X
         Y
         Area
@@ -23,7 +24,7 @@ classdef Elem_2d_UP < handle
         S
 		Length             		% length of each side
         Locarray                % global location array of mixed dofs,[ux,uy,p]
-        LocarrayU               % global location array of only U, [ux,uy]
+        LocarrayU               % global location array of only U, [ux,uy],  not obsolete, used in linsys.upconf
         LocarrayP               % global location array of only p, [p]
         dXn2i                   % (standard) unknowns solved from current iteration [dx1,dy1,dp1,dx2,dy2,dp2...]	
         Un2i                    % (standard) Un1+dUn2i
@@ -113,15 +114,16 @@ classdef Elem_2d_UP < handle
         end
         
         %% Function Prototyping
+        assemble_locarray( obj );                           % assemble enriched locarray from JacobianMatDict to obj.JacobianMat.
         crtstif(obj,newmark,iinc,gbinp, blending);           % create element stiffness matrix, call matct in gausspnt
         crtstif_enriched(obj,newmark,id,gbinp,blending);    % create element stiffness matrix, call matct in gausspnt, for enrichitem id.
-        crtstif_enriched_1Dflow( obj, newmark, id , gbinp); % 1D crack fluid flow adopted and compressibility of fracking fluid ignored
+%         crtstif_enriched_1Dflow( obj, newmark, id , gbinp); % 1D crack fluid flow adopted and compressibility of fracking fluid ignored
         givelocarray(obj,varargin);
         givelocarray_enriched(obj,crackid,varargin);
 		load=ifstd(obj,newmark , calstress);     			% compute internal force vectors; call listra and matsu
         [IntLoadAll,stagechangeflag]=ifstd_enriched( obj,newmark,id, stagecheck , calstress);
         calarea(obj);
-        flag=isinside(obj,x,y);				% check if point(x,y) is inside or on the edge of the element
+%         flag=isinside(obj,x,y);				% check if point(x,y) is inside or on the edge of the element
 		[flagie,flagi,flage,flagoe,area] = isinside_vec(obj,plist);
 		[gp,gw]=subdomain(obj,id,varargins);
         [ gp,gw ] = linegauss( obj,id,cohesive,perforated,varargin );

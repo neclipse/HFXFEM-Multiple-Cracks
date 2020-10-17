@@ -33,12 +33,12 @@ function  upconf_trial( obj,newmark)
         obj.ElemDict(ielem).Un2t2=obj.Ut2(UVec);
         obj.ElemDict(ielem).Pn2t1=obj.Pt1(PVec);
     end
-    % trial update the enriched dofs as well 
+    % trial update the enriched dofs as well, AT ELEMENTAL LEVEL, 10/12/20
 	for iEnrich=1:length(obj.EnrichItems)
 		enrichitem=obj.EnrichItems{iEnrich};
-		id=enrichitem.Id;
+% 		id=enrichitem.Id;
 		for ielem=1:length(enrichitem.INTELEM)
-			Jacob=enrichitem.INTELEM(ielem).JacobianMatDict(id);
+			Jacob=enrichitem.INTELEM(ielem).JacobianMat;
 % 			DofEnrVec=Jacob.LocarrayEnr;
 			UEnrVec=Jacob.LocarrayUEnr;
 			PEnrVec=Jacob.LocarrayPEnr;
