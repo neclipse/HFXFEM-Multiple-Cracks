@@ -66,7 +66,7 @@ if size(JMat.Kusue,2)~=r1t % stays constant over the simulation
     % Change: the element with multiple cracks share the same gauss points,
     % and the shape functions and their derivatives are already made
     % comprehensive by the EnrichPack.EnrichFun. 10/09/20
-    GaussPnt=obj.EnrichGaussDict; % only one dict 10/09/20
+    GaussPnt=obj.EnrichGauss; % only one dict 10/09/20
     numgauss=length(GaussPnt);
     %% Area Integral over the element
     for igauss=1:numgauss
@@ -157,7 +157,7 @@ for ienr=1:obj.EnrichNum
     % coehsive force
     Kc=zeros(r1,r1);
     % fluid pressure to the crack
-    % The naming is to consistent with Queps, although Nu is used
+    % The naming is to consistent with Queps, although Nu(std) is used
     % The enrichitem specific fractions are initiated with zeros
     Qintueps=zeros(r1,r2);                      
     Qintuepe=zeros(r1,r2t);                      

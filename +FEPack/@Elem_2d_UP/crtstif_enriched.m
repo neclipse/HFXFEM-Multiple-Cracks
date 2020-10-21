@@ -59,7 +59,7 @@ if isempty(JMat.Kusue) % stays constant over the simulation
     Spepe=zeros(r2,r2);
     m=[1;1;0;1];                                % Kroneck delta in vector form
     %% Need to obtain Nuenr, Npenr, DNpenr, etc for every involved crack. 092920
-    GaussPnt=obj.EnrichGauss;
+    GaussPnt=obj.EnrichGauss; % Where the comprehensive Nuenr, Npenr, etc. are stored. 10/16/20
     numgauss=length(GaussPnt);
     %% Area Integral over the element
     for igauss=1:numgauss

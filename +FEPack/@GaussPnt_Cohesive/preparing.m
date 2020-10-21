@@ -1,4 +1,4 @@
-function obj=preparing(obj,X,Y)
+function obj=preparing(obj,X,Y, EnrichNum)
 % method of GaussPnt_Cohesive class: TO WATCH. DOES THE PREPARING METHOD
 % NEED TO BE CHANGED FOR THE LINE GAUSSIAN POINTS. NOTE THIS METHOD WAS
 % ORIGINALLY DEVELOPED FOR THE 2D DOMAIN GAUSSIAN POINTS. 10/20/20

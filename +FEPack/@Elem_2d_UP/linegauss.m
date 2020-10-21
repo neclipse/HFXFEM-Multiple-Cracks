@@ -55,7 +55,7 @@ Mtaud=mtaud/ds;   % unit tangent vector
 gaussdictm(1,p)=FEPack.GaussPnt_Cohesive(); % generate an void object array
 for igauss=1:p
     gaussdictm(igauss)=FEPack.GaussPnt_Cohesive(gp(igauss,1),gp(igauss,2),gw(igauss),nnodes,gbinp,perforated,Alpha);
-    gaussdictm(igauss)=gaussdictm(igauss).preparing(obj.X,obj.Y);
+    gaussdictm(igauss)=gaussdictm(igauss).preparing(obj.X,obj.Y,obj.EnrichNum);
     % Explicit linear softening
     if strcmp(cohesive,'unified')
         gaussdictm(igauss).TractionLaw=EnrichPack.TractionLaw_unified(lcr,dcr,tkrg,tini,lini,gbinp);

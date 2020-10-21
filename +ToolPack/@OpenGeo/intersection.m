@@ -22,7 +22,7 @@ pnts=zeros(2,2);            % global coordinates of the intersections
 localpnts=zeros(2,2);       % local coordinates of the intersections
 % extrapnts=zeros(2,2);       % local coordinates of the two extra points for the seeds
 ipnt=1;
-pairs=zeros(1,4);
+pairs=zeros(1,4);           % The nodes on the edges which are intersected by the crack
 R=zeros(1,2);
 % Find the two intersections and on what edge
 for i =1:4

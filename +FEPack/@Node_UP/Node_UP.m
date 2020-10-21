@@ -18,10 +18,12 @@ classdef Node_UP < handle
        NoUDofs
        NoPDofs
        % on 10/02/20 Relieve NoEnrDofs by NoDofs
-%        NoEnrDofs=zeros(1,3);    %  array, same structure as the Enrich
-%        NoUenrDofs=zeros(1,3);    
-%        NoPenrDofs=zeros(1,3);
-       Stress=zeros(5,1)         % Total stresses vector [repetition,sx,sy,sxy,sz]
+%        NoEnrDofs=zeros(1,5);    %  array, same structure as the Enrich
+%        NoUenrDofs=zeros(1,5);    
+%        NoPenrDofs=zeros(1,5);
+
+       % THE SIZE HAS NOTING TO DO WITH THE CELL ARRAY FOR ENRICH
+       Stress=zeros(5,1)         % Total stresses vector [repetition,sx,sy,sxy,sz], 
        Stressp=zeros(5,1)        % Effective stresses vector [rep,sx,sy,sxy,sz]
        Leakoff=0;                % Leakoff rate
        ALeakoff=0;               % Accumulated leakoff volume

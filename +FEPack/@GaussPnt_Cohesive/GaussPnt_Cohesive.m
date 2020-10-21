@@ -135,7 +135,7 @@ classdef GaussPnt_Cohesive < FEPack.GaussPnt_LE_UP
        %% Prototype
        obj=matsu_enriched(obj,us,ue,ps,pe)
        [traction,stagechangeflag]=matctu(obj,us,ue,Due);
-       obj=preparing(obj,X,Y);       
+       obj=preparing(obj,X,Y,EnrichNum);       
        obj=enriching(obj);          % preparing the enrichment matrices, Bmatenr,Nuenr,Npenr
        obj=matct(obj);               % calculate the tangent_cohesive in the global coordinate system
    end
