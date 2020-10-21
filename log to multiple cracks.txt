@@ -182,7 +182,8 @@ object. The core is obj.enrichgauss and the enrichment is applied to the
 elem.EnrichGaussDict{id}. Different crack items yield separate subdomain
 and EnrichGaussDict{id}. The enrichment belongs to the specific enrcrackbody.
 If junction enrichment function is not adopted, no changes seem necessary.
-(To watch). According to my recent thoughts on enrichment strategy, we had
+(To watch). 
+According to my recent thoughts on enrichment strategy, we had
 better enrich the element consistently for the same gaussian points. All 
 EnrichEnfs belonging to all enriched items should apply to all gaussian points
 including the subdomain gaussian points and the line gaussian points specific
@@ -194,8 +195,8 @@ may penetrate the existing crack in the next step. Here lies the need to
 implement the interaction strategy and enrichment strategy in a optimal way.
 (To change). (To watch)
 
-    EnrCrackBody.update_enrich--
-    .update_opening: the core is linegauss.updatecrackopening(ue1,ue2). 
+    EnrCrackBody.postprocess
+    .lg.updatecrackopening(us,ue):  
 The question becomes if the update of one crack opening also depends on the
 enriched displacements dofs of other enrichment iterm. This is a critical 
 question as the postprocessing of strain, stress, and  cohesive traction, 
@@ -207,7 +208,7 @@ along the current enrichitem (1) as they are always on the same side of the
 enrichitem (2). Then Nuenrplus and Nuenrminus are the same. The contribution
 of the ue2 for the crack opening of (1) is actually zero. (To watch).
 
-    .postprocess-- this is largely related to the Jocabian matrix. Whether
+    .the rest-- this is largely related to the Jocabian matrix. Whether
 a single comprehesive Jacobian matrix or a independent Jacobian matrix will
 be used depends on the exact implementation in +FEPack. (To change)
 The leakoff calculation, pfcrack, for each separate crack item can also be 
@@ -280,7 +281,7 @@ the Npenr2 and DNpenr2 etc., at the linegauss points of crack-1 for crack-2?
 Yes, we should follow the similar fashision and compute Npenr2 and DNpenr2
 at points along crack-1. Also we should compute Npenr1 and DNpenr1 at points
 along crack-2. The line integrals should be computed for both crack items 
-because qint exist for both items. In the end, the two repetions (of the
+because there are two qint respectively. In the end, the two repetions (of the
 same dimension) can be added together and combined into the comprehensive
 elemental Jacobian matrix. This is done for easier connection with other 
 existing functions, like ifstd_enriched. The leakoff calculation, pfcrack,

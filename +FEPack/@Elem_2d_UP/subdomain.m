@@ -95,9 +95,13 @@ gbinp=obj.GaussPntDictM(1).GBINP;
 gaussdictm(1,tpt)=FEPack.GaussPnt_LE_UP(); % generate an void object array
     for igauss=1:tpt
         gaussdictm(igauss)=FEPack.GaussPnt_LE_UP(GP(igauss,1),GP(igauss,2),GW(igauss),nnodes,gbinp);
-        gaussdictm(igauss)=gaussdictm(igauss).preparing(obj.X,obj.Y);
+        gaussdictm(igauss)=gaussdictm(igauss).preparing(obj.X,obj.Y,obj.EnrichNum);
     end
 % replace the GaussPntDictM with the newly generated gaussdictm
-obj.EnrichGaussDict{id}=gaussdictm;
+% obj.EnrichGaussDict{id}=gaussdictm;
+% The comprehensive gaussdict should be also updated. Actuall, the
+% comprehensive gaussdict should be the same as every cell within the
+% obj.EnrichGaussDict after update. 10/16/20
+obj.EnrichGauss=gaussdictm; 
 end
 

@@ -29,8 +29,8 @@ classdef EnFHeaviside < EnrichPack.EnrichFun
            % SUBDOMAIN METHOD SO THAT ONLY THE CLOSEST GAUSSIAN POINTS TO
            % THE CRACK ARE WITHIN [-OBJ.EPSILON,+OBJ.EPSILON] IN THE
            % DETERMINATION OF DERIVATIVES. 01272020.
-           %% Confirmed that the obj.Epsilon should be very small so that no
-           % gaussian points are included in the range. 013120
+           %% Confirmed that the obj.Epsilon should be very small so that 
+           % NO gaussian points are included in the range. 013120
            obj.Epsilon=0.0001*minelength;    % minelength is the minimun element length along the crack   
            obj.Lsv=lsv;
        end
@@ -115,10 +115,10 @@ classdef EnFHeaviside < EnrichPack.EnrichFun
            end
            % loop over all Gauss points for the current enrcrack(id)
            k=elem.Enrich==id;
-           GaussPnt_domain=obj.enrichgauss(nodes_phi,elem.EnrichGaussDict{k});
+           GaussPnt_domain=obj.enrichgauss(nodes_phi,elem.EnrichGauss,k);
            GaussPnt_line=obj.enrichgauss(nodes_phi,elem.LineGaussDict{k});
            % Because gausspnt is an data object, hard copy is required
-           elem.EnrichGaussDict{k}=GaussPnt_domain;
+           elem.EnrichGauss=GaussPnt_domain;
            elem.LineGaussDict{k}=GaussPnt_line;
        end
        
@@ -138,7 +138,13 @@ classdef EnFHeaviside < EnrichPack.EnrichFun
            node.NoEnrDofs=node.NoUenrDofs+node.NoPenrDofs;
        end
        
-       function [GaussPnt,Nuenrplus,Nuenrminus]=enrichgauss(obj,nodes_phi,GaussPnt)
+       function [GaussPnt,Nuenrplus,Nuenrminus]=enrichgauss(obj,nodes_phi,GaussPnt,varargin)
+           if isempty(varargin)
+               mode=1; % line gaussian points
+           else
+               mode=2;  % domain gaussian points
+               k=varargin{1}; % k is the logical index for the current EnrichItem
+           end
           for igauss=1:length(GaussPnt)
                N=GaussPnt(igauss).Np;
                Nu=GaussPnt(igauss).Nu;
@@ -155,10 +161,6 @@ classdef EnFHeaviside < EnrichPack.EnrichFun
                heaviside_enrnodes=obj.calculate(nodes_phi);
                heaviside_gauss=obj.calculate(gauss_phi);
                Phishift=heaviside_gauss-heaviside_enrnodes;
-               % To calculate the displacement right above and below
-               % the crack
-               Phishiftplus=obj.calculate(1)-heaviside_enrnodes;
-               Phishiftminus=obj.calculate(-1)-heaviside_enrnodes;
                phi_der=obj.calculate_der(gauss_phi); %03282019
                %% On 02262019, new strategy does not delete the standard
                % nodes in this stage, but enforce the enriched dofs as
@@ -166,31 +168,40 @@ classdef EnFHeaviside < EnrichPack.EnrichFun
                % delete the standard nodes in the enrichment, IMPORTANT STEP TO ONLY ENRICH THE
                % ENRICHED NODES
 %                Phishift(stdnodes)=0;
-               if isempty(GaussPnt(igauss).Enf)
-                   enf=struct('Phi',gauss_phi,'Phishift',Phishift,'Ridge',nan);
-                   GaussPnt(igauss).Enf=enf;
+               if isempty(GaussPnt(igauss).Enf{k})
+                   enf=struct('Phi',nan,'Phishift',nan,'Ridge',Ridge,'JunctionU',nan,'JunctionP',nan);
+                   GaussPnt(igauss).Enf{k}=enf;
                else
-                   GaussPnt(igauss).Enf.Phi=gauss_phi;
-                   GaussPnt(igauss).Enf.Phishift=Phishift;
+                   GaussPnt(igauss).Enf{k}.Phi=gauss_phi;
+                   GaussPnt(igauss).Enf{k}.Phishift=Phishift;
                end
-               % prepare Nuenr
+               % prepare Nuenr for all; and Nuenrplus, minus for linegauss
                Nuenr=zeros(size(Nu));
-               Nuenrplus=Nuenr;
-               Nuenrminus=Nuenr;
                nuenr=N.*Phishift';
                Nuenr(1,1:2:end)=nuenr;
                Nuenr(2,2:2:end)=nuenr;
-               nuenrp=N.*Phishiftplus';
-               nuenrm=N.*Phishiftminus';
-               Nuenrplus(1,1:2:end)=nuenrp;
-               Nuenrplus(2,2:2:end)=nuenrp;
-               Nuenrminus(1,1:2:end)=nuenrm;
-               Nuenrminus(2,2:2:end)=nuenrm;
-               GaussPnt(igauss).Nuenr=Nuenr;
+               k=find(k); % return the index of logical "1"
+               startind=1+(k-1)*size(Nuenr,2);
+               endind=k*size(Nuenr,2);
+               GaussPnt(igauss).Nuenr(:,startind:endind)=Nuenr;
                % if gausspnt is cohesive class, then assign plus and minus
-               if isa(GaussPnt(igauss),'FEPack.GaussPnt_Cohesive')
-                   GaussPnt(igauss).Nuenrplus=Nuenrplus;
-                   GaussPnt(igauss).Nuenrminus=Nuenrminus;
+               % NOTE PLUS AND MINUS ARE ONLY CALCULATED FOR THE CURRENT
+               % CRACK ALTHOUGH THEY TAKE THE SAME SHAPE OF NUENR. IT IS
+               % JUST TO BE COMPATIBLE TO THE CALL OF NUENRPLUS AND UENR
+               % LATER ON IN GAUSS.MATCTU AND GAUSS.UPDATECRACKOPENING.
+               if mode==1
+                   % To calculate the displacement right above and below
+                   % the crack
+                   Phishiftplus=obj.calculate(1)-heaviside_enrnodes;
+                   Phishiftminus=obj.calculate(-1)-heaviside_enrnodes;
+                   Nuenrplus=Nuenr;
+                   Nuenrminus=Nuenr;
+                   Nuenrplus(1,1:2:end)=N.*Phishiftplus';
+                   Nuenrplus(2,2:2:end)=N.*Phishiftplus';
+                   Nuenrminus(1,1:2:end)=N.*Phishiftminus';
+                   Nuenrminus(2,2:2:end)=N.*Phishiftminus';
+                   GaussPnt(igauss).Nuenrplus(:,startind:endind)=Nuenrplus;
+                   GaussPnt(igauss).Nuenrminus(:,startind:endind)=Nuenrminus;
                end
                % prepare Bmatenr
                Bmatenr=zeros(size(Bmat));
@@ -213,7 +224,9 @@ classdef EnFHeaviside < EnrichPack.EnrichFun
                Bmatenr(2,2:2:end)=N_yenr;
                Bmatenr(3,1:2:end)=N_yenr;
                Bmatenr(3,2:2:end)=N_xenr;
-               GaussPnt(igauss).Bmatenr=Bmatenr;
+               startind=1+(k-1)*size(Bmatenr,2);
+               endind=k*size(Bmatenr,2);
+               GaussPnt(igauss).Bmatenr(:,startind:endind)=Bmatenr;
            end 
        end
    end

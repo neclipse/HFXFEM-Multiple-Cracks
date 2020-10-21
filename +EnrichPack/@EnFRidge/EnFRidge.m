@@ -1,4 +1,5 @@
 classdef EnFRidge < EnrichPack.EnrichFun
+    % Ridge function is used to enrich pressure for a weak discontinuity
    properties
        Lsv                                  % lsv is Mygeo.Phi: (nodes,phi)
    end
@@ -31,10 +32,10 @@ classdef EnFRidge < EnrichPack.EnrichFun
            end
            % loop over all Gauss points for the current enrcrack(id)
            k=elem.Enrich==id;
-           GaussPnt_domain=obj.enrichgauss(nodes_phi,elem.EnrichGaussDict{k});
+           GaussPnt_domain=obj.enrichgauss(nodes_phi,elem.EnrichGauss,k);
            GaussPnt_line=obj.enrichgauss(nodes_phi,elem.LineGaussDict{k});
            % Because gausspnt is an data object, hard copy is required
-           elem.EnrichGaussDict{k}=GaussPnt_domain;
+           elem.EnrichGauss=GaussPnt_domain;
            elem.LineGaussDict{k}=GaussPnt_line;
        end
        function addnodedofs(~,node,id,varargin)
@@ -52,7 +53,10 @@ classdef EnFRidge < EnrichPack.EnrichFun
            end
            node.NoEnrDofs(id)=node.NoUenrDofs(id)+node.NoPenrDofs(id);
        end
-       function GaussPnt=enrichgauss(obj,nodes_phi,GaussPnt)
+       function GaussPnt=enrichgauss(obj,nodes_phi,GaussPnt,varargin)
+           if ~isempty(varargin)
+               k=varargin{1}; 
+           end         
            for igauss=1:length(GaussPnt)
                N=GaussPnt(igauss).Np;
                DNp=GaussPnt(igauss).DNp;
@@ -64,15 +68,14 @@ classdef EnFRidge < EnrichPack.EnrichFun
                % nodes in this stage, but enforce the enriched dofs as
                % zero in the boundary conditions.
 %                Ridge(stdnodes)=0;
-               if isempty(GaussPnt(igauss).Enf)
-                   enf=struct('Phi',nan,'Phishift',nan,'Ridge',Ridge);
-                   GaussPnt(igauss).Enf=enf;
+               if isempty(GaussPnt(igauss).Enf{k})
+                   enf=struct('Phi',nan,'Phishift',nan,'Ridge',Ridge,'JunctionU',nan,'JunctionP',nan);
+                   GaussPnt(igauss).Enf{k}=enf;
                else
-                   GaussPnt(igauss).Enf.Ridge=Ridge;
+                   GaussPnt(igauss).Enf{k}.Ridge=Ridge;
                end
                % prepare Npenr
                Npenr=N.*Ridge;
-               GaussPnt(igauss).Npenr=Npenr;
                % prepare DNpenr
                N_x=DNp(1,:);
                N_y=DNp(2,:);
@@ -85,7 +88,14 @@ classdef EnFRidge < EnrichPack.EnrichFun
                DNpjx=N_x.*Ridge+Nj*Ridge_x;
                DNpjy=N_y.*Ridge+Nj*Ridge_y;
                DNpenr=[DNpjx;DNpjy];
-               GaussPnt(igauss).DNpenr=DNpenr;
+               % Store Npenr and DNpenr in the right location, 10/18/20
+               k=find(k); % return the index of logical "1"
+               startind=1+(k-1)*size(Npenr,2);
+               endind=k*size(Npenr,2);
+               GaussPnt(igauss).Npenr(:,startind:endind)=Npenr;
+               startind=1+(k-1)*size(DNpenr,2);
+               endind=k*size(DNpenr,2);
+               GaussPnt(igauss).DNpenr(:,startind:endind)=DNpenr;
            end
        end
    end

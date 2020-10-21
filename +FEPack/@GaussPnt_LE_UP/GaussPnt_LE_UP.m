@@ -21,7 +21,7 @@ classdef GaussPnt_LE_UP
        Stress      % current total stress at this gaussian point
        Strainc     % relative strain comparing to the initial state
        Uy
-       Enf         % cell array of struct array{enfid1,enfid2...}, changed on 11/01/2018
+       Enf=cell(1,3);         % cell array of struct array{enfid1,enfid2...}, changed on 11/01/2018
 %        Tangent_coh % cohesive tangent matrix describing the cohesive crack separation law
 %        CrackOpening
 %        CrackPerm   % Aparrent Permeability of the crack, depending on the crack opening. 

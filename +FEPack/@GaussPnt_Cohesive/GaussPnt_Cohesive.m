@@ -5,10 +5,10 @@ classdef GaussPnt_Cohesive < FEPack.GaussPnt_LE_UP
        IniCrackDisp;
        MinCrackOpening  % for perforated initial notch, 10282019 also used to compare with Abaqus (2e-3 m)
        CrackOpening;
-       Uplus            % displacement at the positive face of the crack, positive means the signed distance function is positive
-       Uminus           % displacement at the negative face of the crack
-       Nuenrplus        % enriched shape function right above the crack Nuenr+
-       Nuenrminus       % enriched shape function right beneath the crack Nuenr-
+       Uplus            % displacement at the positive face of the crack, positive means the signed distance function is positive, outdated 10/20/20
+       Uminus           % displacement at the negative face of the crack, outdated, as Nuenrplus and Nuenrminus are not rigorous (only contain partial Nuenr)
+       Nuenrplus        % enriched shape function right above the crack Nuenr+, take the same shape of Nuenr, but only contains effective info from the current crack
+       Nuenrminus       % enriched shape function right beneath the crack Nuenr-, take the same shape of Nuenr
        FractureP        % Fracture pressure interpolated from standard pdof and all penrdofs at the element nodes
        Ds               % The interval length for integral
        Ntaud            % unit normal vector
@@ -109,6 +109,12 @@ classdef GaussPnt_Cohesive < FEPack.GaussPnt_LE_UP
 %                % Type 2: sign-step function
 %                obj.CrackDisp=obj.Nu*ua*2;
 %            end
+
+           % outdated Uplus and Uminus 10/20/20 because they are not highly
+           % necessary and only used in domain.snapshot. The important
+           % thing is the obj.CrackDisp and obj.CrackOpening. The
+           % simplified Nuenrplus and Nuenrminus are good for these
+           % calculation but not Uplus and Uminus.
            obj.Uplus=obj.Nu*us+obj.Nuenrplus*ua;
            obj.Uminus=obj.Nu*us+obj.Nuenrminus*ua;
            % add the obj.IniCrackDisp as the resultant crackdisp should be
