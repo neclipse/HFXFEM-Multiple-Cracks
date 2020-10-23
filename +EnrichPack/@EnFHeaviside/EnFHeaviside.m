@@ -39,7 +39,7 @@ classdef EnFHeaviside < EnrichPack.EnrichFun
            % purely calculate the enrichment function value(s) based on the
            % given phi value(s)
            switch obj.Type
-               case 1
+               case 1 %[-1,1]
                    if ~obj.Smoothed
                        enf=heaviside(phi);
                    else
@@ -50,9 +50,13 @@ classdef EnFHeaviside < EnrichPack.EnrichFun
                        enf(L2)=1;
                        enf(L3)=1/2+phi(L3)/2/obj.Epsilon+1/2/pi*sin(pi*phi(L3)/obj.Epsilon);
                    end
-               case 2
+               case 2 % [-1/2, 1/2]
                    if ~obj.Smoothed
-                       enf=sign(phi)/2;
+                       enf=sign(phi)/2; 
+                       % it is important to be divided by 2 otherwise, the
+                       % crackdisplacement expression becomes 2*Nu*uenr,
+                       % which may be used in multiple places like
+                       % crtstif_enriched and updateopening.
                    else
                        enf=ones(size(phi));
                        L1=phi<-obj.Epsilon;

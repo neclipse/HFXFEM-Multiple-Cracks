@@ -1,4 +1,4 @@
-function [IntLoadAll,stagechangeflag]=ifstd_enriched( obj,newmark,id,stagecheck,calstress)
+function [IntLoadAll,stagechangeflag]=ifstd_enriched( obj,newmark,stagecheck,calstress)
 % internal force vector calculation and the stress update
 % global skin;
 % skin=gbinp.skin;
@@ -49,13 +49,15 @@ function [IntLoadAll,stagechangeflag]=ifstd_enriched( obj,newmark,id,stagecheck,
     end
     %% update cohesive traction at linegauss_cohesive
     % NEED TO RETHINK ABOUT THE SIZE AND LOCATION OF F_COH_I 10/16/20.
-    F_coh_i=zeros(size(Due));
+    F_coh_i=zeros(size(Due)); % This preallocates the elemental comprehensive F_coh_i
     for ienr=1:obj.EnrichNum
+        istart=1+(ienr-1)*2*obj.NoNodes;
+        iend=ienr*2*obj.NoNodes;
         for ig=1:length(obj.LineGaussDict{ienr})
             lg= obj.LineGaussDict{ienr}(ig);   % VALUE CLASS, A HARD COPY
             if stagecheck
                 % Do not return lg to lg
-                [traction,stagechangeflag]=lg.matctu(us,ue,Due);
+                [traction,stagechangeflag]=lg.matctu(ue,Due);
                 if stagechangeflag
                     IntLoadAll=[];
                     return;
@@ -63,14 +65,15 @@ function [IntLoadAll,stagechangeflag]=ifstd_enriched( obj,newmark,id,stagecheck,
             else
                 %for the first iteration, the traction can inherit from the
                 %last increment. 07272019. (Not 100% sure, changed back after trial)
-                traction=lg.matctu(us,ue,Due);
+                traction=lg.matctu(ue,Due);
             end
             lg.Traction=traction;
-            F_coh_i=F_coh_i+lg.H*lg.Nu'*lg.Traction*lg.Ds;
+            F_coh_i(istart:iend)=F_coh_i(istart:iend)+lg.H*lg.Nu'*lg.Traction*lg.Ds;
             % Need to add these for "value" class gauss
             obj.LineGaussDict{ienr}(ig)=lg;
         end
     end
+    Jacob.F_coh_i=F_coh_i;
     %% Interal load vector for the element
     % calculate internal loadus, -a1*(Musus*as+Musue*ae+Kusus*us+Kusue*ue-Qusps*ps-Quspe*pe)
     loadus=-a1*(Jacob.Musus*as+Jacob.Musue*ae+Jacob.Kusus*us+Jacob.Kusue*ue-Jacob.Qusps*ps-Jacob.Quspe*pe);
@@ -85,12 +88,8 @@ function [IntLoadAll,stagechangeflag]=ifstd_enriched( obj,newmark,id,stagecheck,
 %     if ~isempty(Jacob.F_coh_old)
 %         Jacob.F_coh_i=Jacob.F_coh_old+Jacob.Kc*Due;
 %     else
-        Jacob.F_coh_i=F_coh_i;
+        
 %     end
-    % To enforce the zero traction after complete separation
-    if any(any(Jacob.Kc))==false % if all zero
-        Jacob.F_coh_i=zeros(size(Due));
-    end
 	%f_int=Jacob.Qintueps*ps+Jacob.Qintuepe*pe;
 	loadue=-a1*(Jacob.Mueus*as+Jacob.Mueue*ae+Jacob.Kueus*us...
 	+Jacob.Kueue*ue-Jacob.Queps*ps-Jacob.Quepe*pe+Jacob.F_coh_i...

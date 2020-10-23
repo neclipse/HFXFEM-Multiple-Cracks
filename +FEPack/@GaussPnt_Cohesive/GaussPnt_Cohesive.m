@@ -8,7 +8,7 @@ classdef GaussPnt_Cohesive < FEPack.GaussPnt_LE_UP
        Uplus            % displacement at the positive face of the crack, positive means the signed distance function is positive, outdated 10/20/20
        Uminus           % displacement at the negative face of the crack, outdated, as Nuenrplus and Nuenrminus are not rigorous (only contain partial Nuenr)
        Nuenrplus        % enriched shape function right above the crack Nuenr+, take the same shape of Nuenr, but only contains effective info from the current crack
-       Nuenrminus       % enriched shape function right beneath the crack Nuenr-, take the same shape of Nuenr
+       Nuenrminus       % enriched shape function right beneath the crack Nuenr-, take the same shape of Nuenr, not very useful as only crackopening is required.
        FractureP        % Fracture pressure interpolated from standard pdof and all penrdofs at the element nodes
        Ds               % The interval length for integral
        Ntaud            % unit normal vector
@@ -111,15 +111,17 @@ classdef GaussPnt_Cohesive < FEPack.GaussPnt_LE_UP
 %            end
 
            % outdated Uplus and Uminus 10/20/20 because they are not highly
-           % necessary and only used in domain.snapshot. The important
-           % thing is the obj.CrackDisp and obj.CrackOpening. The
-           % simplified Nuenrplus and Nuenrminus are good for these
-           % calculation but not Uplus and Uminus.
+           % necessary and only used in domain.snapshot and
+           % crackbody.postprocess. The important thing is the
+           % obj.CrackDisp and obj.CrackOpening. The simplified Nuenrplus
+           % and Nuenrminus are good for these calculation but not Uplus
+           % and Uminus.
            obj.Uplus=obj.Nu*us+obj.Nuenrplus*ua;
            obj.Uminus=obj.Nu*us+obj.Nuenrminus*ua;
            % add the obj.IniCrackDisp as the resultant crackdisp should be
            % used for givetangent.
            obj.CrackDisp=(obj.Nuenrplus-obj.Nuenrminus)*ua+obj.IniCrackDisp;
+           % it is equivalent to obj.Nu*ua+obj.IniCrackDisp;
 %            obj.CrackDisp=(obj.Nuenrplus-obj.Nuenrminus)*ua;
            obj.CrackOpening=obj.Ntaud'*obj.CrackDisp+obj.MinCrackOpening;
            % one place to prevent interpenetration, 07052019
@@ -134,7 +136,7 @@ classdef GaussPnt_Cohesive < FEPack.GaussPnt_LE_UP
        
        %% Prototype
        obj=matsu_enriched(obj,us,ue,ps,pe)
-       [traction,stagechangeflag]=matctu(obj,us,ue,Due);
+       [traction,stagechangeflag]=matctu(obj,ue,Due);
        obj=preparing(obj,X,Y,EnrichNum);       
        obj=enriching(obj);          % preparing the enrichment matrices, Bmatenr,Nuenr,Npenr
        obj=matct(obj);               % calculate the tangent_cohesive in the global coordinate system

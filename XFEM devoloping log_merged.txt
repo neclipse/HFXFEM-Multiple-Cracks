@@ -1736,7 +1736,7 @@ general anymore when we are dealing tipelement.
 
 02/06/20
 1. We should change the dimension of matrices in elem.crtstif_enriched.
-2. Specially, for the line integral, Qintuepe and Qintueps should use Nu_part
+2. Specially, for the line integral, Qintuepe and Qintueps should use std Nu
 corresponding to the enriched nodes. 
 
 02/07/20

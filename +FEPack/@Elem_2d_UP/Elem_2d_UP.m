@@ -117,11 +117,12 @@ classdef Elem_2d_UP < handle
         assemble_locarray( obj );                           % assemble enriched locarray from JacobianMatDict to obj.JacobianMat.
         crtstif(obj,newmark,iinc,gbinp, blending);           % create element stiffness matrix, call matct in gausspnt
         crtstif_enriched(obj,newmark,id,gbinp,blending);    % create element stiffness matrix, call matct in gausspnt, for enrichitem id.
+        crtstif_enriched_elemental( obj, newmark, gbinp, blending);
 %         crtstif_enriched_1Dflow( obj, newmark, id , gbinp); % 1D crack fluid flow adopted and compressibility of fracking fluid ignored
         givelocarray(obj,varargin);
         givelocarray_enriched(obj,crackid,varargin);
 		load=ifstd(obj,newmark , calstress);     			% compute internal force vectors; call listra and matsu
-        [IntLoadAll,stagechangeflag]=ifstd_enriched( obj,newmark,id, stagecheck , calstress);
+        [IntLoadAll,stagechangeflag]=ifstd_enriched( obj,newmark, stagecheck , calstress);
         calarea(obj);
 %         flag=isinside(obj,x,y);				% check if point(x,y) is inside or on the edge of the element
 		[flagie,flagi,flage,flagoe,area] = isinside_vec(obj,plist);
