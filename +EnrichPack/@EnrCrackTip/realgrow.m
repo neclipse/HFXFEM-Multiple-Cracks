@@ -26,6 +26,8 @@ if obj.Isactive
         % element, tip nodes are accordingly updated inside
         % Mygeo, the level sets are also to be updated
         newpoint=[size(obj.Mygeo.Segments,1)+1,pnts(obj.Itip,:)];
+        % newpoint is obtained this way because pnts has been ordered in
+        % mygeo.intersection.
         if obj.Itip==1
             obj.Mygeo.Segments=[obj.Mygeo.Segments;newpoint];
         elseif obj.Itip==2

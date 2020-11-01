@@ -200,7 +200,7 @@ classdef EnrCrackTip < EnrichPack.EnrichItem
             else
                 % 4. Calculate the intersection using the signed distance
                 % function, which would be the end point
-                [goodelem,pnts,localpnts,seeds] = intersection(obj.Mygeo,elem,nodes,Phi);
+                [goodelem,pnts,localpnts] = intersection(obj.Mygeo,elem,nodes,Phi);
             end
         end
         

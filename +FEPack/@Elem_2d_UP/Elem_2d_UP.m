@@ -4,7 +4,6 @@ classdef Elem_2d_UP < handle
         Type                    % Element type reheritated from the class Domain
         MatType
         NodList                 % Global order of the nodes in the element
-        NodstdList=cell(1,3);  % local order of the standard nodes in the element,not necessary after 022619
         NodDict
         GaussPntDictM;                 % object array of class standard GaussPnt
         LineGaussDict=cell(1,3);      % object array of the GaussPnt for line integral only
@@ -36,7 +35,7 @@ classdef Elem_2d_UP < handle
         Stressp                % Effective stresses at the element centroid
         EnrichNum=0;          % The total involved enriched items in this element
         Enrich=zeros(1,3);    % Enrichment flags: special structure:[id1,id2,id3...]
-        Seeds=cell(1,3);      % seeds points to create triangular subdomain
+        Seeds;                % seeds points to create triangular subdomain, only store the latest updated info.
         LocalInt=cell(1,3);   % local coordinates of the intersections   
         GlobalInt=cell(1,3);  % global coordinates of the intersections
         JacobianMat           % The comprehensive elemental JocobianMat, object of FEPack.JacobianMat
@@ -126,8 +125,8 @@ classdef Elem_2d_UP < handle
         calarea(obj);
 %         flag=isinside(obj,x,y);				% check if point(x,y) is inside or on the edge of the element
 		[flagie,flagi,flage,flagoe,area] = isinside_vec(obj,plist);
-		[gp,gw]=subdomain(obj,id,varargins);
-        [ gp,gw ] = linegauss( obj,id,cohesive,perforated,varargin );
+		subdomain(obj, varargins);
+    linegauss( obj,id,cohesive,perforated,varargin );
         [stressp, stress]=extraplstress( obj, xi, eta);
         calstress(obj);
         calstress_enriched(obj);

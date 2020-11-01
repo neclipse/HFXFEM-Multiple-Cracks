@@ -1,4 +1,4 @@
-function  initiate_2nd( obj,injectionpoint,varargin )
+function  initiate( obj,injectionpoint,varargin )
 % Initial calculation of signed distance of nodes within the narrow
 % band arond the open geometry
 %   1. This method will first use enough discrete points along the crack
@@ -38,7 +38,7 @@ end
         obj.discretize(np);					% Rediscretize the segments using the desired np
     end
     np=size(obj.Segments,1);
-%  1'' Search for the possible  using a loop over all newly generated segments points
+%  1'' Search for the possible nodes using a loop over all newly generated segments points
 	possiblenodes=zeros(100*np,1);
     iloc1=1;
     for ip=1:np
@@ -68,11 +68,13 @@ end
 	[xy,~,~,~] = distance2curve(curvexy,plist,'linear');
     % (distance) is the shortest distance from plist to the curve (excluding
     % the extension of the curve, consequently many xy will be the endpoint 
-    % if plist cannot find its normal projection within the curve).
+    % if plist cannot find its normal projection within the
+    % curve).obsolete.
+    % see the following change about extendedcurve.
     
     % It is later on deemed important to find normal projection and real
     % closest distance. So we extend the curve on 06292019, the change
-    % extends till line 99 about y2.
+    % extends the definition of y2.
     r=2*obj.Maxelength;
     extendedtip1x=obj.Tips(1,1)+r*cos(obj.Omegas(1));
     extendedtip1y=obj.Tips(1,2)+r*sin(obj.Omegas(1));
@@ -124,10 +126,11 @@ end
     goodlist=true(size(interactedelems));
     for ielem=1:length(interactedelems)
         elem=obj.Elemdict(interactedelems(ielem));
-        [goodlist(ielem),pnts,localpnts,seeds] = intersection(obj, elem);
-        elem.Seeds{obj.Id}=seeds;
-        elem.LocalInt{obj.Id}=localpnts;
-        elem.GlobalInt{obj.Id}=pnts;
+        [goodlist(ielem),pnts,localpnts] = intersection(obj, elem);
+%         elem.Seeds=seeds; % Here the seeds are actually empty.
+        id=elem.Enrich==obj.Id;
+        elem.LocalInt{id}=localpnts;
+        elem.GlobalInt{id}=pnts;
     end
     % BUG: the following line will add back the elements filtered out by
     % intersection method. Need to be commented. 07/07/2020.
