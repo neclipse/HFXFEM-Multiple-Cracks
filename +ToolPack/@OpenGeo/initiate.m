@@ -1,4 +1,4 @@
-function  initiate( obj,injectionpoint,varargin )
+function  initiate( obj,varargin )
 % Initial calculation of signed distance of nodes within the narrow
 % band arond the open geometry
 %   1. This method will first use enough discrete points along the crack
@@ -12,13 +12,7 @@ function  initiate( obj,injectionpoint,varargin )
 %   4. Find the nearest two points to (x*,y*) on the curve (x1,y1) and (x2,y2), 
 %   sign=(y2-y1)*(x*-x))+(x1-x2)*(y*-y), psi=sign*dist
 
-% Arguements input
-% varargin specifies the desired search level, by default, it is 3 (maxelen)
-if isempty(varargin)
     searchlevel=3;
-else
-    searchlevel=varargin{1};
-end
 % if nargin<3
 %     option=true;        % by default, apply Toedge
 % else
@@ -183,8 +177,11 @@ end
     obj.Bodynodes=setdiff(obj.Nodes,obj.Rtipnodes);
     obj.Rtipelements=rtipelems;
     obj.Bodyelements=setdiff(goodelements,rtipelems);
-    %   8. Find the surrounding elements(blending elements)
-    obj.findblending(1,injectionpoint,5);
+    %   8. Find the injection point surrounding elements (blending elements)
+    if ~isempty(varargin)
+        injectionpoint=varargin{1};
+        obj.findblending(1,injectionpoint,5);
+    end
 end
 
 

@@ -42,7 +42,7 @@ classdef GaussPnt_LE_UP
        obj=matsu(obj,disp,dp);
        obj=matsu_enriched(obj,us,ue,ps,pe);
        obj=psu(obj);
-       obj=preparing(obj,X,Y,EnrichNum);
+       obj=preparing(obj,X,Y,varargin);
        obj=enriching(obj);                  % not implemented here though. See Enr.enrichgauss.
        matct(obj);
    end

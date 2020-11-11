@@ -126,7 +126,7 @@ classdef Elem_2d_UP < handle
 %         flag=isinside(obj,x,y);				% check if point(x,y) is inside or on the edge of the element
 		[flagie,flagi,flage,flagoe,area] = isinside_vec(obj,plist);
 		subdomain(obj, varargins);
-    linegauss( obj,id,cohesive,perforated,varargin );
+        linegauss( obj,id,cohesive,perforated,varargin );
         [stressp, stress]=extraplstress( obj, xi, eta);
         calstress(obj);
         calstress_enriched(obj);

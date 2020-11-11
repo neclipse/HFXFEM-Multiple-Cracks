@@ -53,7 +53,9 @@ for i =1:4
 end
 % REORDER THE INTERSECTIONS TO ALIGN WITH THE DIRECTION OF CRACK 11/05/2018
 % The reorderring is to let the crtip.realgrow know which point is the new
-% point. 10/30/20. There may be other way to achieve such goal.
+% point. 10/30/20. 
+% This is also to make sure the elem.linegauss has the right crack
+% direction 11/04/20.
 % Find the nearest segments
  p=xy1;
  curvexy=obj.Segments(:,2:3);

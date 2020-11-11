@@ -76,7 +76,7 @@ classdef GaussPnt_Cohesive < FEPack.GaussPnt_LE_UP
                   initraction=obj.TractionLaw.Lambdaini/obj.TractionLaw.Lambdacr*obj.TractionLaw.PeakTraction;
               end
               separation=obj.TractionLaw.Lambdaini*obj.TractionLaw.CriticalDisp;
-              ul=[separation*cos(obj.Alpha);separation*sin(obj.Alpha)];
+              ul=[separation*cos(obj.Alpha);separation*sin(obj.Alpha)]; % [us,un]
               obj.CrackDisp=Amat'*ul;     % ul is local displcaement discontinuity averaged from nodal values
               obj.IniCrackDisp=obj.CrackDisp;
               obj.MinCrackOpening=minaperture;    % Abaqus setttings

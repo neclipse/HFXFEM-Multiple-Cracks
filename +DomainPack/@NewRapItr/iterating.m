@@ -102,18 +102,18 @@ while obj.CutFlag==1
         if ~isempty(obj.LinSysCrt.EnrichItems)
             unstablegrowflag=false(1,length(obj.LinSysCrt.EnrichItems));
             for ienr=1:length(obj.LinSysCrt.EnrichItems)
-                [unstablegrowflag(ienr),cutflag]=obj.LinSysCrt.EnrichItems{ienr}.update_enrich;
+                [unstablegrowflag(ienr),cutflag]=obj.LinSysCrt.EnrichItems{ienr}.check_grow;
                 if cutflag
                     obj.ConvFlag=0;
                     obj.DivFlag=1;
                     obj.CutFlag=1;
-                    continue;
+                    % BUG Fixing: when there are multiple enrichitems, we
+                    % should break the loop but not continue to the next
+                    % iteration. This may induce slow increment as only one
+                    % cutflag has to delay other crack grow but it is
+                    % required to have convergent solution.11/06/2020.
+                    break; 
                 end
-            end
-            if any(unstablegrowflag)
-                minimalinc=0.0001;    % minimal time step =inc*obj.Tottime
-                allowedsteps=2;
-                obj.autoincrem(3,0.25,1.5,inclist,minimalinc,allowedsteps);
             end
         end
     end
@@ -122,10 +122,11 @@ end
 % % IF NEEDED TO UPDATE ENRICHITEMS WITHIN THE ITERATION IS NOT CONFIRMED. (03102019)
 % Attempt to change it to update enrichitems within iterations, suspended
 % on 03132019 because much need to changed to accomodate it.
-if ~isempty(obj.LinSysCrt.EnrichItems)
-    for ienr=1:length(obj.LinSysCrt.EnrichItems)
-        obj.LinSysCrt.EnrichItems{ienr}.postprocess(obj.Dt);      % obtain crack aperture and other practical information.
-    end
+obj.update_enrich; % Comprehensive method: postprocess cracks and grow cracks
+if any(unstablegrowflag)
+    minimalinc=0.0001;    % minimal time step =inc*obj.Tottime
+    allowedsteps=2;
+    obj.autoincrem(3,0.25,1.5,inclist,minimalinc,allowedsteps);
 end
 % store current values of some parameters to the last converged value
 obj.switching(1);

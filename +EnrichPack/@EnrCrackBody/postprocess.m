@@ -43,16 +43,18 @@ for iE=1:length(obj.INTELEM)
     pde=Jacob.Pn2t1Enr;
     % Enriched Dofs, zero initial values if they are newly enriched, added
     % on 07132019
-    if ~isempty(obj.NewElems)
-        if any(obj.NewElems==elem.Ind)
-            %  due=zeros(size(us));
-            ue=zeros(size(us));
-            pe=zeros(size(ps));
-            ve=zeros(size(us));
-            pde=zeros(size(pds));
-            
-        end
-    end
+    % 11/06/20 The NewElems are made empty by NewRapItr.update_enrich
+    % because the postprocessing comes before real crack growth.
+%     if ~isempty(obj.NewElems)
+%         if any(obj.NewElems==elem.Ind)
+%             %  due=zeros(size(us));
+%             ue=zeros(size(us));
+%             pe=zeros(size(ps));
+%             ve=zeros(size(us));
+%             pde=zeros(size(pds));
+%             
+%         end
+%     end
     %% Leakoff calculation
     % Integrate the leak off volume, from two parts: standard and enriched
     % NOTE HERE JACOB MATRICES ARE UPDATED FROM THE UPDATED CRACK
@@ -60,18 +62,18 @@ for iE=1:length(obj.INTELEM)
     % It is confirmed that qint has such a sign convention: positive
     % for flow into the domain from the crack; negative for flow
     % from the domain to the crack.(04232019)
-    if ~isempty(obj.NewElems)
-        if any(obj.NewElems==elem.Ind)
-            qintps=zeros(size(ps));
-            qintpe=zeros(size(ps));
-        else
-            qintps=Jacob.Hintpsps*ps+Jacob.Hintpspe*pe+Jacob.Sintpsps*pds+Jacob.Sintpspe*pde-Jacob.Qintueps'*ve;
-            qintpe=Jacob.Hintpeps*ps+Jacob.Hintpepe*pe+Jacob.Sintpeps*pds+Jacob.Sintpepe*pde-Jacob.Qintuepe'*ve;
-        end
-    else
+%     if ~isempty(obj.NewElems)
+%         if any(obj.NewElems==elem.Ind)
+%             qintps=zeros(size(ps));
+%             qintpe=zeros(size(ps));
+%         else
+%             qintps=Jacob.Hintpsps*ps+Jacob.Hintpspe*pe+Jacob.Sintpsps*pds+Jacob.Sintpspe*pde-Jacob.Qintueps'*ve;
+%             qintpe=Jacob.Hintpeps*ps+Jacob.Hintpepe*pe+Jacob.Sintpeps*pds+Jacob.Sintpepe*pde-Jacob.Qintuepe'*ve;
+%         end
+%     else
         qintps=Jacob.Hintpsps*ps+Jacob.Hintpspe*pe+Jacob.Sintpsps*pds+Jacob.Sintpspe*pde-Jacob.Qintueps'*ve;
         qintpe=Jacob.Hintpeps*ps+Jacob.Hintpepe*pe+Jacob.Sintpeps*pds+Jacob.Sintpepe*pde-Jacob.Qintuepe'*ve;
-    end
+%     end
     %    leakvfstd(iE,:)=transpose(qintps);      % The leak-off FLUX distributed to the standard dofs of the nodes within iE element
     %    leakvfenr(iE,:)=transpose(qintpe);      % The leak-off FLUX distributed to the enriched dofs of the nodes within iE element
     % 04292019, need subtract the node.Leakoff calculated from the

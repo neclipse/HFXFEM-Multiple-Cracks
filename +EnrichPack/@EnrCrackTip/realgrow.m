@@ -8,7 +8,7 @@ if obj.Isactive
         theta=obj.Growcheck.growdirection;
         % 3. calculate obj.Growincrement (embeded in obj.findnextelem)
 %         elemahead1=obj.NextElem.Ind;
-        [elemahead2,pnts,localpnts,seeds,Phi]=obj.findnextelem(theta);
+        [elemahead2,pnts,localpnts,Phi]=obj.findnextelem(theta);
 %         if elemahead1~=elemahead2
 %             warning('The grow direction may turn too much.')
 %         end
@@ -18,7 +18,8 @@ if obj.Isactive
 %         if dist/min(obj.INTELEM.Length)>0.1
 %             warning('The current INTELEM may need get updated');
 %         end
-        obj.NextElem.Seeds{obj.Id}=seeds;
+%         obj.NextElem.Seeds{obj.Id}=seeds; % seeds generated in
+%         elem.subdomain
         obj.NextElem.LocalInt{obj.Id}=localpnts;
         obj.NextElem.GlobalInt{obj.Id}=pnts;
         %% 4. Really advance the crack front
