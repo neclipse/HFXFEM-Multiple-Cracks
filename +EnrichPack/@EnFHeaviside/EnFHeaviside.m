@@ -17,18 +17,13 @@ classdef EnFHeaviside < EnrichPack.EnrichFun
    end
    
    methods
-       function obj=EnFHeaviside(smoothed,minelength,lsv,varargin)
+       function obj=EnFHeaviside(minelength,lsv,varargin)
            if isempty(varargin)
                obj.Type=1;
            else 
                obj.Type=varargin{1};
            end
-           obj.Smoothed=smoothed;         
-           %% IMPORTANT BUG: OBJ.EPSILON IS A CRITICAL PARAMETER TO THE XFEM
-           % FRAMEWORK, IT SHOULD BE DETERMINED BASED ON THE MESH AND THE
-           % SUBDOMAIN METHOD SO THAT ONLY THE CLOSEST GAUSSIAN POINTS TO
-           % THE CRACK ARE WITHIN [-OBJ.EPSILON,+OBJ.EPSILON] IN THE
-           % DETERMINATION OF DERIVATIVES. 01272020.
+           obj.Smoothed=1; % fixed as 1, to avoid unstability when use unsmoothed  
            %% Confirmed that the obj.Epsilon should be very small so that 
            % NO gaussian points are included in the range. 013120
            obj.Epsilon=0.0001*minelength;    % minelength is the minimun element length along the crack   

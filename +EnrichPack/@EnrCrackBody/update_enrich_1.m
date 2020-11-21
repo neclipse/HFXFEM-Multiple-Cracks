@@ -1,30 +1,7 @@
-function [unstablegrow,cutflag]=update_enrich(obj,varargin)
-% concrete method of EnrCrackBody
-% update geometry and associated elements and nodes, selectively enrich new elements and nodes
-% check the propagation rule using the component obj.Propagate (not realised)
-% assign basic enrichment info to the selected elements and
-% nodes
-%% Lead obj.Mytips to lookahead
-growflags=false(1,length(obj.Mytips));
-unstablegrowflags=false(1,length(obj.Mytips));
-cutflags=false(1,length(obj.Mytips));
-unstablegrow=false;
-cutflag=false;
-for itip=1:length(obj.Mytips)
-    % calculate the stress at tip
-    obj.Mytips(itip).calstress_nonlocal;
-    % look ahead to see if the crack shall propagate
-    [growflags(itip),unstablegrowflags(itip),cutflags(itip)]=obj.Mytips(itip).lookahead;
-end
-if any(cutflags)
-%     disp('cut back the current time increment');
-    cutflag=true;
-    return;
-end
-if any(unstablegrowflags)
-%     disp('cut the following increments for unstable growth');
-    unstablegrow=true;      % allow grow but need reduce inc for the following increments
-end
+function update_enrich_1(obj,varargin)
+% method of EnrCrackBody update geometry and associated elements
+% and nodes, change the enrich flag of these elements and nodes, but do not
+% update the subdomain and update the enrichment function.
 %% Really grow the crack if cutflag is not true for any tip
 nodes=NaN(1,100);
 elems=NaN(1,100);
@@ -42,7 +19,7 @@ elems=elems(1:ielem-1);
 obj.NewNodes=nodes;
 obj.NewElems=elems;
 %% Really update crackbody object info and the enrichment
-if any(growflags)
+if any([obj.Mytips.Growcheck.Growflag])
     display(growflags,'crack growth');
     perforated=false;
     %% update basic info
@@ -62,9 +39,8 @@ if any(growflags)
         % element
         obj.Elemdict(elems(iE)).setenrich(obj.Id);
         % divide the element into triangular subdomains for 2d
-        % integral
-        
-        obj.Elemdict(elems(iE)).subdomain(obj.Id);
+        % integral, this module is moved to update_enrich_2. 11/06/20
+%         obj.Elemdict(elems(iE)).subdomain(obj.Id);
         % find the gaussian points on the crack for line integral,
         % p=3 to make the gauss quadrature accurate enough for the
         % line integral. (not sure if it is really useful, 03122019)
@@ -82,17 +58,17 @@ if any(growflags)
 %             myenf.addnodedofs(obj.Nodedict(node),obj.Id);
 %         end
 %     end
-    %% update enrich new elemdict
-    for iE=1:length(elems)
-        elem=elems(iE);
-        % use geometeric info to divide the elem into subdomains
-        % for integral purpose.
-        %mygeo.subdomain(elem);
-        for ienf=1:length(obj.Myenfs)
-            myenf=obj.Myenfs{ienf};
-            myenf.enrichelem(obj.Elemdict(elem),obj.Id);
-        end
-    end
+    %% update enrich new elemdict,this module is update_enrich_2. 11/06/20
+%     for iE=1:length(elems)
+%         elem=elems(iE);
+%         % use geometeric info to divide the elem into subdomains
+%         % for integral purpose.
+%         %mygeo.subdomain(elem);
+%         for ienf=1:length(obj.Myenfs)
+%             myenf=obj.Myenfs{ienf};
+%             myenf.enrichelem(obj.Elemdict(elem),obj.Id);
+%         end
+%     end
 end
 obj.checkactive;
 end

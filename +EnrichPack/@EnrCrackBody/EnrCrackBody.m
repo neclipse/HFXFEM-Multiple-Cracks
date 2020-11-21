@@ -17,8 +17,8 @@ classdef EnrCrackBody < EnrichPack.EnrichItem
        CMP              % Crack mouth pressure
        % IN such fashion [encrack.Id,q,locnode1,localnode2,x_coord of the
        % injection point,y_coord of the injection point];
-       NewNodes
-       NewElems
+       NewNodes         % Newly found nodes to be enriched at this increment
+       NewElems         % These info will be used in obj.postprocess for skipping.
        Perforated       % flag to denote if the existing crack is perforated (completely cohesionless)
        Cohesive         % flag for the type of TSL, 'linear'-linear softening; 'bilinear'-bilinear softening.
        Alpha            % angle between the crack plane and the initial loading for inplace mode
@@ -29,9 +29,10 @@ classdef EnrCrackBody < EnrichPack.EnrichItem
    end
    methods
        
-       function obj = EnrCrackBody(id,type,elemdict,nodedict,mygeo,perforated,cohesive,alpha)
-           obj = obj@EnrichPack.EnrichItem(id,type,elemdict,nodedict);
+       function obj = EnrCrackBody(type,elemdict,nodedict,mygeo,perforated,cohesive,alpha)
+           obj = obj@EnrichPack.EnrichItem(type,elemdict,nodedict);
            obj.Mygeo=mygeo;
+           obj.Id=mygeo.Id; % Mygeo is the universal id of a crack
            obj.Mesh=mygeo.Mesh;
            obj.Perforated=perforated;   
            obj.Cohesive=cohesive;       
@@ -81,7 +82,9 @@ classdef EnrCrackBody < EnrichPack.EnrichItem
                % element
                obj.Elemdict(elems(iE)).setenrich(obj.Id);   
                % divide the element into triangular subdomains for 2d
-               % integral
+               % integral, this method should be called after all cracks
+               % have been initially enriched, so does the initial enrich
+               % elemdict module below. 10/30/20
                obj.Elemdict(elems(iE)).subdomain(obj.Id);
                % find the gaussian points on the crack for line integral,
                % p=3 to make the gauss quadrature accurate enough for the
@@ -100,7 +103,7 @@ classdef EnrCrackBody < EnrichPack.EnrichItem
 %                   myenf.addnodedofs(obj.Nodedict(node),obj.Id);
 %               end
 %            end
-           %% initial enrich elemdict
+           %% initial enrich elemdict, should be moved outside as elem.subdomain
            for iE=1:length(elems)
                elem=elems(iE);
                % use geometeric info to divide the elem into subdomains
@@ -121,7 +124,9 @@ classdef EnrCrackBody < EnrichPack.EnrichItem
        % function prototyping
        
        [fe,locarray_enr]=cal_qextenr(obj,q,varargin);
-       [unstablegrow,cutflag]=update_enrich(obj,varargin);
+       [unstablegrow,cutflag]=check_grow(obj,varargin);
+       update_enrich_1(obj,varargin);
+       update_enrich_2(obj,varargin);
        showme( obj,typex,varargin );
    end
 end

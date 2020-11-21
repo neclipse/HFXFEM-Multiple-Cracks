@@ -1,4 +1,4 @@
-function obj=preparing(obj,X,Y,EnrichNum)
+function obj=preparing(obj,X,Y,varargin)
 % method of GaussPnt_LE_UP with enriched feature.
 % It provides Jacobian and the derivative of shape functions over global coordinates.
 % It also assemble the B matrix for the gaussian point?
@@ -37,12 +37,10 @@ function obj=preparing(obj,X,Y,EnrichNum)
     end
     % Create Nu matrix
     Nu=zeros(2,2*nnodes);
-    obj.Nuenr=zeros(2,2*EnrichNum*nnodes);
     Nu(1,1:2:2*nnodes-1)=N;
     Nu(2,2:2:2*nnodes)=N;
     % Create B matrix
     B=zeros(4,2*nnodes); % plane strain problem,dimension(S)=[4,2]
-    obj.Bmatenr=zeros(4,2*EnrichNum*nnodes);
     % Assemble B matrix row by row
     B(1,1:2:2*nnodes-1)=N_x;
     B(2,2:2:2*nnodes)=N_y;
@@ -50,13 +48,18 @@ function obj=preparing(obj,X,Y,EnrichNum)
     B(3,2:2:2*nnodes)=N_x;
     % Create DNp matrix
     obj.Np=N;
-    obj.Npenr=zeros(size(N,1),size(N,2)*EnrichNum);
     obj.Nu=Nu;
     obj.DNp=[N_x;N_y];
-    obj.DNpenr=zeros(size(obj.DNp,1),size(obj.DNp,2)*EnrichNum);
     obj.Bmat=B;
     obj.DetJ=dJ;% NOT USED FOR THE INTEGRATION FOR ENRICHMENT ELEMENTS
     % locate gaussian point in global cartesian coordinate system
     obj.X=N*X;              
     obj.Y=N*Y;
+    if ~isempty(varargin)
+        EnrichNum=varargin{1};
+        obj.Nuenr=zeros(2,2*EnrichNum*nnodes);
+        obj.Bmatenr=zeros(4,2*EnrichNum*nnodes);
+        obj.Npenr=zeros(size(N,1),size(N,2)*EnrichNum);
+        obj.DNpenr=zeros(size(obj.DNp,1),size(obj.DNp,2)*EnrichNum);
+    end
 end

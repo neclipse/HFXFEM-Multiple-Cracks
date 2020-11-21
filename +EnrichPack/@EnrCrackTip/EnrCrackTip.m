@@ -23,8 +23,8 @@ classdef EnrCrackTip < EnrichPack.EnrichItem
     
     methods
         
-        function obj = EnrCrackTip(id,type,elemdict,nodedict,mygeo,itip)
-            obj = obj@EnrichPack.EnrichItem(id,type,elemdict,nodedict);
+        function obj = EnrCrackTip(type,elemdict,nodedict,mygeo,itip)
+            obj = obj@EnrichPack.EnrichItem(type,elemdict,nodedict);
             obj.Mygeo=mygeo;
             obj.Itip=itip;
             obj.Mesh=mygeo.Mesh;
@@ -47,23 +47,32 @@ classdef EnrCrackTip < EnrichPack.EnrichItem
             unstablegrow=false;
             cutflag=false;
             if obj.Isactive
-                obj.findnextelem;
-                %% 1. obj.GrowCheck.growcheck;
-                % default mode is tip, change it to center
-                obj.Growcheck.Mode='center';
-                obj.Growcheck.cal_pvariable(obj.Stressp,obj.Itip, obj.Omega,obj.NextElem);
-                obj.Growcheck.growcheck;  % unstable flag can be the output
-                growflag=obj.Growcheck.Growflag;
-                unstable=obj.Growcheck.Unstable;
-                % The current time increment is too large for a good crack
-                % growth prediction, return to cut back the current inc.
-                % Added on 07112019
-                if unstable==true
-                    if growflag==false
-                        cutflag=true;
-                        return;
-                    else
-                        unstablegrow=true;
+                obj.findnextelem; % only find the nextelem and find the intersections
+                % but do not extend the crack tip into the nextelem
+                % If later on the grow check needs to check if obj.NextElem
+                % is already cut by other cracks, do the check here.
+                % 11/07/20
+                if obj.NextElem.EnrichNum>0
+                    % 1. May use different growcheck criterion
+                    fprintf('The NextElem of tip %d of crack %d has existing cracks.\n',obj.Itip, obj.Id);
+                else
+                    % 2. obj.GrowCheck.growcheck;
+                    % default mode is tip, change it to center
+                    obj.Growcheck.Mode='center';
+                    obj.Growcheck.cal_pvariable(obj.Stressp,obj.Itip, obj.Omega,obj.NextElem);
+                    obj.Growcheck.growcheck;  % unstable flag can be the output
+                    growflag=obj.Growcheck.Growflag;
+                    unstable=obj.Growcheck.Unstable;
+                    % The current time increment is too large for a good crack
+                    % growth prediction, return to cut back the current inc.
+                    % Added on 07112019
+                    if unstable==true
+                        if growflag==false
+                            cutflag=true;
+                            return;
+                        else
+                            unstablegrow=true;
+                        end
                     end
                 end
                 
@@ -83,7 +92,7 @@ classdef EnrCrackTip < EnrichPack.EnrichItem
             obj.ENNODE=obj.INTELEM.NodDict;
         end
         
-        function [nextelem,pnts,localpnts,seeds,Phi]=findnextelem(obj,varargin)
+        function [nextelem,pnts,localpnts,Phi]=findnextelem(obj,varargin)
             if obj.Isactive
                 % Find next good element
                 if ~isempty(varargin)
@@ -124,7 +133,7 @@ classdef EnrCrackTip < EnrichPack.EnrichItem
                         nextelem=obj.Mygeo.findelems([xtemp,ytemp],'in_edge');
                         ratio=ratio+0.01;
                     end
-                    [goodelem,pnts,localpnts,seeds,Phi]=obj.elementincrement(gtheta,obj.Elemdict(nextelem));
+                    [goodelem,pnts,localpnts,Phi]=obj.elementincrement(gtheta,obj.Elemdict(nextelem));
                     % Check if the found element is good
                     if ~goodelem
                         if all(Phi>0)||all(Phi<0)
@@ -134,7 +143,7 @@ classdef EnrCrackTip < EnrichPack.EnrichItem
                             warning('the nextelem is not correctly determined using the new gtheta');
                             % Approximately use obj.Omega to get the temporary
                             % extention.
-                            [~,pnts,localpnts,seeds,Phi]=obj.elementincrement(obj.Omega,obj.Elemdict(nextelem));
+                            [~,pnts,localpnts,Phi]=obj.elementincrement(obj.Omega,obj.Elemdict(nextelem));
                             return;
                         else
                             % case b:the found element has little interaction
@@ -150,7 +159,7 @@ classdef EnrCrackTip < EnrichPack.EnrichItem
             obj.NextElem=obj.Elemdict(nextelem);
         end
         
-        function [goodelem,pnts,localpnts,seeds,Phi]=elementincrement(obj,gtheta,varargin)
+        function [goodelem,pnts,localpnts,Phi]=elementincrement(obj,gtheta,varargin)
             % which is basically a function of OpenGeo fulfilled in Tip
             % 1. Initiate a vector from the current tip
             if ~isempty(varargin)
@@ -196,11 +205,10 @@ classdef EnrCrackTip < EnrichPack.EnrichItem
                 goodelem=false;
                 pnts=[];
                 localpnts=[];
-                seeds=[];
             else
                 % 4. Calculate the intersection using the signed distance
                 % function, which would be the end point
-                [goodelem,pnts,localpnts,seeds] = intersection(obj.Mygeo,elem,nodes,Phi);
+                [goodelem,pnts,localpnts] = intersection(obj.Mygeo,elem,nodes,Phi);
             end
         end
         
