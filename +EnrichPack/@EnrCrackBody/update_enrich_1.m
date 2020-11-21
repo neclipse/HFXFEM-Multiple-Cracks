@@ -37,7 +37,12 @@ if any([obj.Mytips.Growcheck.Growflag])
     for iE=1:length(elems)
         % set enrich flag and find the standard nodes within the
         % element
-        obj.Elemdict(elems(iE)).setenrich(obj.Id);
+        elem=obj.Elemdict(elems(iE));
+        elem.setenrich(obj.Id);
+        [~,pnts,localpnts] = obj.Mygeo.intersection(elem);
+        id=elem.Enrich==obj.Id;
+        elem.LocalInt{id}=localpnts;
+        elem.GlobalInt{id}=pnts;
         % divide the element into triangular subdomains for 2d
         % integral, this module is moved to update_enrich_2. 11/06/20
 %         obj.Elemdict(elems(iE)).subdomain(obj.Id);
@@ -45,30 +50,8 @@ if any([obj.Mytips.Growcheck.Growflag])
         % p=3 to make the gauss quadrature accurate enough for the
         % line integral. (not sure if it is really useful, 03122019)
         % Change p=2 (defautl value) on 06072019.
-        obj.Elemdict(elems(iE)).linegauss(obj.Id,obj.Cohesive,perforated);
+        elem.linegauss(obj.Id,obj.Cohesive,perforated);
     end
-    %% update enrich all new nodes inside the enriched elements
-    % the standard nodes have the enriched dofs but keep zero
-    % no need to have these after 10/02/20 as udof==2, pdof==1,
-    % dofs==3, always.
-%     for iN=1:length(nodes)
-%         node=nodes(iN);
-%         for ienf=1:length(obj.Myenfs)
-%             myenf=obj.Myenfs{ienf};
-%             myenf.addnodedofs(obj.Nodedict(node),obj.Id);
-%         end
-%     end
-    %% update enrich new elemdict,this module is update_enrich_2. 11/06/20
-%     for iE=1:length(elems)
-%         elem=elems(iE);
-%         % use geometeric info to divide the elem into subdomains
-%         % for integral purpose.
-%         %mygeo.subdomain(elem);
-%         for ienf=1:length(obj.Myenfs)
-%             myenf=obj.Myenfs{ienf};
-%             myenf.enrichelem(obj.Elemdict(elem),obj.Id);
-%         end
-%     end
 end
 obj.checkactive;
 end

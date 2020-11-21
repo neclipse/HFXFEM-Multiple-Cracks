@@ -21,4 +21,5 @@ end
 for ienr=1:length(obj.LinSysCrt.EnrichItems)
     obj.LinSysCrt.EnrichItems{ienr}.update_enrich_2;
 end
+% the domain.updatedofarray_enriched is called in domain.running. 11/20/20
 

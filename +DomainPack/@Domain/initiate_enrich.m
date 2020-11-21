@@ -7,7 +7,11 @@ for ienr=1:obj.length(obj.EnrichItems)
     enfrd=EnrichPack.EnFRidge(mygeo.Phi);
     % May add another junction enrichment function for minor crack tip
     obj.EnrichItems{ienr}.Myenfs={enfh,enfrd};
-    obj.EnrichItems{ienr}.initial_enrich;
+    obj.EnrichItems{ienr}.initial_enrich_1;
+end
+
+for ienr=1:obj.length(obj.EnrichItems)
+    obj.EnrichItems{ienr}.initial_enrich_2;
 end
 % update the whole dof array
 obj.updatedofarray_enriched;  % update the linsystem inside
