@@ -1,7 +1,10 @@
-function obj=preparing(obj,X,Y)
-% method of GaussPnt class
+function obj=preparing(obj,X,Y, EnrichNum)
+% method of GaussPnt_Cohesive class: TO WATCH. DOES THE PREPARING METHOD
+% NEED TO BE CHANGED FOR THE LINE GAUSSIAN POINTS. NOTE THIS METHOD WAS
+% ORIGINALLY DEVELOPED FOR THE 2D DOMAIN GAUSSIAN POINTS. 10/20/20
+
 % It provides Jacobian and the derivative of shape functions over global coordinates.
-% It also assemble the B matrix for the gaussian point?
+% It also assemble the B matrix for the gaussian point.
 % It also gives the coordinates of the gausssian point in global
 % coordinate system
     nnodes=obj.NNodes;
@@ -25,10 +28,16 @@ function obj=preparing(obj,X,Y)
     end
     % Create Nu matrix
     Nu=zeros(2,2*nnodes);
+    % PREALLOCATE NUENR MATRIX 10/19/20
+    obj.Nuenr=zeros(2,2*EnrichNum*nnodes);
+    obj.Nuenrplus=obj.Nuenr;
+    obj.Nuenrmius=obj.Nuenr;
     Nu(1,1:2:2*nnodes-1)=N;
     Nu(2,2:2:2*nnodes)=N;
     % Create B matrix
     B=zeros(4,2*nnodes); % plane strain problem,dimension(S)=[4,2]
+    % PREALLOCATE BMATENR
+    obj.Bmatenr=zeros(4,2*EnrichNum*nnodes);
     % Assemble B matrix row by row
     B(1,1:2:2*nnodes-1)=N_x;
     B(2,2:2:2*nnodes)=N_y;
@@ -36,8 +45,10 @@ function obj=preparing(obj,X,Y)
     B(3,2:2:2*nnodes)=N_x;
     % Create DNp matrix
     obj.Np=N;
+    obj.Npenr=zeros(size(N,1),size(N,2)*EnrichNum);
     obj.Nu=Nu;
     obj.DNp=[N_x;N_y];
+    obj.DNpenr=zeros(size(obj.DNp,1),size(obj.DNp,2)*EnrichNum);
     obj.Bmat=B;
     obj.DetJ=dJ;
     % locate gaussian point in global cartesian coordinate system

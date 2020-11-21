@@ -79,7 +79,7 @@ classdef EnrCrackBody < EnrichPack.EnrichItem
            for iE=1:length(elems)
                % set enrich flag and find the standard nodes within the
                % element
-               obj.Elemdict(elems(iE)).setenrich(obj.Id);
+               obj.Elemdict(elems(iE)).setenrich(obj.Id);   
                % divide the element into triangular subdomains for 2d
                % integral
                obj.Elemdict(elems(iE)).subdomain(obj.Id);
@@ -90,14 +90,16 @@ classdef EnrCrackBody < EnrichPack.EnrichItem
                obj.Elemdict(elems(iE)).linegauss(obj.Id,obj.Cohesive,obj.Perforated,obj.Alpha);
            end
            %% initial enrich all nodes inside the enriched elements
+           % no need to have these after 10/02/20 as udof==2, pdof==1,
+           % dofs==3, always.
            % the standard nodes have the enriched dofs but keep zero
-           for iN=1:length(obj.Enrichednode)
-              node=obj.Enrichednode(iN);
-              for ienf=1:length(obj.Myenfs)
-                  myenf=obj.Myenfs{ienf};
-                  myenf.addnodedofs(obj.Nodedict(node),obj.Id);
-              end
-           end
+%            for iN=1:length(obj.Enrichednode)
+%               node=obj.Enrichednode(iN);
+%               for ienf=1:length(obj.Myenfs)
+%                   myenf=obj.Myenfs{ienf};
+%                   myenf.addnodedofs(obj.Nodedict(node),obj.Id);
+%               end
+%            end
            %% initial enrich elemdict
            for iE=1:length(elems)
                elem=elems(iE);
@@ -117,6 +119,7 @@ classdef EnrCrackBody < EnrichPack.EnrichItem
            end
        end
        % function prototyping
+       
        [fe,locarray_enr]=cal_qextenr(obj,q,varargin);
        [unstablegrow,cutflag]=update_enrich(obj,varargin);
        showme( obj,typex,varargin );

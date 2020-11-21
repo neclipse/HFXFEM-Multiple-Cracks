@@ -73,13 +73,15 @@ if any(growflags)
     end
     %% update enrich all new nodes inside the enriched elements
     % the standard nodes have the enriched dofs but keep zero
-    for iN=1:length(nodes)
-        node=nodes(iN);
-        for ienf=1:length(obj.Myenfs)
-            myenf=obj.Myenfs{ienf};
-            myenf.addnodedofs(obj.Nodedict(node),obj.Id);
-        end
-    end
+    % no need to have these after 10/02/20 as udof==2, pdof==1,
+    % dofs==3, always.
+%     for iN=1:length(nodes)
+%         node=nodes(iN);
+%         for ienf=1:length(obj.Myenfs)
+%             myenf=obj.Myenfs{ienf};
+%             myenf.addnodedofs(obj.Nodedict(node),obj.Id);
+%         end
+%     end
     %% update enrich new elemdict
     for iE=1:length(elems)
         elem=elems(iE);

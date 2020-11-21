@@ -24,6 +24,8 @@ lini=gbinp.lini;
 tini=gbinp.threshold;
 minaperture=gbinp.minaperture;
 perfaperture=gbinp.perfaperture;
+% use logical array id to relieve the single index id. 10/02/20
+id=obj.Enrich==id;
 localint=obj.LocalInt{id}; % elemental local coordinates of the intersections [xi,eta]
 [ksi,lw]=GaussQuad(p);% parent segment [-1,1]
 Nline=[1-ksi,1+ksi]/2;
@@ -53,7 +55,7 @@ Mtaud=mtaud/ds;   % unit tangent vector
 gaussdictm(1,p)=FEPack.GaussPnt_Cohesive(); % generate an void object array
 for igauss=1:p
     gaussdictm(igauss)=FEPack.GaussPnt_Cohesive(gp(igauss,1),gp(igauss,2),gw(igauss),nnodes,gbinp,perforated,Alpha);
-    gaussdictm(igauss)=gaussdictm(igauss).preparing(obj.X,obj.Y);
+    gaussdictm(igauss)=gaussdictm(igauss).preparing(obj.X,obj.Y,obj.EnrichNum);
     % Explicit linear softening
     if strcmp(cohesive,'unified')
         gaussdictm(igauss).TractionLaw=EnrichPack.TractionLaw_unified(lcr,dcr,tkrg,tini,lini,gbinp);

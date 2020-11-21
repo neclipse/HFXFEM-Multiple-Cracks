@@ -22,14 +22,14 @@ end
 % ElemDict
 gaussdictm=obj.crtgpd;                                    % create an object array of gaussian points (value type) 
 if obj.ElemType == 2
-    % CHANGE SEMICOLON TO COMMA AS SEMICOLON WOULD GIVE A DICTIONARY OF ALL
-    % REPEATED HANDLE
+    % Bug: CHANGE COLON TO COMMA AS COLON WOULD GIVE A DICTIONARY OF ALL
+    % REPEATED HANDLES
     elemdictionary(1,Mesher.Totelem)=FEPack.Elem_2d_EP(); % element class should have default constructor
     for ielem=1:Mesher.Totelem
         elemdictionary(ielem)=FEPack.Elem_2d_EP(ielem,obj.ElemType,obj.MatType, Mesher.EToV(ielem,:), nodedict(Mesher.EToV(ielem,:)),gaussdictm);
     end
 elseif obj.ElemType == 4
-    elemdictionary(1:Mesher.Totelem)=FEPack.Elem_2d_UP(); % element class should have default constructor
+    elemdictionary(1,Mesher.Totelem)=FEPack.Elem_2d_UP(); % element class should have default constructor
     for ielem=1:Mesher.Totelem
         elemdictionary(ielem)=FEPack.Elem_2d_UP(ielem,obj.ElemType,obj.MatType, Mesher.EToV(ielem,:), nodedict(Mesher.EToV(ielem,:)),gaussdictm);
     end

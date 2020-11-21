@@ -1,0 +1,376 @@
+Actions Tags: 
+To change -- Definitely need to be changed
+To watch -- From what I predict on paper, there is no need for immediate 
+chang. Yet, changes may be required later on.
+To improve -- Not quite related to the extension for multiple cracks. 
+But the code has some noticed drawbacks and should be improved.
+
+Overall Strategy: 
+1. only take care of multiple enrichitem in the domain, the interacting 
+enrichitems within one element can only be crossing. The branch is not 
+considered.
+
+2. The branch will be considered by introducing the junction enrichment fun.
+The EnrCrackTip.lookahead should look for existing enrichitem in the element
+ahead and EnrCrackTip.realgrow will be adjusted to enable growth to the 
+existing crack but not the element edge.
+
+3. Interaction criterion will be implemented. First, the current tip will be
+arrested by the existing crack. Second, the tensile stress at the closest 
+gaussian point ahead of the tip will be checked.
+
+Alternatively, we can implement a simplied criterion based on the approaching
+angle and far-field stress level. 
+
+Log: 09/09/20 
+1.Main file started
++DomainPack
+2.Domain class finished
+3.LinSysCreater class finished.
+Log: 09/11/20
+4.NewRapltr class finished.
++ToolPack
+5.Preprocessor class initiated.
+Log: 09/12/20
+5. Preprocessor class finished.
+Log: 09/16/20
+6. Geometry and OpenGeo class finished.
+Log: 09/17/20
++EnrichPack and +FEPack
+7. EnrCrackBody Initiated
+Log:09/24/20
+7. EnrCrackBody, EnrCrackTip, EnFHeaviside, EnFRidge finished.
+Log: 09/25/20
+8. TractionLaw_unified pending
+9. Elem_2d_UP class initiated.
+Log: 09/28/20
+9. Elem_2d_UP class and JocianMat class initiated.
+Log: 10/01/20
+9. Elem_2d_UP class and JocianMat class finished. Important milestone!
+
+Log: 10/02/20
+10. Fixed the indexing and querying of enrichitem in elem, node
+11. GuassPnt_LE_UP class pending.
+
+
+List:
+A. How to handle branches?
+
+1. Initiate multiple intersecting opengeo objects in the main file and we may
+only allow one Rtip for some opengeo objects for simplicity. 
+For each enrichItem, even they intersected each other within in one element,
+there will be separate enriched dofs, even for the intersected element.
+2. Or enable the junction enrichment function, so that the branching can be 
+simulated in anther fashion.
+The junction enrichemnt function belongs to the minor crack/branch crack.
+The jucnction enrichment function only applies to the junction element where
+the major crack has its own enrichment functions and dofs. The rest of the
+branch crack will have the same enrichment technique as heaviside function
+of level set value.
+
+
+B. Places where previous assumption of single enrichemnt item has been implied. 
+and there are loops over all enrichitems
+1. Domain.updatedofarray_enriched. This method add enriched dofs for every
+enrichitem at initialization in the main file. In addition, it add new
+enriched dofs for newly propagated elements for every time increment. 
+The repeated initialization for all old enriched elements may be unncessary.
+(To improve)
+The new element for some enrichitem may be already enriched by other item. 
+yet, the new element need to be specifically enriched for this item. But, 
+attention should be paid to see if this is a crossed intersection or a arrested
+(To watch)
+T-shape junction.
+2.Domain.EnrichItems should be updated within the running method. 
+By default, the domain.updatelinsys will copy these items into linsys, too.
+(To watch)
+3. LinSysCreater.
+    crtLHS_UP: the blending elements.loop Should be OK.
+    The JacobianMatDict should be changed to the comprehensive elemental 
+Jacobian mat containing all involved enriched items. (To change)
+    switching: loop should be OK.
+    upbctableen(obj): loop should be OK.
+    upconf and upconf_trial: loops should be OK.
+4. NewRapItr.
+    iterating:line 105--.EnrichItems{ienr}.update_enrich one by one, 
+after the loop, the configuration of the crack network should be checked
+once again to see if there will be tip annihilation or other interaction.
+Probably, we need another method to do the supervision. (To change)
+    line--127. EnrichItems{ienr}.postprocess. The update will be only for the
+specified {ienr}, and the total update should account for every enrich item
+within the interacted element. Think if I need loop over elements or loop over
+enrichItems, I suppose we should still go with items as there are fewer of 
+them. The question left becomes how to obtain the comprehensive changes 
+for one element when there are more than one enriched item. (To change)
+    intforcer: the elem.ifstd_enriched was only run for the first enrich 
+item for simplicity. Now when we have two or more enerich items, the method
+ifstd_enriched should account for all involved enrich items within one element.
+There may be loops over jacobian matrices for every item. (To change)
+    checksize_porepressure: this was used to apply some criterion for auto-
+increment size control. Some updates may be needed when fracturing is simul-
+ated. (To watch)
+5.Geometry (Simple) does not need to be changed because we are not proposing
+a DFN-based geometry. One single line is one independent object.
+6. OpenGeo class was the only concrete Geometry class in the current code.
+It is a simple two-end segment defined either by a function handle or a 
+series of discrete points. As the fracture network will be modelled by a
+series of simple EnrichItems, we are not proposing new OpenGeo class as of
+now. However, it can be added later on if we will comfortable with multi-layer
+branch tracking from the root. 
+
+6.OpenGeo
+    .Rtips may be redefined. Previously, the Rtips are the tips that are not 
+intersecting the domain boundaries. 
+Now, we may use obj.ACTIVETIPS to differentiate the actual real tips that are
+able to propagate from the dead tips; Alternatively, we redefine Rtips so that
+it also exclude the tip that is arrested by another crack (or deactivated
+to simplify the junction function). I prefer to update the get.Rtips method
+because we don't need to change the rest of the codes using OpenGeo.Rtips.
+(To change)
+    .initiate_2nd: Do not extend the tip to element edge if junction method 
+is adopted.(To change) Toedge1 and Toedge2 (To watch)
+    .findelems: option 1 (To change) if the junction method is enabled. 
+    .intersection: do I need different set of seeds for each EnrichItem? 
+If two discrete enrichitems are used but not junction enrichment, I do not
+see the need to change this function for this purpose and good element 
+purpose. (To watch). But if the junction method was to be used, I think
+this method also need to be changed. (To change) 
+
+
+7. EnrCrackBody: The current approach use the this object as the main enrich-
+item. It will generate crack tips based on the obj.Mygeo.Rtips info. I am 
+still unsure about if I will add the junction function for the multiple 
+crack simulation. But for now, one thing is for sure, that I need to handle
+more than one cracks interesecting in one element. So let's discuss this.
+    
+    .generatetips: generate tips based on obj.Mygeo.Rtips. Okay for the 
+tip initialization. 
+
+EnrCrackBody.initial_enrich is done for the single object --
+    the assignment: Are Interactedelem and Enrichednode truly independent
+for each EnrCrackBody object? if so, no need to change for this assignment.
+    node.setenrich(obj.Id): It already accounts for multiple cracks in cells.
+    elem.setenrich(obj.Id): It already accounts for multiple cracks in cells.
+    elem.subdomain(obj.Id): It depends on the OpenGeo.intersection method.
+    However the indexing and querying should be changed.(To change)
+
+    Are we using the same set of seeds for intersecting cracks? Are the seeds
+created with the consideration of multiple cracks? Are we creating the dense
+square seeds instead of the gaussian seeds within regenerated triangles? 
+If it does not matter whethere different crack item are using different set
+of gauss points, then the method is also good to go. It seems to me now
+we had better use consistent gaussian points for the enriched element when 
+there are more than one enrichitems. Because one Jacobian matrix should be
+assembled for all involved enriched items for the enriched element. It is not
+like what I expected that separate Jacobian matrices would be existing for
+each enrichitems. It also means that the subdomain method should be recalled
+when new enrichitem is added to a former enriched element.Or, we use dnese
+square seeds instad of the gaussian seeds for new triangles. (To change)
+
+    elem.linegauss(obj.Id,obj.Cohesive,obj.Perforated, obj.Alpha): OK for now
+But obj.Alpha may be updated when new traction initiation method is used.
+(To improve)
+    Myenfs{ienf}.addnodedof(nodeobject, obj.Id): the additional dof is added
+by every enf. Therefore, if the junction enrichment function only belongs
+to the junction element, we had better make sure the junction enrichment 
+function does not add enr dofs to the rest section of the branch crack. 
+(To change) If the junction is not adopted, then it is okay to go. 
+This function is discarded in the fix of issue 1.
+
+    Myenrfs.enrichelem(elemobj,obj.Id):Enrich the elem for the id crack 
+object. The core is obj.enrichgauss and the enrichment is applied to the
+elem.EnrichGaussDict{id}. Different crack items yield separate subdomain
+and EnrichGaussDict{id}. The enrichment belongs to the specific enrcrackbody.
+If junction enrichment function is not adopted, no changes seem necessary.
+(To watch). 
+According to my recent thoughts on enrichment strategy, we had
+better enrich the element consistently for the same gaussian points. All 
+EnrichEnfs belonging to all enriched items should apply to all gaussian points
+including the subdomain gaussian points and the line gaussian points specific
+to each crack. (To change 10/09/20) 
+    .checkactive(): now it use .Mygeo.Rtips to determine if it's active.
+Considering that the potential tip annihilation with other crack, this method
+may need to be updated with OpenGeo.ACTIVETIPS.Because the arrested crack tip
+may penetrate the existing crack in the next step. Here lies the need to 
+implement the interaction strategy and enrichment strategy in a optimal way.
+(To change). (To watch)
+
+    EnrCrackBody.postprocess
+    .lg.updatecrackopening(us,ue):  
+The question becomes if the update of one crack opening also depends on the
+enriched displacements dofs of other enrichment iterm. This is a critical 
+question as the postprocessing of strain, stress, and  cohesive traction, 
+fracture pressure all share the same nature. The update of displacements,
+and pressure at any gaussian point shall consider enriched dofs for all cracks.
+However, the updates of crack opening may take a shortcut. There is no
+phishiftplus and phishiftmius for the other enrichitem (2) at the linegauss
+along the current enrichitem (1) as they are always on the same side of the 
+enrichitem (2). Then Nuenrplus and Nuenrminus are the same. The contribution
+of the ue2 for the crack opening of (1) is actually zero. (To watch).
+
+    .the rest-- this is largely related to the Jocabian matrix. Whether
+a single comprehesive Jacobian matrix or a independent Jacobian matrix will
+be used depends on the exact implementation in +FEPack. (To change)
+The leakoff calculation, pfcrack, for each separate crack item can also be 
+obtained if the line integrals are separately stored in corresponding 
+JacobianMat. 
+    myenf.enrichelem(obj.Elemdict(elem),obj.Id): the enrichment function 
+should be selected based on the interaction criterion in stage 2-3.(To change)
+
+8.  EnrCrackTip class 
+    
+    Mytips(itip).calstress_nonlocal: currently only the first Enrich object
+within the element is used for elem.ifstd_enriched for stress update. (To change)
+Similarly, the EnrichGaussDict{1} is used for the gausspool, which may be
+changed to the corresponding crack object. In fact, the stress calculation
+based on strain calculation on the gaussian points should account for all
+enrichitems within the element.(To watch)
+    Mytips(itip).lookahead: need to watch if the current tip will approach
+the existing enrichitem in the element ahead. Even for stage 1 without
+the junction function, it is necessary to look ahead. It may be possible
+to implement the interaction criterion here(To change)
+    Mytips(itip).realgrow: for stage 2, it definitely needs to be changed
+as the growth does not extend to the element edge. (To change) For stage 1,
+do I need to change anything? Probably not.(To watch)
+
+9. Elem_2d_UP class
+    The current enrich flags and corresponding seeds, localInt, JacobianMatDict
+all can hold up to 10 components. In fact, I now find out the real situation
+will be 3 at most. I should change it to 3 for small memory usage. (To improve)
+    
+    .setenrich(obj,id): The obj.Enrich(id)= id assumes the id enrichitem
+is stored at the id position in the obj.Enrich array, which is not necessary
+and may cause problems when there are more enrichitems in the whole domain
+than the length of initialized obj.Enrich. The same also applies to the
+obj.JacobianMatDict(id). Accordingly, the way I used to query the indexed
+crack in other functions should be changed, like .crtstif_enriched, 
+.givelocarry_enriched, .subdomain, .linegauss, enf.addnodedof, enf.enrichelem,
+Node.EnrDofArray, etc..  (To change)
+    .givelocarray_enriched: like what is mentioned above, the query of 
+specified crackid should be changed as the idcrack is not stored in the id
+position within the JacobianMatDict array. It is easy to fix, however, caution
+is needed to look for all such calls.
+    .crtstif_enriched: this method should become a higher level director
+to guide the building of Jacobian matrices for the element which may interact
+with multiple enrichitems. Do I need to assemble all the JacobianMat here? 
+Or do I keep the parts in corresponding JacobianMat and assemble later on?
+Perhaps, it is easier to assemble the shape function and their derivatives
+first, then the following formula to obtain assembled Jacobian matrix do
+not have to be changed.
+(To change)
+The method should detect how many enrichitems are currently in this element
+and guide the buliding by another function.
+The enriched Jacobian matrix should consist two primary parts: the standard
+and the enriched. The standard part can be readily computed by crtstif and
+stored within the Elem_2d_UP class itself. The enriched part now should 
+comprise fractioned contributions from all enriched items. Luckily, this is
+also modular so the code can be modular. For example, there are two items and
+the Jacobian matrix is simplied as stiffness matrix K.
+K=[Kusus, Kusue; Kueus, Kueue]. The standard part Kusus is already taken care
+of by obj.crtstif. The rest three components all comprise two parts respectively
+for enricheditem-1,2. Specifically, Kusue=[B'*D*Benr1, B'*D*Benr2].
+Kueue=[[Benr1'*D*Benr1;Benr2'*D*Benr1], [Benr1'*D*Benr2;Benr2'*D*Benr2]]. 
+The basic matrix Benr1 and Benr2 are stored within corresponding 
+obj.EnrichGuassDict{id}. 
+But it may be easier to combine the basic shape functions first and achieve
+the final assembled Jacobian matrix at one time using the current formula.
+
+Question: Is the line integral following the similar fashion? Because we 
+will have distinct linegaussdict for each crack item. Do I need to compute
+the Npenr2 and DNpenr2 etc., at the linegauss points of crack-1 for crack-2?
+Yes, we should follow the similar fashision and compute Npenr2 and DNpenr2
+at points along crack-1. Also we should compute Npenr1 and DNpenr1 at points
+along crack-2. The line integrals should be computed for both crack items 
+because there are two qint respectively. In the end, the two repetions (of the
+same dimension) can be added together and combined into the comprehensive
+elemental Jacobian matrix. This is done for easier connection with other 
+existing functions, like ifstd_enriched. The leakoff calculation, pfcrack,
+for each separate crack item can also be obtained if the line integrals are 
+separately stored in corresponding JacobianMat. 
+
+    .ifstd_enriched: if the comprehensive Jacobian Matrix is available. The
+function only need minor change. Note currently all enriched dofs are stored
+in the first JacobianMatDict. It should be changed to the comprehensive
+Jacobian Matrix. (To change)
+    .calstress_enriched: only the first enrichitem is used. (To change)
+
+10. Details on Github: 
+https://github.com/neclipse/HFXFEM-Verified-Singlecrack/issues/1
+
+11. 
+
+
+
+
+
+
+
+
+    
+    
+
+C. How to handle initial cohesive tractions?
+Use new approach to initiate the cohesive traction: Alpha in main file and
+in linegauss, and in GaussPnd_cohesive. 
+The thoughts to use stress states at linegaussian points to initialize the
+cohesive traction may not be feasible. Because there is no linegauss points
+prior to the enrichment. Yet, one can seek to transfer the stress states from
+standard gaussian points to these newly generated line gaussian points by
+interpolation. It is not clear if the work is worthy.
+
+
+D. Put a question mark over the implementation of initial stress and intial
+pore pressure. 
+1. For example, if the initial stress state 3MPa in compression. When we say
+the initial pore water pressure is zero, do we mean total pore pressure or
+excess pore water pressure ? Okay, we can have two implications. But at 
+equilibrium, the excess pore water pressure must be zero but the total pore
+water pressure depends on the boundary condition. When the boundary are per-
+meable and connects to zero pressure aquifer, the whole domain should also
+have total zero pore water pressure. Note the biot effective stress is dependent
+on the total pore water pressure.
+2. If we have -3MPa insitu stress specified in the assembleglobalinputs, and
+have all Dirichelet type boundaries and keep imbalanced empty, what does
+this imply?
+The Linsys.initialRHS will be skipped and the domain is essentially at zero
+stress state and all boundaries are fixed. The stress state calculated are
+essentially change of stress. The initial stress state are only added to the
+change to mathematically return the total stress in gauss.matsu. Anything 
+wrong here? If the initial stress state and initial pore water pressure is 
+the condition, I think my code is all right at this.
+3. If we have -3MPa insitu stress specified both in assembleglobalinputs and 
+the main file as curload, and have Neumann type boundaries and then specify 
+the boundary in the preprocess.Imbalanced, what does this imply?
+The Linsys.initialRHS will calculate the load vector INI implied by the inital
+stress and the curload will be used in linsys.crtRHS for FFG. These two load
+vector are the same actually so the resultant linsys.RHS=FFG-INI will be zero.
+As the u and p are zero after linsys.switching(3), the internal load vector
+should also be zero. Therefore, the implied domain is also essentially at 
+zero stress state but now all boundaries are free of load but not free of
+displacements. The rest are the same as the above implementation.
+
+4. What really becomes different may be the loading in the simulation done 
+in papers like Carrier 2012. There is no initial stress state but initial 
+loading. In other words, we have zero in-situ stress state and zero pore 
+pressure initially. Then they have active load of 3MPa applied at the boundary.
+This is what I later realized 02/13/2020. The following are excerpt from
+XFEM developing log_merged.txt:
+" After a night of second thought, the way the problem is defined may be 
+different from Carrier's. In my model, I set the initial stress as -3.7 MPa
+but either the fixed displacement or fixed load boundary condition does not 
+let the model know it is subject to a constant load. But the crack growth has
+to overcome a initial stress state of -3.7 MPa. For now, I don't know if I
+have mistakes in understanding geostatic state. But I do know Carrier et al.
+did not put a initial stress state but applyed a constant load to the top of
+-3.7 MPa. These two problems are different. Their model have a zero initial
+stress state.
+Therefore, I can view my output of pressure as net fluid injection pressure
+pf-sigma0."
+
+5. Think abou the implications on the modeling fluid leak-off.
+Following item 2-3 in this thread, we are getting the net fluid injection 
+pressure. Also, the fluid leak-off is based on the net fluid pressure. 
+Does it mean we are gonna have a smaller pressure gradient?
+The base pressure is zero for the equilibrium state as modeled by item 2-3,
+The base pressure is around 3MPa for the active load by item 4. The pressure
+gradient in the normal direction of the fracture should be similar.

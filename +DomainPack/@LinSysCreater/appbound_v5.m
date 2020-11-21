@@ -1,7 +1,9 @@
 function appbound_v5( obj )
-%APPBOUND_v5 This function applies essential boundary condition to the
-%linear system using the direct method. This version will also work with the
-% speicial standnodes described by the enrichitems. 03032019
+%APPBOUND_v5 simplified verison of appbound_v4.
+% This function applies essential boundary condition to the
+%linear system using the direct method, but only handle zero condition.
+% This will also work with speicial standnodes described by the
+% enrichitems. 03032019
 
 %% Loop through all dirichlet boundary condition and assemble the complete locarray of known dofs Ud
 Allknownsloc=zeros(obj.Drow,1);                                            

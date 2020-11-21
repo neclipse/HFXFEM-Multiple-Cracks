@@ -1,4 +1,16 @@
 # HFXFEM-Verified-Singlecrack
+
+# Author info
+Chang Huang : chuan25@lsu.edu
+
+# Affiliation
+Geomechanics Group leaded by Dr. Shengli Chen
+Department of Civil and Environmental Engineering
+Louisiana State University
+
+# Purpose description
+The project of modeling hydraulic fracturing propagation
+ 
 This Matlab package is developed following the Object-oriented paradiagm. The theoretical details will be available in our latest [publication](https://www.onepetro.org/journal-paper/SPE-204476-PA) early 2021.
 
 The core structure is inherited from my other [repository](https://github.com/neclipse/FEA-in-Matlab-NSMOOM).

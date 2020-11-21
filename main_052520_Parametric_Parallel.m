@@ -30,7 +30,7 @@ fb={fb1,fb2,fb3,fb4};
 qline=-0.011248593925759;              % Unit flux rate, which is volumetric rate/area: [m/s], negative for source
 % the sectional area of the perforated wellbore: wellbore 3.75inch diameter (0.085725 m) ,
 % 0.35 inch (0.00889m ) peforation hole; gives:
-q=-0.0005;            % flow rate: [m^2/s] -1e-4
+q=-0.0005;            % flow rate: [m^2/s] -1e-3
 % It is kind of realistic as it corresponds to 0.079 bpm per
 % perforation hole. In real case, there are more than 5 perforation
 % holes per cluster, and more than 5 clusters per stage. The total
@@ -40,28 +40,29 @@ q=-0.0005;            % flow rate: [m^2/s] -1e-4
 % meshing
 % meshnode=readmatrix('nodefile_01122020_carrier.txt','Delimiter',',');
 % meshelement=readmatrix('elemfile_01122020_carrier.txt','Delimiter',',');
-meshnode=readmatrix('nodefile_width_coarse.txt','Delimiter',',');
-meshelement=readmatrix('elemfile_width_coarse.txt','Delimiter',',');
+meshnode=readmatrix('nodefile_Dontsov_medium.txt','Delimiter',',');
+meshelement=readmatrix('elemfile_Dontsov_medium.txt','Delimiter',',');
 meshnode=meshnode(:,2:3);
 meshelement=meshelement(:,2:5);
 plate=Quadmesher(meshnode,meshelement);
 % plate.plotmesh;
-%% Inputs
+%% Inputs and Parfor setting
 % % To display the progress
 % proT=uitable('ColumnName','numbered');
 % proT.Units='Normalized';
 % proT.Position=[.1,.1,.8,.8];
-workers=int8(4);
-cases=12;
-caseids=71:82;
-% proT.Data(1,1:cases)=caesids;
-% parprofile=Par(cases); % profile the time for each head
-parfor(icase=1:cases,workers) % request 4 workers
+% workers=int8(4);
+% cases=12;
+% caseids=71:82;
+% % proT.Data(1,1:cases)=caesids;
+% % parprofile=Par(cases); % profile the time for each head
+% parfor(icase=1:cases,workers) % request 4 workers
 %     Par.tic;
-    GBINP=assembleglobalinputs(icase);
-%% --  Step 1: Pull from the top boundary
+%     fprintf('cases_%d is running\n',caseids(icase));
+    GBINP=assembleglobalinputs(1);
+%% --  Step 1
     %% set up the boundary condtion
-    fprintf('cases_%d is running\n',caseids(icase));
+
     % ----Special nodes
     BCTable_node=[];        % For Dirichelet boundary condition on sparse nodes
     % Do not use QTable_node unless this is injection to non-crack area.
@@ -77,10 +78,14 @@ parfor(icase=1:cases,workers) % request 4 workers
 %     BCmat_line=[0,1,1,0;0,0,1,0;0,0,1,4;1,0,0,0];% The description is in the Precessor class.
     [ir,ic]=find(BCmat_line==1);
     psdboundind=[ir,ic];    % Dirichlet boundary, in this case all bounaries are fixed
-    imbalancedbound=[];     % Neumann boundary is the 3rd boundary, top edge             
+    imbalancedbound=[];     % Neumann boundary is the 3rd boundary, top edge, must specify if existing  
+    % THE SPECIFIED BOUNDARIES WILL BE USED IN LINSYS.INTIALRHS AND THE
+    % INSITU STRESS RESULTANT LOAD VECTOR WILL BE CALCULATED. THE CURLOAD
+    % SHOULD BE SPECIFIED AND THE BCMAT_LINE SHOULD CHANGE FROM '1' TO '4'.
     predof=[0,0,0;0,0,0;0,0,0;0,0,0]; % Predefined dofs corresponding to the '1's in the BCmat_line;
 %     curloads1m=[0,3.7e-3];   % [Tx,Ty] are the current traction to the top side, GPa 
-%     curloads3m=[0,-5e-3];   % [Tx,Ty] are the current traction to the top side, GPa 
+%     curloads3m=[0,-2e-3];   % [Tx,Ty] are the current traction to the top
+%     side, GPa. 
     curloads3m=[];
 %     curloads3q=q;       % OUTWARD POSITIVE, INJECTION NEGATIVE.
     curloads={[],[];[],[];curloads3m,[];[],[]};
@@ -97,7 +102,7 @@ parfor(icase=1:cases,workers) % request 4 workers
     Step1=Step1.assignmesh;
     Step1=Step1.updatedofarray;
     Step1=Step1.crtlinsys;                   % create the linsystem here because enrichitem may be void (03032019,06232019)
-    %% Setting up the crack profile
+    %% Setting up the crack profile, consider to add multiple cracks
     mesh=Step1.Preprocess.Mesher;
     elemdict=Step1.ElemDict;
     nodedict=Step1.NodeDict;
@@ -115,13 +120,17 @@ parfor(icase=1:cases,workers) % request 4 workers
     crack1.initiate_2nd(injectionpoint);
     Perforated=true;
     Cohesive='unified';
-    Alpha=pi/2;     %-atan(0.5);
+    Alpha=pi/2;     %pi/2-atan(0.5) the angle between the tensile force and crack plane
+    % This alpha is used to initiate the initial traction and crack opening
+    % for existing crack, implemented in GaussPnt_Cohesive class.
     encrack=EnrichPack.EnrCrackBody(1,'crackbody',elemdict,nodedict,crack1,Perforated,Cohesive,Alpha);
     % for injection, both qext_enr and qext_std
     crackqtable=[encrack.Id,q]; % for edge crack, it is okay to ignore the injection point.
     encrack.Qtable=crackqtable;
     enfh=EnrichPack.EnFHeaviside(1,crack1.Minelength,crack1.Phi); % smoothed type 1 heaviside is required
     enfrd=EnrichPack.EnFRidge(crack1.Phi);
+    % May add another junction enrichment function for minor crack or major
+    % crack or separately or both?
     encrack.Myenfs={enfh,enfrd};
     encrack.initial_enrich;
     % Explicitly assign the propagation check and direction 
@@ -129,7 +138,7 @@ parfor(icase=1:cases,workers) % request 4 workers
 %     encrack.Mytips(1).Growdirection=ToolPack.Maxpsdirection(encrack.Mytips(1).Omega);
 %     encrack.Mytips(2).GrowCheck=ToolPack.Maxpscheck(threshold);
 %     encrack.Mytips(2).Growdirection=ToolPack.Maxpsdirection(encrack.Mytips(2).Omega);
-    Step1.EnrichItems={encrack};
+    Step1.EnrichItems={encrack}; % need to be updated when new iterms are added 090920
 %     mesh.plotmesh;hold on; crack1.plotme;
     % -- Creating a sparse linear system upon updating the dofarray             
     Step1=Step1.updatedofarray_enriched;                        % update the linsystem inside
@@ -170,67 +179,50 @@ parfor(icase=1:cases,workers) % request 4 workers
 %     save('propagating_comparison_1105.mat','Step1');
 %     toc;
     postdict=Step1.Postprocess;
-    %% Storing the Numerical solutions
-    startpoint=1;
-    endpoint=length(postdict);
-    % endpoint=61;
-    NT=transpose([postdict(startpoint:endpoint).Inc]);
-    NL=zeros(size(NT));
-    NCMOD=NL;
-    NCMP=NL;
-    CKV=NL;
-    LKV=NL;
-    % samplenodes=[445,4836,1615,1635,1645,1705,1755,1865,1915,1945]; % mesh
-    % Dontsov 0403
-    % samplenodes=[9333,9317,9297,9277,9257,9237,9217,9207]; % after 02/24/20
-    % samplenodes=[9337,9317,9297,9277,9257,9237,9217];   % prior to 02/24/20
-    % LKF=zeros(length(NL),length(samplenodes));
-    % CL=zeros(1,length(samplenodes));
-    for i=startpoint:endpoint
-        mouthind=1;
-        NL(i-startpoint+1)=postdict(i).EnrichItems{1}.Length;
-        NCMOD(i-startpoint+1)=postdict(i).EnrichItems{1}.Aperture(mouthind);
-        NCMP(i-startpoint+1)=postdict(i).EnrichItems{1}.Pfrack(mouthind);
-        LKV(i-startpoint+1)=postdict(i).EnrichItems{1}.LeakoffVolume;
-        CKV(i-startpoint+1)=postdict(i).EnrichItems{1}.CrackVolume;
-        %     LKF(i-startpoint+1,:)=postdict(i).EnrichItems{1}.LeakoffFlux;
-    end
-    NL=(NL-0.05);  % 0.05 is the initial perforated length
-    NCMOD=(NCMOD-GBINP.perfaperture)*1e3; % mm
-    NCMP=NCMP*1e3; %MPa
-    Results=[NT,NL,NCMOD,NCMP,CKV,LKV];
-    filename=strcat('case_',num2str(caseids(icase)),'.mat');
-    m=matfile(filename,'writable',true);
-    m.postdict=postdict;
-    m.GBINP=GBINP;
-    m.Results=Results;
-%     parprofile(icase)=Par.toc;
-    fprintf('cases_%d is finished\n',caseids(icase));
+    
+
+     %% Storing the Numerical solutions, Only needed for parfor 090920
+%     startpoint=1;
+%     endpoint=length(postdict);
+%     % endpoint=61;
+%     NT=transpose([postdict(startpoint:endpoint).Inc]);
+%     NL=zeros(size(NT));
+%     NCMOD=NL;
+%     NCMP=NL;
+%     CKV=NL;
+%     LKV=NL;
+%     % samplenodes=[445,4836,1615,1635,1645,1705,1755,1865,1915,1945]; % mesh
+%     % Dontsov 0403
+%     % samplenodes=[9333,9317,9297,9277,9257,9237,9217,9207]; % after 02/24/20
+%     % samplenodes=[9337,9317,9297,9277,9257,9237,9217];   % prior to 02/24/20
+%     % LKF=zeros(length(NL),length(samplenodes));
+%     % CL=zeros(1,length(samplenodes));
+%     for i=startpoint:endpoint
+%         mouthind=1;
+%         NL(i-startpoint+1)=postdict(i).EnrichItems{1}.Length;
+%         NCMOD(i-startpoint+1)=postdict(i).EnrichItems{1}.Aperture(mouthind);
+%         NCMP(i-startpoint+1)=postdict(i).EnrichItems{1}.Pfrack(mouthind);
+%         LKV(i-startpoint+1)=postdict(i).EnrichItems{1}.LeakoffVolume;
+%         CKV(i-startpoint+1)=postdict(i).EnrichItems{1}.CrackVolume;
+%         %     LKF(i-startpoint+1,:)=postdict(i).EnrichItems{1}.LeakoffFlux;
+%     end
+%     NL=(NL-0.05);  % 0.05 is the initial perforated length
+%     NCMOD=(NCMOD-GBINP.perfaperture)*1e3; % mm
+%     NCMP=NCMP*1e3; %MPa
+%     Results=[NT,NL,NCMOD,NCMP,CKV,LKV];
+%     filename=strcat('case_',num2str(caseids(icase)),'.mat');
+%     m=matfile(filename,'writable',true);
+%     m.postdict=postdict;
+%     m.GBINP=GBINP;
+%     m.Results=Results;
+% %     parprofile(icase)=Par.toc;
+%     fprintf('cases_%d is finished\n',caseids(icase));
 %     m.time=time
-end
+% end
 % stop(parprofile);
 % plot(parprofile);
-poolobj=gcp('nocreate');
-delete(poolobj);
-%% Postprocessing
+% poolobj=gcp('nocreate');
+% delete(poolobj);
+%% Plotting
 %example of postprocessing
-% plot all contour figures without setting the number of contour lines
-% radnodes=Step1.Preprocess.Mesher.radnodes;
-% tannodes=Step1.Preprocess.Mesher.tannodes;
-% nodestruct=[tannodes,radnodes];
-% xnlist=(15*tannodes+1):(16*tannodes);
-% dnlist=tannodes/2:tannodes:length(Step1.NodeDict);
-% ynlist=tannodes:tannodes:length(Step1.NodeDict);
-% [h,xxx,yyy]=Step1.Postprocess(1,5).plotxy('P',xnlist,'linear',1);
-% hold on
-% [h2,xxx2,yyy2]=Step1_0909.Postprocess(1,1).plotxy('P',xnlist,'linear',1);
-% [h2,xxx2,yyy2]=Step1.Postprocess(1,4).plotxy('UY',xnlist,'linear',1);
-% Step1.Postprocess(1,36).plotsurf('P',nodestruct,0);
-% Step1.Postprocess(1,36).plotsurf('SPN',nodestruct,0,2);
-% Step1.Postprocess(36).plotcrack(mesh,1,1,1000);
-% Step1.snapshot('crackgeo',[1,10,20,40])
-% mesh.plotmesh(1,Step1.Postprocess(1,end).UX,Step1.Postprocess(1,end).UY,'scale',1);
-% Step1.Postprocess(1,10).plotsurf('UY',nodestruct,1);
-% encrack.plotcrack(1,0,Step1.Postprocess(1,7).UX,Step1.Postprocess(1,7).UY,100)
-% [h,xxx,yyy]=Step1.Postprocess(1,1).plotxy('P',xnlist,'xlog',rw);
 % export_fig 'Organized results\Stationary_center_crack_0410\Deformed mesh plot with center crack.tif' -m3.125 -transparent

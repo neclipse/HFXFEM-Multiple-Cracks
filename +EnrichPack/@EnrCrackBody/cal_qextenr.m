@@ -113,7 +113,7 @@ for in=1:length(nodes)
 end
 % 5. Find the locarray_enr and locarray_std
 % ERROR found on 0423  FIXED on 0424, do not use LocarraryPEnr
-locarray_enr=mouthelem.JacobianMatDict(obj.Id).LocarrayEnr(3*nodes);
+locarray_enr=mouthelem.JacobianMatDict(mouthelem.Enrich==obj.Id).LocarrayEnr(3*nodes);
 locarray_std=mouthelem.Locarray(3*nodes);
 locarray=[locarray_std,locarray_enr];
 % locarray=locarray_enr;

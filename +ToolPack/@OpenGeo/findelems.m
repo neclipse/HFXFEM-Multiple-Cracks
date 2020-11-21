@@ -4,7 +4,7 @@ function elems=findelems( obj,plist,varargin )
 % Method of opengeo objects Varargin sets the search options, 
 %1. By default, no varargin, option ='initial', search enveloping element 
 % and element with the point on its edge, also check if the element is cut 
-% by the segment.
+% by the segment (after extension to edge)
 %2. option = 'edge', search elements with point on its edge
 %3. option= 'in_edge', search elements with point inside or on their edges
 if isempty(varargin) || strcmp(varargin{1},'initial')

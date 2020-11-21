@@ -18,6 +18,8 @@ end
 % triangles note seeds_all is still a cell array because obj.Seeds has two
 % levels: first level is the crack id and the second level is the
 % subdomains for triangulation 03282019
+% use logical array id to relieve the single index id. 10/02/20
+id=obj.Enrich==id;
 seeds_all=obj.Seeds{id};    % all subpolygons for current crack id
 GNcoord=[obj.X,obj.Y];      % global coordinates of the nodes of the element
 GP=zeros(60,2); % preallocate
@@ -93,9 +95,13 @@ gbinp=obj.GaussPntDictM(1).GBINP;
 gaussdictm(1,tpt)=FEPack.GaussPnt_LE_UP(); % generate an void object array
     for igauss=1:tpt
         gaussdictm(igauss)=FEPack.GaussPnt_LE_UP(GP(igauss,1),GP(igauss,2),GW(igauss),nnodes,gbinp);
-        gaussdictm(igauss)=gaussdictm(igauss).preparing(obj.X,obj.Y);
+        gaussdictm(igauss)=gaussdictm(igauss).preparing(obj.X,obj.Y,obj.EnrichNum);
     end
 % replace the GaussPntDictM with the newly generated gaussdictm
-obj.EnrichGaussDict{id}=gaussdictm;
+% obj.EnrichGaussDict{id}=gaussdictm;
+% The comprehensive gaussdict should be also updated. Actuall, the
+% comprehensive gaussdict should be the same as every cell within the
+% obj.EnrichGaussDict after update. 10/16/20
+obj.EnrichGauss=gaussdictm; 
 end
 

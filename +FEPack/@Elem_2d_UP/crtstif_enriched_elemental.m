@@ -1,4 +1,4 @@
-function crtstif_enriched( obj, newmark, id , gbinp, blending)
+function crtstif_enriched_elemental( obj, newmark, gbinp, blending)
 %CRTST method of elem_2d_EP to calculate the stiffness matrix using gauss
 %point class
 %   This function is slightly different from the calstifmatrix in class
@@ -23,43 +23,50 @@ else
     Cstar=gbinp.Cstar;          % use consistent domain Biot_mod
 end
 muf=gbinp.muf;
-% use logical array id to relieve the single index id. 10/02/20
-id=obj.Enrich==id;
-% initialization of JacobianMatDict(id): Compute all components for the
-% first increment after being Enriched, only initialize for once.
+k=obj.EnrichNum;                % number of current enrichitems in the element
 nnodes=obj.NoNodes;
-r1=2*nnodes;
-r2=nnodes;
+% 10/09/20: This scheme for enrichment assumes the support (element) is
+% divided into (k+1) sections by k cracks. It is already a general 
+%implementation. It has no problem with two arbitrary fully extended
+% cracks within the element. It also works for multiple branches as long as
+% each branch is enriched with the correct junction function. See (Daux 2000)
+r1=2*nnodes;    % uenrdofs for 1 enrichitem
+r2=nnodes;      % penrdofs for 1 enrichitem
+r1t=2*k*nnodes; % total uenrdofs
+r2t=k*nnodes;   % total penrdofs
 %% May only need one final JacobianMat, no need for discrete crack. 092920.
-JMat=obj.JacobianMat;
-if isempty(JMat.Kusue) % stays constant over the simulation                                 
+JMat=obj.JacobianMat; % elemental comprehensive JacobianMat
+if size(JMat.Kusue,2)~=r1t % stays constant over the simulation                                 
     % preallocate the displacement vector for crack opening calculation
     % 02/01/2019
-    JMat.Un2iEnr=zeros(r1,1);
+    JMat.Un2iEnr=zeros(r1t,1);
     % Preallocate a zero matrix for the stiffness matrix;
     Musus=zeros(r1,r1);                         % Dynamic term
-    Musue=zeros(r1,r1);
-    Mueus=zeros(r1,r1);
-    Mueue=zeros(r1,r1);
+    Musue=zeros(r1,r1t);
+    Mueus=zeros(r1t,r1);
+    Mueue=zeros(r1t,r1t);
     Kusus=zeros(r1,r1);                         % Classic stiffness matrix
-    Kusue=zeros(r1,r1);
-    Kueus=zeros(r1,r1);
-    Kueue=zeros(r1,r1);
+    Kusue=zeros(r1,r1t);
+    Kueus=zeros(r1t,r1);
+    Kueue=zeros(r1t,r1t);
     Qusps=zeros(r1,r2);                         % coupling matrix
-    Quspe=zeros(r1,r2);
-    Queps=zeros(r1,r2);
-    Quepe=zeros(r1,r2);
+    Quspe=zeros(r1,r2t);
+    Queps=zeros(r1t,r2);
+    Quepe=zeros(r1t,r2t);
     Hpsps=zeros(r2,r2);                         % permeability matrix
-    Hpspe=zeros(r2,r2);  
-    Hpeps=zeros(r2,r2);  
-    Hpepe=zeros(r2,r2);  
+    Hpspe=zeros(r2,r2t);  
+    Hpeps=zeros(r2t,r2);  
+    Hpepe=zeros(r2t,r2t);  
     Spsps=zeros(r2,r2);                         % Compressibility matrix
-    Spspe=zeros(r2,r2);
-    Speps=zeros(r2,r2);  
-    Spepe=zeros(r2,r2);
+    Spspe=zeros(r2,r2t);
+    Speps=zeros(r2t,r2);  
+    Spepe=zeros(r2t,r2t);
     m=[1;1;0;1];                                % Kroneck delta in vector form
     %% Need to obtain Nuenr, Npenr, DNpenr, etc for every involved crack. 092920
-    GaussPnt=obj.EnrichGauss; % Where the comprehensive Nuenr, Npenr, etc. are stored. 10/16/20
+    % Change: the element with multiple cracks share the same gauss points,
+    % and the shape functions and their derivatives are already made
+    % comprehensive by the EnrichPack.EnrichFun. 10/09/20
+    GaussPnt=obj.EnrichGauss; % only one dict 10/09/20
     numgauss=length(GaussPnt);
     %% Area Integral over the element
     for igauss=1:numgauss
@@ -105,9 +112,9 @@ if isempty(JMat.Kusue) % stays constant over the simulation
         Spepe=Spepe+H*dJ*Npenr'*Cstar*Npenr;
     end
     % store the constant values to the JacobianMat(id)
-%     JMat.Locarray=obj.Locarray;
-%     JMat.LocarrayU=obj.LocarrayU;
-%     JMat.LocarrayP=obj.LocarrayP;
+    JMat.Locarray=obj.Locarray;
+    JMat.LocarrayU=obj.LocarrayU;
+    JMat.LocarrayP=obj.LocarrayP;
     JMat.Musus=Musus;
     JMat.Musue=Musue;
     JMat.Mueus=Mueus;
@@ -133,21 +140,36 @@ end
 % It seems better to store the line integral for each encrackitem
 % separately if the leakoff calculation for each crackitem is needed.
 % 10/01/20
+% The elemental value remains
+JMat.Kc=zeros(r1t,r1t);
+JMat.Qintueps=zeros(r1t,r2);
+JMat.Qintuepe=zeros(r1t,r2t);
+JMat.Hintpsps=zeros(r2,r2);
+JMat.Hintpspe=zeros(r2,r2t);
+JMat.Hintpeps=zeros(r2t,r2);
+JMat.Hintpepe=zeros(r2t,r2t);
+JMat.Sintpsps=zeros(r2,r2);
+JMat.Sintpspe=zeros(r2,r2t);
+JMat.Sintpeps=zeros(r2t,r2);
+JMat.Sintpepe=zeros(r2t,r2t);
+% Loop over every Enrichitem in this element
+for ienr=1:obj.EnrichNum
     % coehsive force
     Kc=zeros(r1,r1);
     % fluid pressure to the crack
-    % The naming is to consistent with Queps, although Nu is used
+    % The naming is to consistent with Queps, although Nu(std) is used
+    % The enrichitem specific fractions are initiated with zeros
     Qintueps=zeros(r1,r2);                      
-    Qintuepe=zeros(r1,r2);                      
+    Qintuepe=zeros(r1,r2t);                      
     % Leak-off terms
     Hintpsps=zeros(r2,r2);
-    Hintpspe=zeros(r2,r2);
-    Hintpeps=zeros(r2,r2);
-    Hintpepe=zeros(r2,r2);
+    Hintpspe=zeros(r2,r2t);
+    Hintpeps=zeros(r2t,r2);
+    Hintpepe=zeros(r2t,r2t);
     Sintpsps=zeros(r2,r2);
-    Sintpspe=zeros(r2,r2);
-    Sintpeps=zeros(r2,r2);
-    Sintpepe=zeros(r2,r2);
+    Sintpspe=zeros(r2,r2t);
+    Sintpeps=zeros(r2t,r2);
+    Sintpepe=zeros(r2t,r2t);
     linegauss=obj.LineGaussDict{id};
     numl=length(linegauss);
     kfi=1/gbinp.Kf;
@@ -206,19 +228,36 @@ end
         Sintpepe=Sintpepe-H*Npenr'*kfi*Npenr*wd*ds;
     end
     % Return the normal and tangent vector to the elem-obj because 
-    % it is a descendent of value class 
-    obj.LineGaussDict{id}=linegauss;
-    JMat.Kc=Kc;
-	JMat.Qintueps=Qintueps;
-	JMat.Qintuepe=Qintuepe;
-	JMat.Hintpsps=Hintpsps;
-	JMat.Hintpspe=Hintpspe;
-	JMat.Hintpeps=Hintpeps;
-	JMat.Hintpepe=Hintpepe;
-	JMat.Sintpsps=Sintpsps;
-	JMat.Sintpspe=Sintpspe;
-	JMat.Sintpeps=Sintpeps;
-	JMat.Sintpepe=Sintpepe;
+    % Linegauss is a descendent of value class 
+    obj.LineGaussDict{ienr}=linegauss;
+    % Store the enrichitem specific fractions
+    obj.JacobianMatDict(ienr).Kc=Kc;
+    obj.JacobianMatDict(ienr).Qintueps=Qintueps;
+    obj.JacobianMatDict(ienr).Qintuepe=Qintuepe;
+    obj.JacobianMatDict(ienr).Hintpsps=Hintpsps;
+    obj.JacobianMatDict(ienr).Hintpspe=Hintpspe;
+    obj.JacobianMatDict(ienr).Hintpeps=Hintpeps;
+    obj.JacobianMatDict(ienr).Hintpepe=Hintpepe;
+    obj.JacobianMatDict(ienr).Sintpsps=Sintpsps;
+    obj.JacobianMatDict(ienr).Sintpspe=Sintpspe;
+    obj.JacobianMatDict(ienr).Sintpeps=Sintpeps;
+    obj.JacobianMatDict(ienr).Sintpepe=Sintpepe;
+    % store the elemental comprehensive matrices
+    % Fractioned Kc lies along the main diagnal of elemental comprehensive Kc 
+    istart=1+(ienr-1)*r1;
+    iend=ienr*r1;
+    JMat.Kc(istart:iend,istart:iend)=Kc;
+    JMat.Qintueps(istart:iend,:)=Qintueps;
+    JMat.Qintuepe(istart:iend,:)=Qintuepe;
+    JMat.Hintpsps=JMat.Hintpsps+Hintpsps;
+    JMat.Hintpspe=JMat.Hintpspe+Hintpspe;
+    JMat.Hintpeps=JMat.Hintpeps+Hintpeps;
+    JMat.Hintpepe=JMat.Hintpepe+Hintpepe;
+    JMat.Sintpsps=JMat.Sintpsps+Sintpsps;
+    JMat.Sintpspe=JMat.Sintpspe+Sintpspe;
+    JMat.Sintpeps=JMat.Sintpeps+Sintpeps;
+    JMat.Sintpepe=JMat.Sintpepe+Sintpepe;
+end
 %% assemble into the comprehensive Jacobian Matrix
 a0=newmark.a0;
 a1=newmark.a1;
@@ -234,26 +273,26 @@ Jusue=-a1*(a0*JMat.Musue+JMat.Kusue);
 Jusps=a1*JMat.Qusps;
 Juspe=a1*JMat.Quspe;
 Jueus=-a1*(a0*JMat.Mueus+JMat.Kueus);
-Jueue=-a1*(a0*JMat.Mueue+JMat.Kueue+Kc);
+Jueue=-a1*(a0*JMat.Mueue+JMat.Kueue+JMat.Kc);
 % when it comes to a new increment the Kc should be left out because the
 % unkonwns is total displacement but Kc is based on incremental
 % displacement. The cohesion traction(from the previous increment) was
 % already added in the intforcer. 04122019
 Jueuenew=-a1*(a0*JMat.Mueue+JMat.Kueue);    
-Jueps=a1*(JMat.Queps+Qintueps);
-Juepe=a1*(JMat.Quepe+Qintuepe);
+Jueps=a1*(JMat.Queps+JMat.Qintueps);
+Juepe=a1*(JMat.Quepe+JMat.Qintuepe);
 Jpsus=a1*JMat.Qusps';
-Jpsue=a1*transpose(JMat.Queps+Qintueps);
+Jpsue=a1*transpose(JMat.Queps+JMat.Qintueps);
 % IMPORTANT ERROR: SIGN OF HINTPSPS, SINTPSPS. (FIXED ON 04022019)
-Jpsps=JMat.Hpsps-Hintpsps+a1p*(JMat.Spsps-Sintpsps);
+Jpsps=JMat.Hpsps-JMat.Hintpsps+a1p*(JMat.Spsps-JMat.Sintpsps);
 % IMPORTANT ERROR: SIGN OF HINTPSPE, SINTPSPE. (FIXED ON 04022019)
-Jpspe=JMat.Hpspe-Hintpspe+a1p*(JMat.Spspe-Sintpspe);
+Jpspe=JMat.Hpspe-JMat.Hintpspe+a1p*(JMat.Spspe-JMat.Sintpspe);
 Jpeus=a1*JMat.Quspe';
-Jpeue=a1*transpose(JMat.Quepe+Qintuepe);
+Jpeue=a1*transpose(JMat.Quepe+JMat.Qintuepe);
 % IMPORTANT ERROR: SIGN OF HINTPEPS, SINTPEPS. (FIXED ON 04022019)
-Jpeps=JMat.Hpeps-Hintpeps+a1p*(JMat.Speps-Sintpeps);
+Jpeps=JMat.Hpeps-JMat.Hintpeps+a1p*(JMat.Speps-JMat.Sintpeps);
 % IMPORTANT ERROR: SIGN OF HINTPEPE, SINTPEPE. (FIXED ON 04022019)
-Jpepe=JMat.Hpepe-Hintpepe+a1p*(JMat.Spepe-Sintpepe);
+Jpepe=JMat.Hpepe-JMat.Hintpepe+a1p*(JMat.Spepe-JMat.Sintpepe);
 % The whole elemental Jacobian Matrix
 JMat.WJ=[Jusus,Jusps,Jusue,Juspe;
         Jpsus,Jpsps,Jpsue,Jpspe;

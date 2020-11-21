@@ -31,11 +31,6 @@ obj.switching(3);
 % The next trial is very important to link step n+1 to step n
 obj.LinSysCrt.upconf_trial(obj.Newmark);
 obj.intforcer;                                     % Trial intforcer based on the first trial of u_sup(n+1) and p_sup(n+1)
-% if ~isempty(obj.LinSysCrt.EnrichItems)
-%     for ienr=1:length(obj.LinSysCrt.EnrichItems)
-%         obj.LinSysCrt.EnrichItems{ienr}.postprocess(obj.Dt);      % obtain crack aperture and other practical information.
-%     end
-% end
 % This residual load vector is the difference between external load vector and the trial internal load vector for the new time increment
 obj.LinSysCrt.RHS=obj.ResLoadVec;
 % Loop over equillibrium equations for a load increment
@@ -55,7 +50,7 @@ while obj.CutFlag==1
             cutratio=0.4+0.2*rand(1);
             obj.autoincrem(1,cutratio,1.5,inclist);
             obj.updatenewmark(1);
-            obj.LinSysCrt.crtLHS_UP(obj.Newmark,iinc);     % update LHS
+            obj.LinSysCrt.crtLHS_UP(obj.Newmark,iinc);     % update LHS as newmark changed
             obj.LinSysCrt.crtRHS_UP(obj.Newmark);          % update external load vector;
             obj.ExtLoadVec=obj.LinSysCrt.RHS;
             obj.switching(3);
@@ -64,6 +59,8 @@ while obj.CutFlag==1
             obj.LinSysCrt.RHS=obj.ResLoadVec;
         end
         obj.IItr=obj.IItr+1;
+        % Don't check stagechangeflag for the first iteration as it's not
+        % accurate load update yet.
         if obj.IItr==1
             % Apply specified non-zero Dirichlet boundary condtion
             obj.LinSysCrt.appbound_v4; % applied on LHSnew

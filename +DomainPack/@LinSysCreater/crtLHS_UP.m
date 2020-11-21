@@ -9,7 +9,7 @@ function crtLHS_UP(obj,newmark,iinc)
 % of LHS. Instead LocarrayU(1:2:end-1)=Locarray(1:3:end);
 % LocarrayU(2:2:end)=Locarray(2:3:end); LocarrayP=Locarray(3:3:end);
 % Locarray=[LocarrayU,LocarrayP];
-Ntriplets=numel(obj.ElemDict)*24*24;       % The maximum number of components of I, J and Value
+Ntriplets=numel(obj.ElemDict)*24*24;       % The maximum number of components of I, J and Value, one node has 6 dofs in average.
 I=zeros(Ntriplets,1);
 J=zeros(Ntriplets,1);
 Value=zeros(Ntriplets,1);
@@ -29,7 +29,6 @@ blendingelems=blendingelems(1:icount2);
 blendingelems=unique(blendingelems);
 for ielem=1:length(obj.ElemDict)
     % fprintf('Assembling the %d element\n',ielem);   
-    ienrich= find(obj.ElemDict(ielem).Enrich);
     % enriched element
     if any(blendingelems==ielem)
         % blending element
@@ -38,13 +37,14 @@ for ielem=1:length(obj.ElemDict)
         % standard element
         blending=false;
     end
+    ienrich= find(obj.ElemDict(ielem).Enrich);
     if ~isempty(ienrich)
         % there is at most only one ienrich at current stage 11/22/18
         obj.ElemDict(ielem).crtstif_enriched(newmark,ienrich,gbinp,blending);
-        Std=obj.ElemDict(ielem).JacobianMatDict(ienrich).Locarray;
-        Enr=obj.ElemDict(ielem).JacobianMatDict(ienrich).LocarrayEnr;
-        stdU=zeros(size(obj.ElemDict(ielem).JacobianMatDict(ienrich).LocarrayU));
-        enrU=zeros(size(obj.ElemDict(ielem).JacobianMatDict(ienrich).LocarrayUEnr));
+        Std=obj.ElemDict(ielem).Locarray;
+        Enr=obj.ElemDict(ielem).JacobianMat.LocarrayEnr;
+        stdU=zeros(size(obj.ElemDict(ielem).JacobianMat.LocarrayU));
+        enrU=zeros(size(obj.ElemDict(ielem).JacobianMat.LocarrayUEnr));
         stdU(1:2:end-1)=Std(1:3:end);
         stdU(2:2:end)=Std(2:3:end);
         stdP=Std(3:3:end);

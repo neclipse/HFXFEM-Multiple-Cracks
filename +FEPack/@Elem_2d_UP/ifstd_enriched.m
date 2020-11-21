@@ -1,19 +1,22 @@
-function [IntLoadAll,stagechangeflag]=ifstd_enriched( obj,newmark,id,stagecheck,calstress,gbinp)
+function [IntLoadAll,stagechangeflag]=ifstd_enriched( obj,newmark,id,stagecheck,calstress)
 % internal force vector calculation and the stress update
 % global skin;
 % skin=gbinp.skin;
 	% Enrichement screening
-	if obj.Enrich(id)==0
-		error('The element does not interact with the specified enrichement item\n')
-	end 
+% 	if obj.Enrich(id)==0
+% 		error('The element does not interact with the specified enrichement item\n')
+% 	end 
+    % use logical array id to relieve the single index id. 10/02/20
+%     id=obj.Enrich==id; % since ErnichGaussDict and JacobianMat is now elemental, obsolete, 10/12/20 
+    
 	% Standard Dofs
     us=obj.Un2i;      % elemental iterative total displacement vector, u_sup(n+1)_sub(i+1)
     ps=obj.Pn2i;      % elemental iterative total pore pressure vector, p_sup(n+1)_sub(i+1)
     vs=obj.Un2t1;
     as=obj.Un2t2;
     pds=obj.Pn2t1;
-	% Enriched Dofs
-	Jacob=obj.JacobianMatDict(id);
+	% Enriched Dofs store in the elemental JacobianMat now. 10/12/20.
+	Jacob=obj.JacobianMat;
     Due=Jacob.DUn2Enr;
 	ue=Jacob.Un2iEnr;
 	pe=Jacob.Pn2iEnr;   
@@ -27,45 +30,46 @@ function [IntLoadAll,stagechangeflag]=ifstd_enriched( obj,newmark,id,stagecheck,
     %  version and the
     % newmark value is arbitrarily set as it is not used in matsu.
     if calstress
-        for ig=1:length(obj.EnrichGaussDict{id})
+        for ig=1:length(obj.EnrichGauss)
             % update stresses
-            obj.EnrichGaussDict{id}(ig)=obj.EnrichGaussDict{id}(ig).matsu_enriched(us,ue,ps,pe);
+            obj.EnrichGaussDict(ig)=obj.EnrichGaussDict(ig).matsu_enriched(us,ue,ps,pe);
             % calculate the maximum principal stress and its orientation
             % [psmax,gtheta]=obj.EnrichGaussDict{id}.psu;
         end
-        for ig=1:length(obj.LineGaussDict{id})
-            % update stresses at the discontinuity
-            obj.LineGaussDict{id}(ig)=obj.LineGaussDict{id}(ig).matsu_enriched(us,ue,ps,pe);
-            % calculate the maximum principal stress and its orientation
-            % [psmax,gtheta]=obj.EnrichGaussDict{id}.psu;
+        for ienr=1:obj.EnrichNum
+            for ig=1:length(obj.LineGaussDict{ienr})
+                % update stresses at the discontinuity
+                obj.LineGaussDict{ienr}(ig)=obj.LineGaussDict{ienr}(ig).matsu_enriched(us,ue,ps,pe);
+                % calculate the maximum principal stress and its orientation
+                % [psmax,gtheta]=obj.EnrichGaussDict{id}.psu;
+            end
         end
         return;
         % return because the newmark value is arbitrarily set
     end
     %% update cohesive traction at linegauss_cohesive
+    % NEED TO RETHINK ABOUT THE SIZE AND LOCATION OF F_COH_I 10/16/20.
     F_coh_i=zeros(size(Due));
-    for ig=1:length(obj.LineGaussDict{id})
-        lg= obj.LineGaussDict{id}(ig);   % VALUE CLASS, A HARD COPY
-        if stagecheck
-            % Do not return lg to lg
-            [traction,stagechangeflag]=lg.matctu(us,ue,Due);
-            if stagechangeflag
-                IntLoadAll=[];
-                return;
+    for ienr=1:obj.EnrichNum
+        for ig=1:length(obj.LineGaussDict{ienr})
+            lg= obj.LineGaussDict{ienr}(ig);   % VALUE CLASS, A HARD COPY
+            if stagecheck
+                % Do not return lg to lg
+                [traction,stagechangeflag]=lg.matctu(us,ue,Due);
+                if stagechangeflag
+                    IntLoadAll=[];
+                    return;
+                end
+            else
+                %for the first iteration, the traction can inherit from the
+                %last increment. 07272019. (Not 100% sure, changed back after trial)
+                traction=lg.matctu(us,ue,Due);
             end
-        else
-            %for the first iteration, the traction can inherit from the
-            %last increment. 07272019. (Not 100% sure, changed back after trial)
-            traction=lg.matctu(us,ue,Due);
-%             traction=lg.TractionO;
-            % For the new increment, do not assign traction to lg.Traction
-            % yet. (does not matter now, because lg.Traction is updated based
-            % on lg.TractionO and Due inside lg.matctu).
+            lg.Traction=traction;
+            F_coh_i=F_coh_i+lg.H*lg.Nu'*lg.Traction*lg.Ds;
+            % Need to add these for "value" class gauss
+            obj.LineGaussDict{ienr}(ig)=lg;
         end
-        lg.Traction=traction;
-        F_coh_i=F_coh_i+lg.H*lg.Nu'*lg.Traction*lg.Ds;
-        % Need to add these for "value" class gauss
-        obj.LineGaussDict{id}(ig)=lg;
     end
     %% Interal load vector for the element
     % calculate internal loadus, -a1*(Musus*as+Musue*ae+Kusus*us+Kusue*ue-Qusps*ps-Quspe*pe)

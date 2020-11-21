@@ -21,7 +21,7 @@ classdef GaussPnt_LE_UP
        Stress      % current total stress at this gaussian point
        Strainc     % relative strain comparing to the initial state
        Uy
-       Enf         % cell array of struct array{enfid1,enfid2...}, changed on 11/01/2018
+       Enf=cell(1,3);         % cell array of struct array{enfid1,enfid2...}, changed on 11/01/2018
 %        Tangent_coh % cohesive tangent matrix describing the cohesive crack separation law
 %        CrackOpening
 %        CrackPerm   % Aparrent Permeability of the crack, depending on the crack opening. 
@@ -42,8 +42,8 @@ classdef GaussPnt_LE_UP
        obj=matsu(obj,disp,dp);
        obj=matsu_enriched(obj,us,ue,ps,pe);
        obj=psu(obj);
-       obj=preparing(obj,X,Y);
-       obj=enriching(obj);                  % preparing the enrichment matrices, Bmatenr,Nuenr,Npenr
+       obj=preparing(obj,X,Y,EnrichNum);
+       obj=enriching(obj);                  % not implemented here though. See Enr.enrichgauss.
        matct(obj);
    end
     

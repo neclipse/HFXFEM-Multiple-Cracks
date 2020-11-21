@@ -21,6 +21,7 @@ post.Inc=inc;                                               % The actual time in
 % Store the reaction force vector on every nodes
 a1=obj.NewtonRaphson.Newmark.a1;
 % Important to note that the newraphson.IntLoadVect has a coeffient of (-a1)
+% Only need the normal standard dofs, do not need the enriched. 091120
 RLOAD=obj.NewtonRaphson.IntLoadVec(1:obj.NoDofs)/(-a1);
 post.RLOADX=RLOAD(1:3:end);
 post.RLOADY=RLOAD(2:3:end);

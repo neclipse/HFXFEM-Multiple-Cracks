@@ -29,7 +29,7 @@ end
 for iE=1:length(obj.INTELEM)
     %% Withdraw data
     elem=obj.INTELEM(iE);
-    Jacob=elem.JacobianMatDict(obj.Id);
+    Jacob=elem.JacobianMat;
     % ua is the current displacement discontinuity of all nodes for the
     % specified (id) enrichement item.
     % Standard Dofs
@@ -85,7 +85,7 @@ for iE=1:length(obj.INTELEM)
     end
     
     %% Calculation at the linegaussian points along the crack curve
-    linegauss=elem.LineGaussDict{obj.Id};
+    linegauss=elem.LineGaussDict{elem.Enrich==obj.Id};
     for ig=1:length(linegauss)
         lg=linegauss(ig);
         intpoints(iint,:)=[lg.X,lg.Y];

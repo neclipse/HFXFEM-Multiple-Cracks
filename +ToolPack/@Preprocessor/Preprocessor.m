@@ -11,7 +11,7 @@ classdef Preprocessor < handle
        Predof
        BoundEdge        % indices of corner nodes on a side along the boundary
        BCTable_line
-       BCTable_imbalance% mechanically loaded boundary (Linsys.initialRHS)
+       BCTable_imbalance% mechanically loaded boundary instead of fixed(Linsys.initialRHS)
        BCTable_node     % boundary condition table, its size is nonode*4
        QTable_node      % line source/link in arbitrary location,[[localnode1,localnode2],{points},q]
        BCTable_disp     % boundary condition table for predescribed displacement

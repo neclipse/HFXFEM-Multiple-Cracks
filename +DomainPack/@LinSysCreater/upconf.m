@@ -11,7 +11,7 @@ function  upconf( obj,newmark)
     % ERROR ON THE UPDATE OF OBJ.U AND OBJ.P, noticed on 6/4, not fixed
     obj.U=obj.U+du;                 % U_sup(n+1)_sub(i+1), displacement
     DU=obj.U-obj.UO;                % incremental change in displacment.
-    obj.P=obj.P+dp;                 % p_sup(n+1)_sub(i+1), excess pore water pressure
+    obj.P=obj.P+dp;                 % p_sup(n+1)_sub(i+1), current excess pore water pressure
     nm=newmark;                     % newmark parameters in struct array
 %   calculate the time derivatives of the updated U and P using newmark method
     obj.Ut1=nm.a1*(obj.U-obj.UO)-nm.a3*obj.UOt1-nm.a5*obj.UOt2;
@@ -32,12 +32,12 @@ function  upconf( obj,newmark)
         obj.ElemDict(ielem).Un2t2=obj.Ut2(UVec);
         obj.ElemDict(ielem).Pn2t1=obj.Pt1(PVec);
     end
-    % update the enriched dofs as well
+    % update the enriched dofs as well, AT ELEMENTAL LEVEL 10/12/20
 	for iEnrich=1:length(obj.EnrichItems)
 		enrichitem=obj.EnrichItems{iEnrich};
-		id=enrichitem.Id;
+% 		id=enrichitem.Id;
 		for ielem=1:length(enrichitem.INTELEM)
-			Jacob=enrichitem.INTELEM(ielem).JacobianMatDict(id);
+			Jacob=enrichitem.INTELEM(ielem).JacobianMat;
 % 			DofEnrVec=Jacob.LocarrayEnr;
 			UEnrVec=Jacob.LocarrayUEnr;
 			PEnrVec=Jacob.LocarrayPEnr;

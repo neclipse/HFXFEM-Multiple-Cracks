@@ -1,7 +1,8 @@
 function  iterating_nonlinear( obj, iinc, varargin)
-%Iterating Method of NewtonRaphson class
-% Loop over equilibrium iterations for one increment, modified
-% Newton-Raphson method as the tangent matrix is updated per increment.
+%Iterating Method of NewtonRaphson class, tried to change this to full 
+% Newton-Raphson method as the tangent matrix is updated per iteration.
+% Not finished. 091120
+
 % Assemble, solve Linear equation system and update
 if nargin>3
     psddofs=varargin{1};

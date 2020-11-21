@@ -110,17 +110,17 @@ classdef NewRapItr < handle
        end
        % update the parameters for newmark scheme
        updatenewmark(obj,varargin);
-       initialize_v1_E(obj);    % Assume the material at the initial state is pure elastic
-       returning(obj);          % Main plastic returning method: loop over equilibrium equation
-       iterating(obj,i,stdpdofs,varargin);
+       initialize_v1_E(obj);    % Assume the material at the initial state is pure elastic, not used for elastic analysis
+       returning(obj);          % Main plastic returning method: loop over equilibrium equation, not used for elastic XFEM 
+       iterating(obj,i,stdpdofs,varargin); % used for elastic
        stagechangeflag=intforcer(obj,varargin);          % Calulate the internal force vector for all elements
        converger(obj,varargin);          % Determine the convergenence flag for the domain
        autoincrem(obj,mode,varargin);  % Automatically adjust the size of the increments
        % IMPORTANT :REMEMBER TO ASSIGN CORRECT INPUT AND OUTPUT NUMBER IN
        % DECLARING THE FUNCTION NAME ONLY
        switching(obj,mode);     % switch between current value and last converged value
-       checksize_porepressure( obj,stdpdofs,varargin );
-       epnotifier(obj);
+       checksize_porepressure( obj,stdpdofs,varargin ); % applying a criterion for automatic step 
+       epnotifier(obj);   % not used for pure elastic analysis
    end 
 
 end
