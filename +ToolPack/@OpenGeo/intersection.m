@@ -1,4 +1,4 @@
-function [good,pnts,localpnts,seeds] = intersection( obj,elem,varargin )
+function [good,pnts,localpnts] = intersection( obj,elem,varargin )
 % intersection method of OpenGeo
 % find the intersections of elem
 % of the OpenGeo and the element edges
@@ -17,7 +17,7 @@ end
 corner = [1,2,3,4,1];
 node=[-1,-1;1,-1;1,1;-1,1];
 good=true;
-seeds=[];                   
+% seeds=[];                   
 pnts=zeros(2,2);            % global coordinates of the intersections
 localpnts=zeros(2,2);       % local coordinates of the intersections
 % extrapnts=zeros(2,2);       % local coordinates of the two extra points for the seeds
@@ -52,6 +52,10 @@ for i =1:4
     end
 end
 % REORDER THE INTERSECTIONS TO ALIGN WITH THE DIRECTION OF CRACK 11/05/2018
+% The reorderring is to let the crtip.realgrow know which point is the new
+% point. 10/30/20. 
+% This is also to make sure the elem.linegauss has the right crack
+% direction 11/04/20.
 % Find the nearest segments
  p=xy1;
  curvexy=obj.Segments(:,2:3);
@@ -70,7 +74,7 @@ end
  intx1=pnts(1,1); inty1=pnts(1,2); intx2=pnts(end,1); inty2=pnts(end,2);
  signd=sign((x2-x1)*(intx2-intx1)+(y2-y1)*(inty2-inty1));
  % make the intersections points aligned with crack direction as from 1st
- % tip to 2nd tip
+ % point to 2nd point.
  if signd==1
     pnts=flip(pnts,1);      % flip upside down
     localpnts=flip(localpnts,1);
@@ -115,32 +119,33 @@ end
 % midpoint=1/2*localpnts(1,:)+1/2*localpnts(2,:);
 % 03282019 Try to discretize the two subpolygon finer 
 
+%% Now move the seeds generation into a separate function: plane_partition
 % scenario 1: a triangle and a pentagon--> four triangles
-if ~isempty(idrep)
-    temp=[node;localpnts];
-    tri=delaunay(temp(:,1),temp(:,2));
-    seeds=cell(1,size(tri,1));
-    for itri=1:size(tri,1)
-       id=tri(itri,:);
-       vertices=temp(id,:);
-       cent=sum(vertices)/3;    % centroid
-       seeds{itri}=[vertices;cent];% seeds for each triangle
-    end
-else    % secenario 2: two quadrilaterals
-    % subpolygons (the second and the third must be on the same side of the crack)
-    nodesid1=pairs([1,4]);
-    nodesid2=pairs([2,3]);
-    nodes1=node(nodesid1,:);
-    nodes2=node(nodesid2,:);
-    midpoint1=sum(nodes1)/2;
-    midpoint2=sum(nodes2)/2;
-    midpointc=sum(localpnts)/2; % sum by column to give the midpoint of the crack
-    midpoint1=sum([midpoint1;midpointc])/2;
-    midpoint2=sum([midpoint2;midpointc])/2;
-    seeds1=[nodes1;localpnts;midpoint1;midpointc];
-    seeds2=[nodes2;localpnts;midpoint2;midpointc];
-    seeds={seeds1,seeds2};
-end
+% if ~isempty(idrep)
+%     temp=[node;localpnts];
+%     tri=delaunay(temp(:,1),temp(:,2));
+%     seeds=cell(1,size(tri,1));
+%     for itri=1:size(tri,1)
+%        id=tri(itri,:);
+%        vertices=temp(id,:);
+%        cent=sum(vertices)/3;    % centroid
+%        seeds{itri}=[vertices;cent];% seeds for each triangle
+%     end
+% else    % secenario 2: two quadrilaterals
+%     % subpolygons (the second and the third in the pairs must be on the same side of the crack)
+%     nodesid1=pairs([1,4]);
+%     nodesid2=pairs([2,3]);
+%     nodes1=node(nodesid1,:);
+%     nodes2=node(nodesid2,:);
+%     midpoint1=sum(nodes1)/2;
+%     midpoint2=sum(nodes2)/2;
+%     midpointc=sum(localpnts)/2; % sum by column to give the midpoint of the crack
+%     midpoint1=sum([midpoint1;midpointc])/2;
+%     midpoint2=sum([midpoint2;midpointc])/2;
+%     seeds1=[nodes1;localpnts;midpoint1;midpointc];
+%     seeds2=[nodes2;localpnts;midpoint2;midpointc];
+%     seeds={seeds1,seeds2};
+% end
 % seeds are the vertices for delaunay to create triangular subdomains
 end
 

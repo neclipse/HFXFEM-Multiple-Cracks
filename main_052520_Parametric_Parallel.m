@@ -18,7 +18,7 @@ addpath(genpath('.\Utility'));
 % crack has length of 40cm.
 lw=45;                                      % The width of the plate
 lh=60;                                      % The height of the plate
-lc=0.05;                                    % The center crack length     
+lc=0.15;                                    % The center crack length     
 % four boundary handles (note that these handles should be adjusted based
 % on where the origin is located on the mesh.)
 fb1= @(p) p(:,2);                    % The bottom side
@@ -113,35 +113,44 @@ plate=Quadmesher(meshnode,meshelement);
 %     des={crackfunhandle,1,xlimits};
 %     crack1=ToolPack.OpenGeo(1,mesh,bdls,nodedict,elemdict,2,des,10);
    % set crack geometry using segment points
-    segments=[1,0,lh/2;2,lc,lh/2];                      % crack segments [n,x,y]
-    des=segments;
-    crack1=ToolPack.OpenGeo(1,mesh,bdls,nodedict,elemdict,1,des,10);
-    injectionpoint=[0,lh/2];
-    crack1.initiate_2nd(injectionpoint);
-    Perforated=true;
-    Cohesive='unified';
-    Alpha=pi/2;     %pi/2-atan(0.5) the angle between the tensile force and crack plane
+    segments1=[1,0,lh/2;2,lc,lh/2];                      % crack segments [n,x,y]
+    segments2=[1,0.1,lh/2-0.05;2,0.2,lh/2+0.05];
+    crack1=ToolPack.OpenGeo(1,mesh,bdls,nodedict,elemdict,1,segments1,10); % The mouth crack
+    crack2=ToolPack.OpenGeo(2,mesh,bdls,nodedict,elemdict,1,segments2,10); % The intersecting crack for debugging at stage1
+    injectionpoint=[0,lh/2]; % needed for opengeo.findblending.
+    crack1.initiate(injectionpoint);
+    crack2.initiate;
+    Perforated1=true;
+    Perforated2=true;
+    Cohesive1='unified';
+    Cohesive2='unified';
     % This alpha is used to initiate the initial traction and crack opening
-    % for existing crack, implemented in GaussPnt_Cohesive class.
-    encrack=EnrichPack.EnrCrackBody(1,'crackbody',elemdict,nodedict,crack1,Perforated,Cohesive,Alpha);
-    % for injection, both qext_enr and qext_std
-    crackqtable=[encrack.Id,q]; % for edge crack, it is okay to ignore the injection point.
-    encrack.Qtable=crackqtable;
-    enfh=EnrichPack.EnFHeaviside(1,crack1.Minelength,crack1.Phi); % smoothed type 1 heaviside is required
-    enfrd=EnrichPack.EnFRidge(crack1.Phi);
-    % May add another junction enrichment function for minor crack or major
-    % crack or separately or both?
-    encrack.Myenfs={enfh,enfrd};
-    encrack.initial_enrich;
-    % Explicitly assign the propagation check and direction 
-%     encrack.Mytips(1).GrowCheck=ToolPack.Maxpscheck(threshold);
-%     encrack.Mytips(1).Growdirection=ToolPack.Maxpsdirection(encrack.Mytips(1).Omega);
-%     encrack.Mytips(2).GrowCheck=ToolPack.Maxpscheck(threshold);
-%     encrack.Mytips(2).Growdirection=ToolPack.Maxpsdirection(encrack.Mytips(2).Omega);
-    Step1.EnrichItems={encrack}; % need to be updated when new iterms are added 090920
-%     mesh.plotmesh;hold on; crack1.plotme;
-    % -- Creating a sparse linear system upon updating the dofarray             
-    Step1=Step1.updatedofarray_enriched;                        % update the linsystem inside
+    % for existing open crack with cohesive traction, implemented in 
+    % GaussPnt_Cohesive class. In fact, this is no longer useful as the
+    % existing open crack is usually modeled as perforated 'true' and there
+    % is no remaining cohesion to initiate with. For the initially existing
+    % weak crack (modeled as smeared rock matrix), the angle is not useful
+    % either. Because the traction will be initiated from the stress at the
+    % linegauss points along the predefined crack path. The linegauss and
+    % subdomain gaussian points could be prepared even when they the element
+    % are not enriched yet. The enrichment will be hold until the
+    % calculated cohesive traction exceeds the threshold. 11/04/2020
+    % This approach although more complicated, would be more robust than
+    % the current handling of contact modes.
+    Alpha1=pi/2;     %pi/2-atan(0.5) the angle between the tensile force and crack plane
+    Alpha2=pi/2-atan(1); % not necessary as perforated is true. 
+    encrack1=EnrichPack.EnrCrackBody('crackbody',elemdict,nodedict,crack1,Perforated1,Cohesive1,Alpha1);
+    encrack2=EnrichPack.EnrCrackBody('crackbody',elemdict,nodedict,crack2,Perforated2,Cohesive2,Alpha2);
+    crackqtable=[encrack1.Id,q]; % for edge crack, it is okay to ignore the injection point.
+    encrack1.Qtable=crackqtable;
+    Step1.EnrichItems={encrack1,encrack2};
+    % 10/30/20 There may be more than one encracks in the future, so that
+    % the following initialization would be carried out in a domain class.
+    % Another reason is that the initial enrich and update_enrich will be
+    % carried out in two steps: first we set_enrich and second we use
+    % subdomain to the NewElems for EnrichGauss and enrich these elems. 
+    Step1.initiate_enrich;
+%     mesh.plotmesh;hold on; crack1.plotme;                    
     %% Start the Newton-Raphson iterative analysis
     % ---- Newton-Raphson Iterator
 %     step=[0.005,0.0001;0.2,0.006;1,0.01];          % dimensionless increment size
@@ -180,7 +189,6 @@ plate=Quadmesher(meshnode,meshelement);
 %     toc;
     postdict=Step1.Postprocess;
     
-
      %% Storing the Numerical solutions, Only needed for parfor 090920
 %     startpoint=1;
 %     endpoint=length(postdict);

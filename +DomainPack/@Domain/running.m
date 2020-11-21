@@ -55,7 +55,7 @@ try
             end
         end
         if ~isempty(obj.EnrichItems)
-            if ~all(obj.EnrichItems{:}.Isactive)
+            if ~all([obj.EnrichItems.Isactive])
                 if obj.Postprocess(ind).IInc~=iinc
                     ind=ind+1;
                     obj=obj.storage(postdict,iinc,inc,ind);

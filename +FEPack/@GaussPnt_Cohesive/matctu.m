@@ -1,4 +1,4 @@
-function  [traction,stagechangeflag]=matctu(obj,us,ua,Due)
+function  [traction,stagechangeflag]=matctu(obj,ua,Due)
 %MATCTU cohesion traction Update method of GaussPnt_Cohesive (value calss)
 % called by elem_2d_UP.ifstd_enriched
 % update crackdisp within obj, note this obj is not returned to the obj
@@ -40,14 +40,16 @@ if ~obj.Perforated
         traction=[0;0];
         return;
     end
-    traction=obj.TractionO+obj.Tangent_coh*obj.Nu*Due;
+    traction=obj.TractionO+obj.Tangent_coh*(obj.Nuenrplus-obj.Nuenrminus)*Due;
     %% Validate or modify the traction
     % crack opening in the last increment
     %     localdisp=Amat*obj.CrackDisp;
     %     lastopening=localdisp(2);
     %     initialdisp=Amat*obj.IniCrackDisp;
     %     initialopening=initialdisp(2);
-    %     % calculate the current crack opening
+    % calculate the current crack opening
+    % the two ways: (Nuenrplus-Nuenrminus)*ua or Nu*ua
+    % choose one and keep consistent in this function. 10/22/20
     CrackDisp=(obj.Nuenrplus-obj.Nuenrminus)*ua+obj.IniCrackDisp;
     calcrackopening=obj.Ntaud'*CrackDisp;
     %     shearopening=obj.Mtaud'*CrackDisp;
@@ -56,7 +58,7 @@ if ~obj.Perforated
         Tangent_lol=[obj.TractionLaw.Tshearc,0;0,obj.TractionLaw.Tnormalc];
         obj.Tangent_coh=Amat'*Tangent_lol*Amat;
         if any(ua)  % to avoid disturbing the initial call of intforcer when ua are all zeros.
-            temp1=obj.Tangent_coh*obj.Nu*ua;
+            temp1=obj.Tangent_coh*(obj.Nuenrplus-obj.Nuenrminus)*ua;
             temp2=Amat*temp1;
             tnormal=temp2(2);
             tshear=traction(1);
@@ -76,7 +78,7 @@ if ~obj.Perforated
             end
         end
     else
-        if obj.TractionLaw.Stage==1
+        if obj.TractionLaw.Stage==1 % only need to worry about stage change at stage 1
             traction_eff=sqrt(traction(1)^2+traction(2)^2);
             traction_effold=sqrt(obj.TractionO(1)^2+obj.TractionO(2)^2);
             traction_inc=abs(traction_eff-obj.TractionLaw.IniTraction);

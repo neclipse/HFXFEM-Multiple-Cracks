@@ -21,7 +21,7 @@ function area = calarea (obj)
 % Use the builtin method polyarea 03292019
 x=obj.X;
 y=obj.Y;
-area=polyarea(x,y);
+area=polyarea(x,y); % polyarea can be used when x,y are right ordered (no intersection.)
 obj.Area = area;
 end
 % function   calarea( obj )

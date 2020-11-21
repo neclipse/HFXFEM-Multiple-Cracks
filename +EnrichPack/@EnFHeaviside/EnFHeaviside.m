@@ -17,18 +17,13 @@ classdef EnFHeaviside < EnrichPack.EnrichFun
    end
    
    methods
-       function obj=EnFHeaviside(smoothed,minelength,lsv,varargin)
+       function obj=EnFHeaviside(minelength,lsv,varargin)
            if isempty(varargin)
                obj.Type=1;
            else 
                obj.Type=varargin{1};
            end
-           obj.Smoothed=smoothed;         
-           %% IMPORTANT BUG: OBJ.EPSILON IS A CRITICAL PARAMETER TO THE XFEM
-           % FRAMEWORK, IT SHOULD BE DETERMINED BASED ON THE MESH AND THE
-           % SUBDOMAIN METHOD SO THAT ONLY THE CLOSEST GAUSSIAN POINTS TO
-           % THE CRACK ARE WITHIN [-OBJ.EPSILON,+OBJ.EPSILON] IN THE
-           % DETERMINATION OF DERIVATIVES. 01272020.
+           obj.Smoothed=1; % fixed as 1, to avoid unstability when use unsmoothed  
            %% Confirmed that the obj.Epsilon should be very small so that 
            % NO gaussian points are included in the range. 013120
            obj.Epsilon=0.0001*minelength;    % minelength is the minimun element length along the crack   
@@ -39,7 +34,7 @@ classdef EnFHeaviside < EnrichPack.EnrichFun
            % purely calculate the enrichment function value(s) based on the
            % given phi value(s)
            switch obj.Type
-               case 1
+               case 1 %[-1,1]
                    if ~obj.Smoothed
                        enf=heaviside(phi);
                    else
@@ -50,9 +45,13 @@ classdef EnFHeaviside < EnrichPack.EnrichFun
                        enf(L2)=1;
                        enf(L3)=1/2+phi(L3)/2/obj.Epsilon+1/2/pi*sin(pi*phi(L3)/obj.Epsilon);
                    end
-               case 2
+               case 2 % [-1/2, 1/2]
                    if ~obj.Smoothed
-                       enf=sign(phi)/2;
+                       enf=sign(phi)/2; 
+                       % it is important to be divided by 2 otherwise, the
+                       % crackdisplacement expression becomes 2*Nu*uenr,
+                       % which may be used in multiple places like
+                       % crtstif_enriched and updateopening.
                    else
                        enf=ones(size(phi));
                        L1=phi<-obj.Epsilon;

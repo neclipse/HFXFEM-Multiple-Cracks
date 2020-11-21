@@ -143,12 +143,13 @@ classdef OpenGeo < ToolPack.Geometry
             xyl=T*[xc;yc];
             r=norm(xyl);
         end
-function findblending(obj,mode,varargin)
+        
+        function findblending(obj,mode,varargin)
             % use a ellipse to determine elements around the injection
             % point to make the isolation zone to concentrate fluid
             % injection.
             switch mode
-                % called by geo.initiate2nd
+                % called by geo.initiate
                 case 1
                     shortaxis=obj.Length;
                     injectionpoint=varargin{1};
@@ -184,7 +185,7 @@ function findblending(obj,mode,varargin)
                     obj.Blendingelems=unique([obj.Blendingelems;elems]);
             end
         end
-        initiate_2nd(obj,injectionpoint,varargin)                                          % to find the inititial interacted elements with the geometry
+        initiate(obj,injectionpoint,varargin)                                          % to find the inititial interacted elements with the geometry
         discretize(obj,np)
         rtipelems=Toedge1(obj)                                               % Ensure the current tip lies on the edge 
         rtipelems=Toedge2(obj,varargin)                                      % Ensure the current tip lies on the edge
@@ -193,6 +194,6 @@ function findblending(obj,mode,varargin)
         length=callength(obj)                                               % determine the crack length
         plotme(obj,deformflag,crackflag, nodeflag,varargin);                % plot the crack segments with options
         elems=findelems( obj,plist,varargin )                               % find the interacting elements with a list of plist(x,y;...) with options 'inside', 'edge', 'in_edge'
-        [good,pnts,localpnts,seeds]=intersection(obj,elem,varargin)                  % the intersection method to find the intersections of the crack with the elem obj
+        [good,pnts,localpnts]=intersection(obj,elem,varargin)                  % the intersection method to find the intersections of the crack with the elem obj
     end
 end

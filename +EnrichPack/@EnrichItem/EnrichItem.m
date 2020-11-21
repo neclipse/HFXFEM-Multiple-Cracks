@@ -35,8 +35,8 @@ classdef EnrichItem < matlab.mixin.Copyable
    methods
        plotcrack(obj,varargin);
        % constructor
-       function obj = EnrichItem(ID,type,elemdict,nodedict) 
-          obj.Id=ID;
+       function obj = EnrichItem(type,elemdict,nodedict) 
+%           obj.Id=ID; % assigned by mygeo
           obj.Type  = type;                                                 % type is a string, 'crackbody', 'cracktip','inclusion', 'void',etc
           obj.Elemdict= elemdict;
           obj.Nodedict= nodedict; 

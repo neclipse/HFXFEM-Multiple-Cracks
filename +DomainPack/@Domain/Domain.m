@@ -43,13 +43,14 @@ classdef Domain
        % prototype undefined functions 
        obj=updatedofarray(obj);
        obj=updatedofarray_enriched(obj);
+       initiate_enrich(obj);
        obj=assignmesh(obj);     % Use mesh info to initiate elemdict and nodedict
        gaussdictm=crtgpd( obj, varargin );
        obj=crtlinsys(obj);      % create linear equation system
        obj=updatelinsys(obj);
        obj=storage( obj, postdict, iinc, inc, varargin );
        obj=running(obj,postdict,savemode,varargin);
-       assign_arbitrary_flow( obj );
+       assign_arbitrary_flow(obj);
        snapshot( obj, variable, timesteps, varargin);
        %
    end

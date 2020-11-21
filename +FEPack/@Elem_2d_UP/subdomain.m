@@ -1,14 +1,124 @@
-function [gp,gw]=subdomain(obj,id,varargin)
-%SUBDOMAIN use the seeds to create triangular subdomains for integral
-%purpose. called by EnrCrackBody. Last update date:03302019.
-%   The seeds in terms of local coordinates, xi and eta have been created
-%   and assigned from ToolPact.OpenGeo.intersection method
+function subdomain(obj,varargin)
+%SUBDOMAIN use the LocalInt to create triangular subdomains for integral
+%purpose. This method should be called by higher level class when every 
+% EnrCrackBody has finished the enriching. Otherwise, it is just a waste
+% of computation cost.10/31/2020
+
 % Explanation of outputs:
 % 1. gp: the xi and eta in terms local parent element coordinates
 % 2. gw: the weights of the integration points
-% Explanationo f the inputs:
+% Explanation of the inputs:
 % 1. obj is the Elem_2d_UP element
 % 2. the number of gauss points within one triangle (p<=13)
+
+%   The seeds in terms of local coordinates, xi and eta have been created
+%   and assigned from ToolPact.OpenGeo.intersection method 03302019.
+
+%% 10/30/20 Generate the polygons for subdomains
+% Now the seeds will be generated here using new method for more
+% general cases when there are more than one crcks inside this element.
+% This method should be better than the previous hand-coded criterion to
+% find sub-polygons. Note convex hull method is not necessary in this
+% context as we would have the vertices on the boundaries but not internal
+% point cloud.
+
+% 1.  Read the cracks intersections with the boundaries (obj.LocalInt) and 
+% express the crack segements in functions
+NLines=obj.EnrichNum;
+MaxPart=NLines*(NLines+1)/2+1; % Maximum possible partitions from NLines
+polygons=cell(1,MaxPart);
+localints=zeros(NLines*2,2);
+localints_inrow=zeros(NLines,4);
+LineHandles=cell(1,NLines); % a cell array to store the function handles
+% create line function handles by two points
+for iline=1:NLines
+    x1=obj.LocalInt{iline}(1,1);
+    y1=obj.LocalInt{iline}(1,2);
+    x2=obj.LocalInt{iline}(2,1);
+    y2=obj.LocalInt{iline}(2,2);
+    localints(2*iline-1:2*iline,:)=obj.LocalInt{iline};
+    localints_inrow(iline,:)=[x1,y1,x2,y2];
+    LineHandles{iline}=@(x,y) y-y1-(y2-y1)*(x-x1)/(x2-x1);
+end
+
+% 2. Find the intersections of these crack segments and store the
+% intersections together with the localpnts, nodes as the vertices for the
+% sub-polygons
+intersections=[];
+if NLines>1
+    AllPairs=sortrows(combnk(1:NLines,2));
+    % LineIntersection may not work because it does not constrain it for this
+    % segment.
+    results = lineSegmentIntersect(localints_inrow(AllPairs(:,1),:) , localints_inrow(AllPairs(:,2),:) );
+    logicalind=diag(results.intAdjacencyMatrix);
+    px=diag(results.intMatrixX);
+    px=px(logicalind);
+    py=diag(results.intMatrixY);
+    py=py(logicalind);
+    intersections=[px,py]; % intersections of the crack segments
+end
+nodes=[-1,-1;1,-1;1,1;-1,1];
+allvertices=unique([nodes;localints;intersections],'rows');
+
+% 3. Plug the vertices into the equations and store the sign in a row
+% vector of the size crack segments. >=0: 1, <=0 : 0. stored in signs=[1 0]
+% real sign determined by sign(linehandle)
+signmat=zeros(size(allvertices,1),NLines);
+% group mat will furtehr determine if the signmat is >=0 and if it is <=0 as well
+groupmat=true(size(signmat,1),2,NLines);
+tol=1e-6; % The numerical calculation of the intersection point may be off the lines
+for iline=1:NLines
+    temp=LineHandles{iline}(allvertices(:,1),allvertices(:,2));
+    temp(abs(temp)<tol)=0;
+    signmat(:,iline)=sign(temp);
+    groupmat(:,1,iline)=signmat(:,iline)>=0;
+    groupmat(:,2,iline)=signmat(:,iline)<=0;
+end
+
+% 4. Group the vertices by groupmat pair. Then we would have
+% the vertices for each subdomain (polygon).
+npart=0;
+for ipair=1:size(AllPairs,1)
+    line1=AllPairs(ipair,1);
+    line2=AllPairs(ipair,2);
+    for i=1:2
+        for j=1:2
+            group=[groupmat(:,i,line1),groupmat(:,j,line2)];
+            part=find(all(group,2));
+            if length(part)>2 % two more points to make a closed 2d shape
+                npart=npart+1;
+                polygons{npart}=part; 
+            end
+        end
+    end
+end
+polygons=polygons(1:npart); % () bracing access the sets of cell arrays, {}access the contents
+iniseeds=cell(1,npart); 
+% 5. Based on the area of subdomains, choose how many inner points will be
+% generated for the delaunay triangulation. Store seeds in cell arrays.
+for ipart=1:npart
+    tempseeds=[allvertices(polygons{ipart},1),allvertices(polygons{ipart},2)]; %(xs,ys)
+    % do not use polyarea here as it requires the vertices at the circular order
+    % use convhull to get the convex hull of the vertices in the right
+    % order
+    [k,area]=convhull(tempseeds(:,1),tempseeds(:,2)); 
+    tempseeds=tempseeds(k(1:end-1),:); % this is very important
+    if area>2
+        vertices_x=tempseeds(:,1);
+        vertices_y=tempseeds(:,2);
+        tri=delaunay(vertices_x,vertices_y);
+        tri_x=vertices_x(tri);
+        tri_y=vertices_y(tri);
+        centroid=[sum(tri_x,2)/3,sum(tri_y,2)/3];
+    elseif area>0.25 
+        centroid = ploygon_centroid(tempseeds(:,1),tempseeds(:,2)); % get the centroid
+    else % do not need further triangulation
+        centroid=[];
+    end
+    iniseeds{ipart}=[tempseeds;centroid];
+end
+
+%% Generate the gaussian points for each subdomain
 if ~isempty(varargin)
     p=varargin{1};
 else
@@ -19,14 +129,14 @@ end
 % levels: first level is the crack id and the second level is the
 % subdomains for triangulation 03282019
 % use logical array id to relieve the single index id. 10/02/20
-id=obj.Enrich==id;
-seeds_all=obj.Seeds{id};    % all subpolygons for current crack id
+% id=obj.Enrich==id;
+% seeds_all=obj.Seeds;        % all subpolygons for current crack id
 GNcoord=[obj.X,obj.Y];      % global coordinates of the nodes of the element
-GP=zeros(60,2); % preallocate
-GW=zeros(60,1);
+GP=zeros(100,2); % preallocate
+GW=zeros(100,1);
 tpt=0;
-for isub=1:length(seeds_all)
-    seeds=seeds_all{isub};
+for ipart=1:npart
+    seeds=iniseeds{ipart};
     % recover the global coordinates GScoord of the seeds
     Nquad= @(xi,eta) [(1-xi).*(1-eta),(1+xi).*(1-eta),(1+xi).*(1+eta),(1-xi).*(1+eta)]/4;
     Nquadmat=Nquad(seeds(:,1),seeds(:,2));
@@ -77,6 +187,8 @@ for isub=1:length(seeds_all)
             % is already expressed by 2*AK. so the easy way to accomadate
             % the change is to combine the w(i)/2 and 2*Ak for gw(pt).
             subarea=polyarea(gcoord(:,1),gcoord(:,2)); %AK
+            % polyarea used here has no problem because triangular
+            % vertices can be arbitrarily ordered.
             gw(pt)=w(i)*subarea;
             pt=pt+1;
         end
@@ -103,5 +215,14 @@ gaussdictm(1,tpt)=FEPack.GaussPnt_LE_UP(); % generate an void object array
 % comprehensive gaussdict should be the same as every cell within the
 % obj.EnrichGaussDict after update. 10/16/20
 obj.EnrichGauss=gaussdictm; 
+end
+
+function centroid = ploygon_centroid(x,y)
+    xs = circshift(x,-1);
+    ys = circshift(y,-1);
+    area = 0.5*sum (x.*ys-xs.*y); % also require the right ordering
+    xc = sum((x.*ys-xs.*y).*(x+xs))/(6*area);
+    yc = sum((x.*ys-xs.*y).*(y+ys))/(6*area);
+    centroid=[xc,yc];
 end
 

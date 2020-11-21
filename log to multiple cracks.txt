@@ -208,7 +208,7 @@ along the current enrichitem (1) as they are always on the same side of the
 enrichitem (2). Then Nuenrplus and Nuenrminus are the same. The contribution
 of the ue2 for the crack opening of (1) is actually zero. (To watch).
 
-    .the rest-- this is largely related to the Jocabian matrix. Whether
+    .the rest of it-- this is largely related to the Jocabian matrix. Whether
 a single comprehesive Jacobian matrix or a independent Jacobian matrix will
 be used depends on the exact implementation in +FEPack. (To change)
 The leakoff calculation, pfcrack, for each separate crack item can also be 
@@ -317,7 +317,8 @@ cohesive traction may not be feasible. Because there is no linegauss points
 prior to the enrichment. Yet, one can seek to transfer the stress states from
 standard gaussian points to these newly generated line gaussian points by
 interpolation. It is not clear if the work is worthy.
-
+Alternatively, I can generate the linegaussian points for the existing 
+but smeared cracks.
 
 D. Put a question mark over the implementation of initial stress and intial
 pore pressure. 
