@@ -120,11 +120,17 @@ function  initiate( obj,varargin )
     goodlist=true(size(interactedelems));
     for ielem=1:length(interactedelems)
         elem=obj.Elemdict(interactedelems(ielem));
-        [goodlist(ielem),pnts,localpnts] = intersection(obj, elem);
-%         elem.Seeds=seeds; % Here the seeds are actually empty.
-        id=elem.Enrich==obj.Id;
-        elem.LocalInt{id}=localpnts;
-        elem.GlobalInt{id}=pnts;
+        goodlist(ielem)= intersection(obj, elem);
+%   The following operations are correct but should not be function of
+%   mygeo. Therefore, it is preferred to be done in
+%   EnrCrackBody.initial_enrich although it will require a second call of
+%   mygeo.intersection method. 11/20/2020
+%         if goodlist(ielem)
+%             elem.setenrich(obj.Id); 
+%             ind=elem.Enrich==obj.Id;
+%             elem.LocalInt{ind}=localpnts;
+%             elem.GlobalInt{ind}=pnts;
+%         end
     end
     % BUG: the following line will add back the elements filtered out by
     % intersection method. Need to be commented. 07/07/2020.

@@ -37,9 +37,9 @@ classdef EnrCrackBody < EnrichPack.EnrichItem
            obj.Perforated=perforated;   
            obj.Cohesive=cohesive;       
            obj.Alpha=alpha;
+           obj.generatetips;
            obj.setinteractedelem;
            obj.setenrichednode;
-           obj.generatetips;
            % Initially the new elems and nodes are all nodes interacted
            obj.NewElems=obj.Interactedelem;
            obj.NewNodes=obj.Enrichednode;
@@ -67,54 +67,7 @@ classdef EnrCrackBody < EnrichPack.EnrichItem
            obj.Mytips=val;
        end
        
-       function initial_enrich(obj)                                         % initialize the enrichment for this EnrichItem
-           % assign basic enrichment info to the selected elements and
-           % nodes
-           elems=obj.Interactedelem;
-           nodes=obj.Enrichednode;
-           %% set the enrich flag = true and enrich_id=Enrichitem.Id, first
-           % nodes then elems
-           for iN=1:length(nodes)
-               obj.Nodedict(nodes(iN)).setenrich(obj.Id);
-           end
-           for iE=1:length(elems)
-               % set enrich flag and find the standard nodes within the
-               % element
-               obj.Elemdict(elems(iE)).setenrich(obj.Id);   
-               % divide the element into triangular subdomains for 2d
-               % integral, this method should be called after all cracks
-               % have been initially enriched, so does the initial enrich
-               % elemdict module below. 10/30/20
-               obj.Elemdict(elems(iE)).subdomain(obj.Id);
-               % find the gaussian points on the crack for line integral,
-               % p=3 to make the gauss quadrature accurate enough for the
-               % line integral. (not sure if it is really useful, 03122019)
-               % Change p=2 (defautl value) on 06072019.
-               obj.Elemdict(elems(iE)).linegauss(obj.Id,obj.Cohesive,obj.Perforated,obj.Alpha);
-           end
-           %% initial enrich all nodes inside the enriched elements
-           % no need to have these after 10/02/20 as udof==2, pdof==1,
-           % dofs==3, always.
-           % the standard nodes have the enriched dofs but keep zero
-%            for iN=1:length(obj.Enrichednode)
-%               node=obj.Enrichednode(iN);
-%               for ienf=1:length(obj.Myenfs)
-%                   myenf=obj.Myenfs{ienf};
-%                   myenf.addnodedofs(obj.Nodedict(node),obj.Id);
-%               end
-%            end
-           %% initial enrich elemdict, should be moved outside as elem.subdomain
-           for iE=1:length(elems)
-               elem=elems(iE);
-               % use geometeric info to divide the elem into subdomains
-               % for integral purpose.
-               %mygeo.subdomain(elem);
-               for ienf=1:length(obj.Myenfs)
-                   myenf=obj.Myenfs{ienf};
-                   myenf.enrichelem(obj.Elemdict(elem),obj.Id);
-               end
-           end
-       end
+       
        
        function checkactive(obj)
            if isempty(obj.Mygeo.Rtips)
@@ -125,6 +78,8 @@ classdef EnrCrackBody < EnrichPack.EnrichItem
        
        [fe,locarray_enr]=cal_qextenr(obj,q,varargin);
        [unstablegrow,cutflag]=check_grow(obj,varargin);
+       initial_enrich_1(obj,varargin);
+       initial_enrich_2(obj,varargin);
        update_enrich_1(obj,varargin);
        update_enrich_2(obj,varargin);
        showme( obj,typex,varargin );
