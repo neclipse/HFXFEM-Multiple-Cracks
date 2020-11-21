@@ -117,13 +117,20 @@ plate=Quadmesher(meshnode,meshelement);
     segments2=[1,0.1,lh/2-0.05;2,0.2,lh/2+0.05];
     crack1=ToolPack.OpenGeo(1,mesh,bdls,nodedict,elemdict,1,segments1,10); % The mouth crack
     crack2=ToolPack.OpenGeo(2,mesh,bdls,nodedict,elemdict,1,segments2,10); % The intersecting crack for debugging at stage1
+    crackdict=[crack1,crack2];
     injectionpoint=[0,lh/2]; % needed for opengeo.findblending.
     crack1.initiate(injectionpoint);
-    crack2.initiate;
+    crack2.initiate; 
+    % visual check of the cracks and the nodes detection.
+    mesh.plotmesh;
+    hold on;
+    for icrack=1:length(crackdict)
+        crackdict(icrack).plotme;
+    end
+    % set EnrCrackBody using the initial crack info
     Perforated1=true;
     Perforated2=true;
-    Cohesive1='unified';
-    Cohesive2='unified';
+    cohesivetype='unified';
     % This alpha is used to initiate the initial traction and crack opening
     % for existing open crack with cohesive traction, implemented in 
     % GaussPnt_Cohesive class. In fact, this is no longer useful as the
@@ -139,8 +146,8 @@ plate=Quadmesher(meshnode,meshelement);
     % the current handling of contact modes.
     Alpha1=pi/2;     %pi/2-atan(0.5) the angle between the tensile force and crack plane
     Alpha2=pi/2-atan(1); % not necessary as perforated is true. 
-    encrack1=EnrichPack.EnrCrackBody('crackbody',elemdict,nodedict,crack1,Perforated1,Cohesive1,Alpha1);
-    encrack2=EnrichPack.EnrCrackBody('crackbody',elemdict,nodedict,crack2,Perforated2,Cohesive2,Alpha2);
+    encrack1=EnrichPack.EnrCrackBody('crackbody',elemdict,nodedict,crack1,Perforated1,cohesivetype,Alpha1);
+    encrack2=EnrichPack.EnrCrackBody('crackbody',elemdict,nodedict,crack2,Perforated2,cohesivetype,Alpha2);
     crackqtable=[encrack1.Id,q]; % for edge crack, it is okay to ignore the injection point.
     encrack1.Qtable=crackqtable;
     Step1.EnrichItems={encrack1,encrack2};
@@ -149,8 +156,7 @@ plate=Quadmesher(meshnode,meshelement);
     % Another reason is that the initial enrich and update_enrich will be
     % carried out in two steps: first we set_enrich and second we use
     % subdomain to the NewElems for EnrichGauss and enrich these elems. 
-    Step1.initiate_enrich;
-%     mesh.plotmesh;hold on; crack1.plotme;                    
+    Step1.initiate_enrich;            
     %% Start the Newton-Raphson iterative analysis
     % ---- Newton-Raphson Iterator
 %     step=[0.005,0.0001;0.2,0.006;1,0.01];          % dimensionless increment size
@@ -188,49 +194,7 @@ plate=Quadmesher(meshnode,meshelement);
 %     save('propagating_comparison_1105.mat','Step1');
 %     toc;
     postdict=Step1.Postprocess;
-    
-     %% Storing the Numerical solutions, Only needed for parfor 090920
-%     startpoint=1;
-%     endpoint=length(postdict);
-%     % endpoint=61;
-%     NT=transpose([postdict(startpoint:endpoint).Inc]);
-%     NL=zeros(size(NT));
-%     NCMOD=NL;
-%     NCMP=NL;
-%     CKV=NL;
-%     LKV=NL;
-%     % samplenodes=[445,4836,1615,1635,1645,1705,1755,1865,1915,1945]; % mesh
-%     % Dontsov 0403
-%     % samplenodes=[9333,9317,9297,9277,9257,9237,9217,9207]; % after 02/24/20
-%     % samplenodes=[9337,9317,9297,9277,9257,9237,9217];   % prior to 02/24/20
-%     % LKF=zeros(length(NL),length(samplenodes));
-%     % CL=zeros(1,length(samplenodes));
-%     for i=startpoint:endpoint
-%         mouthind=1;
-%         NL(i-startpoint+1)=postdict(i).EnrichItems{1}.Length;
-%         NCMOD(i-startpoint+1)=postdict(i).EnrichItems{1}.Aperture(mouthind);
-%         NCMP(i-startpoint+1)=postdict(i).EnrichItems{1}.Pfrack(mouthind);
-%         LKV(i-startpoint+1)=postdict(i).EnrichItems{1}.LeakoffVolume;
-%         CKV(i-startpoint+1)=postdict(i).EnrichItems{1}.CrackVolume;
-%         %     LKF(i-startpoint+1,:)=postdict(i).EnrichItems{1}.LeakoffFlux;
-%     end
-%     NL=(NL-0.05);  % 0.05 is the initial perforated length
-%     NCMOD=(NCMOD-GBINP.perfaperture)*1e3; % mm
-%     NCMP=NCMP*1e3; %MPa
-%     Results=[NT,NL,NCMOD,NCMP,CKV,LKV];
-%     filename=strcat('case_',num2str(caseids(icase)),'.mat');
-%     m=matfile(filename,'writable',true);
-%     m.postdict=postdict;
-%     m.GBINP=GBINP;
-%     m.Results=Results;
-% %     parprofile(icase)=Par.toc;
-%     fprintf('cases_%d is finished\n',caseids(icase));
-%     m.time=time
-% end
-% stop(parprofile);
-% plot(parprofile);
-% poolobj=gcp('nocreate');
-% delete(poolobj);
+
 %% Plotting
 %example of postprocessing
 % export_fig 'Organized results\Stationary_center_crack_0410\Deformed mesh plot with center crack.tif' -m3.125 -transparent
