@@ -140,6 +140,7 @@ classdef EnFHeaviside < EnrichPack.EnrichFun
        function [GaussPnt,Nuenrplus,Nuenrminus]=enrichgauss(obj,nodes_phi,GaussPnt,varargin)
            if isempty(varargin)
                mode=1; % line gaussian points
+               k=logical([1,0,0]);    % the Enf for linegaussian point stored at the first cell
            else
                mode=2;  % domain gaussian points
                k=varargin{1}; % k is the logical index for the current EnrichItem
@@ -168,8 +169,7 @@ classdef EnFHeaviside < EnrichPack.EnrichFun
                % ENRICHED NODES
 %                Phishift(stdnodes)=0;
                if isempty(GaussPnt(igauss).Enf{k})
-                   enf=struct('Phi',nan,'Phishift',nan,'Ridge',Ridge,'JunctionU',nan,'JunctionP',nan);
-                   GaussPnt(igauss).Enf{k}=enf;
+                   GaussPnt(igauss).Enf{k}=struct('Phi',gauss_phi,'Phishift',Phishift,'Ridge',nan,'JunctionU',nan,'JunctionP',nan);
                else
                    GaussPnt(igauss).Enf{k}.Phi=gauss_phi;
                    GaussPnt(igauss).Enf{k}.Phishift=Phishift;

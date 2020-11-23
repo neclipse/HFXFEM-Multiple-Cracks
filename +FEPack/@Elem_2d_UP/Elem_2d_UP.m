@@ -35,7 +35,7 @@ classdef Elem_2d_UP < handle
         Stressp                % Effective stresses at the element centroid
         EnrichNum=0;          % The total involved enriched items in this element
         Enrich=zeros(1,3);    % Enrichment flags: special structure:[id1,id2,id3...]
-        Seeds;                % seeds points to create triangular subdomain, only store the latest updated info.
+        PolygonNum=0;         % number of sub polygons created by the cracks. default=1, to keep track of subdomain
         LocalInt=cell(1,3);   % local coordinates of the intersections   
         GlobalInt=cell(1,3);  % global coordinates of the intersections
         JacobianMat           % The comprehensive elemental JocobianMat, object of FEPack.JacobianMat

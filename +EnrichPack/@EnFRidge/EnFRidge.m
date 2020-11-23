@@ -56,7 +56,9 @@ classdef EnFRidge < EnrichPack.EnrichFun
        function GaussPnt=enrichgauss(obj,nodes_phi,GaussPnt,varargin)
            if ~isempty(varargin)
                k=varargin{1}; 
-           end         
+           else
+               k=logical([1,0,0]);    % the Enf for linegaussian point stored at the first cell
+           end
            for igauss=1:length(GaussPnt)
                N=GaussPnt(igauss).Np;
                DNp=GaussPnt(igauss).DNp;

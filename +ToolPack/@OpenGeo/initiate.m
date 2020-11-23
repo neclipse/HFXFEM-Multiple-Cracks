@@ -108,7 +108,7 @@ function  initiate( obj,varargin )
     obj.Phipool=Phipool;
 %   3. Use (x*,y*) to locate the interacted elements using isinside
     %   function in FEPack.Elem2d
-    xy=unique(xy,'rows');                                                   % added on 1/31 to avoid extra work on the same point
+    xy=uniquetol(xy,'ByRows',true);                                                   % added on 1/31 to avoid extra work on the same point
     interactedelems=obj.findelems(xy,'initial');                            % changed from 'inside' to 'initial' to have count more elements
     obj.Intelements=interactedelems;
 
