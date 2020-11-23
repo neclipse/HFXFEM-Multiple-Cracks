@@ -70,24 +70,31 @@ tol=1e-6; % The numerical calculation of the intersection point may be off the l
 for iline=1:NLines
     temp=LineHandles{iline}(allvertices(:,1),allvertices(:,2));
     temp(abs(temp)<tol)=0;
-    signmat(:,iline)=sign(temp);
-    groupmat(:,1,iline)=signmat(:,iline)>=0;
+    signmat(:,iline)=sign(temp);                % real sign matrix
+    groupmat(:,1,iline)=signmat(:,iline)>=0;    % include bounary
     groupmat(:,2,iline)=signmat(:,iline)<=0;
 end
 
 % 4. Group the vertices by groupmat pair. Then we would have
 % the vertices for each subdomain (polygon).
 npart=0;
-for ipair=1:size(AllPairs,1)
-    line1=AllPairs(ipair,1);
-    line2=AllPairs(ipair,2);
-    for i=1:2
-        for j=1:2
-            group=[groupmat(:,i,line1),groupmat(:,j,line2)];
-            part=find(all(group,2));
-            if length(part)>2 % two more points to make a closed 2d shape
-                npart=npart+1;
-                polygons{npart}=part; 
+% 11/22/20 Fix on the single line mode
+if NLines == 1    % There will be only two polygons created by one line
+    npart=2;
+    polygons{1}=find(groupmat(:,1));
+    polygons{2}=find(groupmat(:,2));
+elseif NLines > 1 % find the polygons by looping through AllPairs
+    for ipair=1:size(AllPairs,1)
+        line1=AllPairs(ipair,1);
+        line2=AllPairs(ipair,2);
+        for i=1:2
+            for j=1:2
+                group=[groupmat(:,i,line1),groupmat(:,j,line2)];
+                part=find(all(group,2)); % treat all logical on each row
+                if length(part)>2 % two more points to make a closed 2d shape
+                    npart=npart+1;
+                    polygons{npart}=part;
+                end
             end
         end
     end
@@ -205,10 +212,10 @@ nnodes=length(obj.NodList);
 %are not consistent with those in traditional elements (1,3,4,2)
 gbinp=obj.GaussPntDictM(1).GBINP;
 gaussdictm(1,tpt)=FEPack.GaussPnt_LE_UP(); % generate an void object array
-    for igauss=1:tpt
-        gaussdictm(igauss)=FEPack.GaussPnt_LE_UP(GP(igauss,1),GP(igauss,2),GW(igauss),nnodes,gbinp);
-        gaussdictm(igauss)=gaussdictm(igauss).preparing(obj.X,obj.Y,obj.EnrichNum);
-    end
+for igauss=1:tpt
+    gaussdictm(igauss)=FEPack.GaussPnt_LE_UP(GP(igauss,1),GP(igauss,2),GW(igauss),nnodes,gbinp);
+    gaussdictm(igauss)=gaussdictm(igauss).preparing(obj.X,obj.Y,obj.EnrichNum);
+end
 % replace the GaussPntDictM with the newly generated gaussdictm
 % obj.EnrichGaussDict{id}=gaussdictm;
 % The comprehensive gaussdict should be also updated. Actuall, the
