@@ -54,7 +54,7 @@ end
 % REORDER THE INTERSECTIONS TO ALIGN WITH THE DIRECTION OF CRACK 11/05/2018
 % The reorderring is to let the crtip.realgrow know which point is the new
 % point. 10/30/20. 
-% This is also to make sure the elem.linegauss has the right crack
+% This is also to make sure the elem.linegauss has the right (consistent) crack
 % direction 11/04/20.
 % Find the nearest segments
  p=xy1;
@@ -74,7 +74,7 @@ end
  intx1=pnts(1,1); inty1=pnts(1,2); intx2=pnts(end,1); inty2=pnts(end,2);
  signd=sign((x2-x1)*(intx2-intx1)+(y2-y1)*(inty2-inty1));
  % make the intersections points aligned with crack direction as from 1st
- % point to 2nd point.
+ % tip to 2nd tip.
  if signd==1
     pnts=flip(pnts,1);      % flip upside down
     localpnts=flip(localpnts,1);

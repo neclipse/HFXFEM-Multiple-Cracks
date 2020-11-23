@@ -31,7 +31,7 @@ function obj=preparing(obj,X,Y, EnrichNum)
     % PREALLOCATE NUENR MATRIX 10/19/20
     obj.Nuenr=zeros(2,2*EnrichNum*nnodes);
     obj.Nuenrplus=obj.Nuenr;
-    obj.Nuenrmius=obj.Nuenr;
+    obj.Nuenrminus=obj.Nuenr;
     Nu(1,1:2:2*nnodes-1)=N;
     Nu(2,2:2:2*nnodes)=N;
     % Create B matrix
