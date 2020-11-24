@@ -40,7 +40,7 @@ for ielem=1:length(obj.ElemDict)
     ienrich= find(obj.ElemDict(ielem).Enrich);
     if ~isempty(ienrich)
         % there is at most only one ienrich at current stage 11/22/18
-        obj.ElemDict(ielem).crtstif_enriched(newmark,ienrich,gbinp,blending);
+        obj.ElemDict(ielem).crtstif_enriched_elemental(newmark,ienrich,gbinp,blending);
         Std=obj.ElemDict(ielem).Locarray;
         Enr=obj.ElemDict(ielem).JacobianMat.LocarrayEnr;
         stdU=zeros(size(obj.ElemDict(ielem).JacobianMat.LocarrayU));
@@ -53,8 +53,8 @@ for ielem=1:length(obj.ElemDict)
         enrP=Enr(3:3:end);
         Locarray=[stdU,stdP,enrU,enrP];
         % A row or a column of WJ follows the order of [stdU, stdP, enrU, enrP]
-        Jacobian=obj.ElemDict(ielem).JacobianMatDict(ienrich).WJ;
-        Jacobiannew=obj.ElemDict(ielem).JacobianMatDict(ienrich).WJnew;
+        Jacobian=obj.ElemDict(ielem).JacobianMat.WJ;
+        Jacobiannew=obj.ElemDict(ielem).JacobianMat.WJnew;
     else
         obj.ElemDict(ielem).crtstif(newmark,iinc,gbinp,blending);
         Allgloballocs=obj.ElemDict(ielem).Locarray;
