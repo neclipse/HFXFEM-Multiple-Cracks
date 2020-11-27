@@ -1,5 +1,5 @@
 classdef LinSysCreater < handle
-   properties
+   properties (SetAccess = private)
        LHS              % Left hand side of the linear system
        LHSnew           % Left hand side of the linear system for the new incremnt(designed for cohesive crack 04122019)
        LHSO             % last converged left hand side
@@ -68,11 +68,12 @@ classdef LinSysCreater < handle
        appbound_v4(obj);                % apply boundary condition to the linear system
        initialRHS( obj );
        initialize( obj );               % not used in the current version 03012019
+       update(obj,totdofs,totudofs,totpdofs,elemdict,nodedict,enrichitems); 
        switching(obj,mode);
        upconf(obj,newmark);             % update configuration within one increment
        upconf_trial(obj,newmark);       % update configuration for next increment
        % Disenrich the standard nodes detected by the Enrichitems (03012019). or prescribe the nonzero enriched values (later)   
-       upbctableen(obj);
+       upbctableen(obj,BCTableqEn);
        calelemstress(obj);
    end
 

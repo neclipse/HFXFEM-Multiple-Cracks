@@ -1,45 +1,46 @@
 classdef Elem_2d_UP < handle
     properties
-        Ind
-        Type                    % Element type reheritated from the class Domain
-        MatType
-        NodList                 % Global order of the nodes in the element
-        NodDict
-        GaussPntDictM;                 % object array of class standard GaussPnt
-        LineGaussDict=cell(1,3);      % object array of the GaussPnt for line integral only
-        EnrichGauss;                  % The EnrichGauss points with assembled Nuenr, Npenr, and their derivatives
-        EnrichGaussDict=cell(1,3);    % object array of GaussPnt for enriched element 2d integral, specific to each enritem
-        X
-        Y
-        Area
-        NoNodes                 % Number of total nodes in this element
-        IntLoadVec              % Element internal load vector
-		ExtLoadVec              % Element external load vector
-        StifMatrix              % Coupled stiffness matrix for the coupled equation
-        M
-        K
-        Q
-        H
-        S
-		Length             		% length of each side
-        Locarray                % global location array of mixed dofs,[ux,uy,p]
-        LocarrayU               % global location array of only U, [ux,uy],  not obsolete, used in linsys.upconf
-        LocarrayP               % global location array of only p, [p]
         dXn2i                   % (standard) unknowns solved from current iteration [dx1,dy1,dp1,dx2,dy2,dp2...]	
         Un2i                    % (standard) Un1+dUn2i
         Pn2i                    % (standard) Pn1+dPu2i
         Un2t1
         Un2t2
         Pn2t1
-        Stress                 % Total stresses at the element centroid
-        Stressp                % Effective stresses at the element centroid
-        EnrichNum=0;          % The total involved enriched items in this element
-        Enrich=zeros(1,3);    % Enrichment flags: special structure:[id1,id2,id3...]
-        PolygonNum=0;         % number of sub polygons created by the cracks. default=1, to keep track of subdomain
         LocalInt=cell(1,3);   % local coordinates of the intersections   
         GlobalInt=cell(1,3);  % global coordinates of the intersections
+        LineGaussDict=cell(1,3);      % object array of the GaussPnt for line integral only
+        EnrichGauss;                  % The EnrichGauss points with assembled Nuenr, Npenr, and their derivatives
+    end
+    properties (SetAccess = private, GetAccess = public)
+        Ind
+        Type                    % Element type reheritated from the class Domain
+        MatType
+        NodList                 % Global order of the nodes in the element
+        NodDict
+        X
+        Y
+        Area
+        GaussPntDictM;                 % object array of class standard GaussPnt
+        NoNodes                 % Number of total nodes in this element
+        IntLoadVec              % Element internal load vector
+        ExtLoadVec              % Element external load vector
+        StifMatrix              % Coupled stiffness matrix for the coupled equation
+        M
+        K
+        Q
+        H
+        S
+        Length             		% length of each side
+        Locarray                % global location array of mixed dofs,[ux,uy,p]
+        LocarrayU               % global location array of only U, [ux,uy],  not obsolete, used in linsys.upconf
+        LocarrayP               % global location array of only p, [p]
+        EnrichNum=0;           % Enrichment flags: special structure:[id1,id2,id3...]
+        Enrich=zeros(1,3);    % Enrichment flags: special structure:[id1,id2,id3...]
+        PolygonNum=0;         % number of sub polygons created by the cracks. default=1, to keep track of subdomain
         JacobianMat           % The comprehensive elemental JocobianMat, object of FEPack.JacobianMat
         JacobianMatDict       % Enriched Jacobian matrix for the enriched element, objects of FEPack.JacobianMat
+        Stress                 % Total stresses at the element centroid
+        Stressp                % Effective stresses at the element centroid
     end
     
     
