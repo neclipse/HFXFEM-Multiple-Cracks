@@ -22,24 +22,32 @@ stdpdofs=obj.NoPDofs;
 %% Loop over Newton_Raphson iteration increments
 ind=1;
 iinc=1;
-% obj.LinSysCrt.initialize; % initialize the dofs and calculate the initial external load vector due to inital stress;
+% 10/30/20 There may be more than one encracks in the future, so that
+% the following initialization would be carried out in a domain class.
+% Another reason is that the initial enrich and update_enrich will be
+% carried out in two steps: first we set_enrich and second we use
+% subdomain to the NewElems for EnrichGauss and enrich these elems.
+obj.initiate_enrich; 
 obj.LinSysCrt.initialRHS;
 % Add try and catch statements to handle unexpected errors without saving
 % the results to obj.Postprocess.07132019
 try
     while iinc<=obj.NewtonRaphson.NoInc                 % For loop is not proper for this kind loop whose loop number will change during the loop
 %         fprintf('Running at No. %d increment out of %d increments .\n',iinc,obj.NewtonRaphson.NoInc);
+        % run into each inc with NewtonRaphson.iterating.
+        % include both standard and enriched dofs described by Dirichlet boundary condition.
+        allpsddofs=[obj.PsdDofs';obj.PsdEnrDofs];        
+        obj.NewtonRaphson.iterating(iinc,stdpdofs,allpsddofs,inclist);
+        % update the enrichitems and do postprocessing after convergence.
+        obj.update_enrich; 
         %%- Store the converged value for postprocessing
         inc=obj.NewtonRaphson.Timeinc(iinc);            % the value of current time
-        allpsddofs=[obj.PsdDofs';obj.PsdEnrDofs];        % include both standard and enriched dofs described by Dirichlet boundary condition.
         if savemode==1
-            % iterating over one single increment
-            obj.NewtonRaphson.iterating(iinc,stdpdofs,allpsddofs);
+            % iterating over one single increment  
             obj=obj.storage(postdict,iinc,inc);
             ind=iinc;
         elseif savemode==2
             % store the results every specified inc
-            obj.NewtonRaphson.iterating(iinc,stdpdofs,allpsddofs);
             if iinc==1
                 obj=obj.storage(postdict,iinc,inc);
             elseif ~mod(iinc,saveinc)||iinc==obj.NewtonRaphson.NoInc
@@ -48,12 +56,12 @@ try
             end
         elseif savemode==3
             % store the results at the specified increment
-            obj.NewtonRaphson.iterating(iinc,stdpdofs,allpsddofs,inclist);
             if ismembertol(inc,timelist)
                 obj=obj.storage(postdict,iinc,inc,ind);
                 ind=ind+1;
             end
         end
+        % Early termination due to cut through
         if ~isempty(obj.EnrichItems)
             if ~all([obj.EnrichItems.Isactive])
                 if obj.Postprocess(ind).IInc~=iinc
