@@ -19,10 +19,10 @@ for iE=1:length(elems)
     elem.LocalInt{id}=localpnts;
     elem.GlobalInt{id}=pnts;
     
-    % divide the element into triangular subdomains for 2d
-    % integral, this method should be called after all cracks
-    % have been initially enriched, so does the initial enrich
-    % elemdict module below. 10/30/20
+    % divide the element into triangular subdomains for 2d integral, this
+    % method should be called after all cracks have been initially
+    % enriched, so does the linegauss and initial enrich elemdict
+    % module below. 10/30/20
     %
     %               elem.subdomain;
     %               subdomain and the enf.enrichelem should be moved out as there
@@ -33,7 +33,7 @@ for iE=1:length(elems)
     % p=3 to make the gauss quadrature accurate enough for the
     % line integral. (not sure if it is really useful, 03122019)
     % Change p=2 (defautl value) on 06072019.
-    elem.linegauss(obj.Id,obj.Cohesive,obj.Perforated,obj.Alpha);
+%     elem.linegauss(obj.Id,obj.Cohesive,obj.Perforated,obj.Alpha);
 end
 %% initial enrich all nodes inside the enriched elements
 % no need to have these after 10/02/20 as udof==2, pdof==1,

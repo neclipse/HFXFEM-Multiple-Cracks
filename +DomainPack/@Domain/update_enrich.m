@@ -18,11 +18,18 @@ if ~isempty(obj.EnrichItems)
     for ienr=1:length(obj.EnrichItems)
         obj.EnrichItems{ienr}.update_enrich_1;
     end
-    % 3. Update the enritem on level 2: apply subdomain and update
-    % enf.enrichelem after all enichitems have finished level 1
+    % 3. Level 2: generate the line gaussian points for all interacted
+    % elems after level 1: the interacted elems are properly set enriched
+    % with correct EnrichNum
     for ienr=1:length(obj.EnrichItems)
         obj.EnrichItems{ienr}.update_enrich_2;
     end
+    % 4. Update the enritem on level 2: apply subdomain and update
+    % enf.enrichelem after all enichitems have finished level 1 and level 2
+    for ienr=1:length(obj.EnrichItems)
+        obj.EnrichItems{ienr}.update_enrich_3;
+    end
+            
 end
     % The updatedofarray_enriched should be run after the obj.storage.
     % 11/27/2020.

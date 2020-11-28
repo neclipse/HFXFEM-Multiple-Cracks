@@ -65,9 +65,7 @@ classdef EnrCrackBody < EnrichPack.EnrichItem
                end
            end
            obj.Mytips=val;
-       end
-       
-       
+       end  
        
        function checkactive(obj)
            if isempty(obj.Mygeo.Rtips)
@@ -80,8 +78,10 @@ classdef EnrCrackBody < EnrichPack.EnrichItem
        [unstablegrow,cutflag]=check_grow(obj,varargin);
        initial_enrich_1(obj,varargin);
        initial_enrich_2(obj,varargin);
+       initial_enrich_3(obj,varargin);
        update_enrich_1(obj,varargin);
        update_enrich_2(obj,varargin);
+       update_enrich_3(obj,varargin)
        showme( obj,typex,varargin );
    end
 end

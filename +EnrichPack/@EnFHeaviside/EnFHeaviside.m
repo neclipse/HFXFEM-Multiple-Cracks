@@ -113,12 +113,16 @@ classdef EnFHeaviside < EnrichPack.EnrichFun
                nodes_phi=phipool(Lcob);
            end
            % loop over all Gauss points for the current enrcrack(id)
-           k=elem.Enrich==id;
-           GaussPnt_domain=obj.enrichgauss(nodes_phi,elem.EnrichGauss,k);
-           GaussPnt_line=obj.enrichgauss(nodes_phi,elem.LineGaussDict{k});
+           enrichind=elem.Enrich==id;
+           GaussPnt_domain=obj.enrichgauss(nodes_phi,elem.EnrichGauss,enrichind);
            % Because gausspnt is an data object, hard copy is required
            elem.EnrichGauss=GaussPnt_domain;
-           elem.LineGaussDict{k}=GaussPnt_line;
+           % loop over all line gaussian points for the current enrich item
+           % enrichind, 11/27/2020.
+           for ienr=1:elem.EnrichNum
+               GaussPnt_line=obj.enrichgauss(nodes_phi,elem.LineGaussDict{ienr},enrichind);
+               elem.LineGaussDict{ienr}=GaussPnt_line;
+           end
        end
        
        function addnodedofs(~,node,varargin)
@@ -137,14 +141,9 @@ classdef EnFHeaviside < EnrichPack.EnrichFun
            node.NoEnrDofs=node.NoUenrDofs+node.NoPenrDofs;
        end
        
-       function [GaussPnt,Nuenrplus,Nuenrminus]=enrichgauss(obj,nodes_phi,GaussPnt,varargin)
-           if isempty(varargin)
-               mode=1; % line gaussian points
-               k=logical([1,0,0]);    % the Enf for linegaussian point stored at the first cell
-           else
-               mode=2;  % domain gaussian points
-               k=varargin{1}; % k is the logical index for the current EnrichItem
-           end
+       function [GaussPnt,Nuenrplus,Nuenrminus]=enrichgauss(obj,nodes_phi,GaussPnt,enrichind)
+          % enrichind; % the logical array of the current enrichitem in
+          % elem.Enrich.
           for igauss=1:length(GaussPnt)
                N=GaussPnt(igauss).Np;
                Nu=GaussPnt(igauss).Nu;
@@ -168,18 +167,18 @@ classdef EnFHeaviside < EnrichPack.EnrichFun
                % delete the standard nodes in the enrichment, IMPORTANT STEP TO ONLY ENRICH THE
                % ENRICHED NODES
 %                Phishift(stdnodes)=0;
-               if isempty(GaussPnt(igauss).Enf{k})
-                   GaussPnt(igauss).Enf{k}=struct('Phi',gauss_phi,'Phishift',Phishift,'Ridge',nan,'JunctionU',nan,'JunctionP',nan);
+               if isempty(GaussPnt(igauss).Enf{enrichind})
+                   GaussPnt(igauss).Enf{enrichind}=struct('Phi',gauss_phi,'Phishift',Phishift,'Ridge',nan,'JunctionU',nan,'JunctionP',nan);
                else
-                   GaussPnt(igauss).Enf{k}.Phi=gauss_phi;
-                   GaussPnt(igauss).Enf{k}.Phishift=Phishift;
+                   GaussPnt(igauss).Enf{enrichind}.Phi=gauss_phi;
+                   GaussPnt(igauss).Enf{enrichind}.Phishift=Phishift;
                end
                % prepare Nuenr for all; and Nuenrplus, minus for linegauss
                Nuenr=zeros(size(Nu));
                nuenr=N.*Phishift';
                Nuenr(1,1:2:end)=nuenr;
                Nuenr(2,2:2:end)=nuenr;
-               k=find(k); % return the index of logical "1"
+               k=find(enrichind); % return the index of logical "1"
                startind=1+(k-1)*size(Nuenr,2);
                endind=k*size(Nuenr,2);
                GaussPnt(igauss).Nuenr(:,startind:endind)=Nuenr;
@@ -188,7 +187,7 @@ classdef EnFHeaviside < EnrichPack.EnrichFun
                % CRACK ALTHOUGH THEY TAKE THE SAME SHAPE OF NUENR. IT IS
                % JUST TO BE COMPATIBLE TO THE CALL OF NUENRPLUS AND UENR
                % LATER ON IN GAUSS.MATCTU AND GAUSS.UPDATECRACKOPENING.
-               if mode==1
+               if isa(GaussPnt(igauss),'FEPack.GaussPnt_Cohesive')
                    % To calculate the displacement right above and below
                    % the crack
                    Phishiftplus=obj.calculate(1)-heaviside_enrnodes;

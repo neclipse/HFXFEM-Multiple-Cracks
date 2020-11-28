@@ -10,9 +10,15 @@ if ~isempty(obj.EnrichItems)
         obj.EnrichItems{ienr}.Myenfs={enfh,enfrd};
         obj.EnrichItems{ienr}.initial_enrich_1;
     end
-    
+    % 2. Level 2: generate the line gaussian points for all interacted
+    % elems after level 1: the interacted elems are properly set enriched
+    % with correct EnrichNum, also generate the domain gaussian points.
     for ienr=1:length(obj.EnrichItems)
         obj.EnrichItems{ienr}.initial_enrich_2;
+    end
+    % 3. enf.enrichelem after all enichitems have finished level 2
+    for ienr=1:length(obj.EnrichItems)
+        obj.EnrichItems{ienr}.initial_enrich_3;
     end
     % update the whole dof array
     obj.updatedofarray_enriched;  % update the linsystem inside

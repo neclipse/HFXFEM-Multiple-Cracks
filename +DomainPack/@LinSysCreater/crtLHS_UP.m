@@ -37,10 +37,9 @@ for ielem=1:length(obj.ElemDict)
         % standard element
         blending=false;
     end
-    ienrich= find(obj.ElemDict(ielem).Enrich);
-    if ~isempty(ienrich)
+    if any(obj.ElemDict(ielem).Enrich)
         % there is at most only one ienrich at current stage 11/22/18
-        obj.ElemDict(ielem).crtstif_enriched_elemental(newmark,ienrich,gbinp,blending);
+        obj.ElemDict(ielem).crtstif_enriched_elemental(newmark,gbinp,blending);
         Std=obj.ElemDict(ielem).Locarray;
         Enr=obj.ElemDict(ielem).JacobianMat.LocarrayEnr;
         stdU=zeros(size(obj.ElemDict(ielem).JacobianMat.LocarrayU));
