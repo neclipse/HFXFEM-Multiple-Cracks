@@ -61,6 +61,11 @@ classdef LinSysCreater < handle
            obj.POt1=zeros(obj.Npdof,1);
            obj.EnrichItems=enrichitems;	% Enrichement items should be iterated to assemble the enriched dofs to the whole global system
        end
+       function updateRHS(obj,val)
+           % this is necessary to update RHS outside this class 
+           %(newtonraphson.iterating and converger) 12/03/2020
+           obj.RHS=val;
+       end
        %%-- Declare other methods which are not defined in the main file
        solve(obj,newmark,varargin);              % solve the linear system
        crtLHS_UP(obj,newmak,iinc);      % creat the left-hand side of the linear system by assembling the element stiffness matrix

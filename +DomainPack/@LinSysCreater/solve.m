@@ -29,9 +29,23 @@ if obj.Drow<=100000
 else
 % Iterative solver GMRES with ilu preconditioner, ILU(0) or milu
     setup.type='nofill';
-    [L,U]=ilu(LHS,setup);
-    xiter=gmres(LHS,obj.RHS,10,1e-10,20,L,U);
-    obj.Unknowns=xiter;
+    if isempty(obj.EnrichItems)
+        % The standard matrix is already well Banded
+        [L,U]=ilu(LHS,setup);
+        xiter=gmres(LHS,obj.RHS,10,1e-10,20,L,U);
+        obj.Unknowns=xiter;
+    else
+        % The enriched matrix may disturb the banded structure
+        % Use the Sparse reverse Cuthill-McKee ordering to reduce the
+        % bandwidth of the LHS in order to improve the solution speed. (03032019)
+        r=symrcm(LHS);
+        rcmlhs=LHS(r,r);
+        rcmrhs=obj.RHS(r);
+        [L,U]=ilu(rcmlhs,setup);
+        rcmxiter=gmres(rcmlhs,rcmrhs,10,1e-10,20,L,U);
+        [~,rI]=sort(r);
+        obj.Unknowns=rcmxiter(rI);   %recover the orginal order
+    end
 end
 % update all field parameters using the newly solved [u(n+1) and p(n+1)]
 obj.upconf(newmark);

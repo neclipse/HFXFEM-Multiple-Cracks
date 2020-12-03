@@ -22,7 +22,7 @@ ratio=resnorm/extnorm;
 if ratio<obj.Tolerance||resmax<obj.Tolerance/1000
     obj.ConvFlag=1;
 else
-    obj.LinSysCrt.RHS=obj.ResLoadVec;
+    obj.LinSysCrt.updateRHS(obj.ResLoadVec);
 end
 if obj.IItr>1
    if ratio>20*obj.Ratio || resmax>20*obj.ResMax 
