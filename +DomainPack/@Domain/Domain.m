@@ -44,6 +44,7 @@ classdef Domain
        obj=updatedofarray(obj);
        obj=updatedofarray_enriched(obj);
        initiate_enrich(obj);
+       update_enrich(obj);
        obj=assignmesh(obj);     % Use mesh info to initiate elemdict and nodedict
        gaussdictm=crtgpd( obj, varargin );
        obj=crtlinsys(obj);      % create linear equation system

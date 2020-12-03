@@ -14,7 +14,9 @@ classdef EnFRidge < EnrichPack.EnrichFun
            % given nodes phi value(s) and shape functions N
            enf=N*abs(nodesphi)-abs(N*nodesphi);
        end
-       function enrichelem(obj,elem,id,varargin)
+       % enrichelem is the same as that of EnFHeaviside. 
+       % Can be made the function in super class, 11/27/2020.
+       function enrichelem(obj,elem,id,varargin) 
            if ~isempty(varargin)
                nodes_phi=varargin{1};
            else
@@ -31,12 +33,16 @@ classdef EnFRidge < EnrichPack.EnrichFun
                nodes_phi=phipool(Lcob);
            end
            % loop over all Gauss points for the current enrcrack(id)
-           k=elem.Enrich==id;
-           GaussPnt_domain=obj.enrichgauss(nodes_phi,elem.EnrichGauss,k);
-           GaussPnt_line=obj.enrichgauss(nodes_phi,elem.LineGaussDict{k});
+           enrichind=elem.Enrich==id;
+           GaussPnt_domain=obj.enrichgauss(nodes_phi,elem.EnrichGauss,enrichind);
            % Because gausspnt is an data object, hard copy is required
            elem.EnrichGauss=GaussPnt_domain;
-           elem.LineGaussDict{k}=GaussPnt_line;
+           % loop over all line gaussian points for the current enrich item
+           % enrichind, 11/27/2020.
+           for ienr=1:elem.EnrichNum
+               GaussPnt_line=obj.enrichgauss(nodes_phi,elem.LineGaussDict{ienr},enrichind);
+               elem.LineGaussDict{ienr}=GaussPnt_line;
+           end
        end
        function addnodedofs(~,node,id,varargin)
            % enrich the node object by adding corresponding dof and
@@ -53,10 +59,7 @@ classdef EnFRidge < EnrichPack.EnrichFun
            end
            node.NoEnrDofs(id)=node.NoUenrDofs(id)+node.NoPenrDofs(id);
        end
-       function GaussPnt=enrichgauss(obj,nodes_phi,GaussPnt,varargin)
-           if ~isempty(varargin)
-               k=varargin{1}; 
-           end         
+       function GaussPnt=enrichgauss(obj,nodes_phi,GaussPnt,enrichind)
            for igauss=1:length(GaussPnt)
                N=GaussPnt(igauss).Np;
                DNp=GaussPnt(igauss).DNp;
@@ -68,11 +71,11 @@ classdef EnFRidge < EnrichPack.EnrichFun
                % nodes in this stage, but enforce the enriched dofs as
                % zero in the boundary conditions.
 %                Ridge(stdnodes)=0;
-               if isempty(GaussPnt(igauss).Enf{k})
+               if isempty(GaussPnt(igauss).Enf{enrichind})
                    enf=struct('Phi',nan,'Phishift',nan,'Ridge',Ridge,'JunctionU',nan,'JunctionP',nan);
-                   GaussPnt(igauss).Enf{k}=enf;
+                   GaussPnt(igauss).Enf{enrichind}=enf;
                else
-                   GaussPnt(igauss).Enf{k}.Ridge=Ridge;
+                   GaussPnt(igauss).Enf{enrichind}.Ridge=Ridge;
                end
                % prepare Npenr
                Npenr=N.*Ridge;
@@ -89,7 +92,7 @@ classdef EnFRidge < EnrichPack.EnrichFun
                DNpjy=N_y.*Ridge+Nj*Ridge_y;
                DNpenr=[DNpjx;DNpjy];
                % Store Npenr and DNpenr in the right location, 10/18/20
-               k=find(k); % return the index of logical "1"
+               k=find(enrichind); % return the index of logical "1"
                startind=1+(k-1)*size(Npenr,2);
                endind=k*size(Npenr,2);
                GaussPnt(igauss).Npenr(:,startind:endind)=Npenr;

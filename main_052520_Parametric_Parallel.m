@@ -122,11 +122,11 @@ plate=Quadmesher(meshnode,meshelement);
     crack1.initiate(injectionpoint);
     crack2.initiate; 
     % visual check of the cracks and the nodes detection.
-    mesh.plotmesh;
-    hold on;
-    for icrack=1:length(crackdict)
-        crackdict(icrack).plotme;
-    end
+%     mesh.plotmesh;
+%     hold on;
+%     for icrack=1:length(crackdict)
+%         crackdict(icrack).plotme;
+%     end
     % set EnrCrackBody using the initial crack info
     Perforated1=true;
     Perforated2=true;
@@ -150,13 +150,7 @@ plate=Quadmesher(meshnode,meshelement);
     encrack2=EnrichPack.EnrCrackBody('crackbody',elemdict,nodedict,crack2,Perforated2,cohesivetype,Alpha2);
     crackqtable=[encrack1.Id,q]; % for edge crack, it is okay to ignore the injection point.
     encrack1.Qtable=crackqtable;
-    Step1.EnrichItems={encrack1,encrack2};
-    % 10/30/20 There may be more than one encracks in the future, so that
-    % the following initialization would be carried out in a domain class.
-    % Another reason is that the initial enrich and update_enrich will be
-    % carried out in two steps: first we set_enrich and second we use
-    % subdomain to the NewElems for EnrichGauss and enrich these elems. 
-    Step1.initiate_enrich;            
+    Step1.EnrichItems={encrack1,encrack2};           
     %% Start the Newton-Raphson iterative analysis
     % ---- Newton-Raphson Iterator
 %     step=[0.005,0.0001;0.2,0.006;1,0.01];          % dimensionless increment size

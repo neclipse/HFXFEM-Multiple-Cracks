@@ -27,7 +27,7 @@ end
 for iEnrich=1:length(obj.EnrichItems)
     enrichitem=obj.EnrichItems{iEnrich};
     for ielem=1:length(enrichitem.NewElems)
-       obj.ElemDict(enrichitem.NewElems(ielem)).assemble_locarry;
+       obj.ElemDict(enrichitem.NewElems(ielem)).assemble_locarray;
    end
 end
 
@@ -38,8 +38,7 @@ obj.NoPenrDofs=totpenrdof-obj.NoPDofs;              % number of total enriched p
 
 %% add the enriched dofs of the stdnodes in the psddofs
 obj=obj.updatelinsys;                               % update the linsystem here
-obj.LinSysCrt.BCTableqEn=BCTableqEn;
-obj.LinSysCrt.upbctableen;                          % update the dirichlet dofs from enrichitems
+obj.LinSysCrt.upbctableen(BCTableqEn);              % update the dirichlet dofs from enrichitems and the injection flow if any
 obj.PsdEnrDofs=obj.LinSysCrt.BCTableEn(:,1);        % all the enriched dofs that need to be dropped
 end
 

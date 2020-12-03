@@ -118,11 +118,16 @@ while obj.CutFlag==1
         end
     end
 end
-% % Update EnrichItems after the converged solution (May not be accurate enough).
-% % IF NEEDED TO UPDATE ENRICHITEMS WITHIN THE ITERATION IS NOT CONFIRMED. (03102019)
-% Attempt to change it to update enrichitems within iterations, suspended
-% on 03132019 because much need to changed to accomodate it.
-obj.update_enrich; % Comprehensive method: postprocess cracks and grow cracks
+% % Update EnrichItems after the converged solution (May not be accurate
+% enough). % IF NEEDED TO UPDATE ENRICHITEMS WITHIN THE ITERATION IS NOT
+% CONFIRMED. (03102019) Attempt to change it to update enrichitems within
+% iterations, suspended on 03132019 because much need to changed to
+% accomodate it. obj.update_enrich; % Comprehensive method: postprocess
+% cracks and grow cracks update_enrich is now a method of DomainPack.Domain
+% as the update comes after the converged solution. There is no need to do
+% it within iterating.m.11/27/20.
+
+% adjust the increment size if unstablegrow is requested.
 if any(unstablegrowflag)
     minimalinc=0.0001;    % minimal time step =inc*obj.Tottime
     allowedsteps=2;

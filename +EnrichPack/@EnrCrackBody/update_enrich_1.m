@@ -50,7 +50,8 @@ if any([obj.Mytips.Growcheck.Growflag])
         % p=3 to make the gauss quadrature accurate enough for the
         % line integral. (not sure if it is really useful, 03122019)
         % Change p=2 (defautl value) on 06072019.
-        elem.linegauss(obj.Id,obj.Cohesive,perforated);
+%         elem.linegauss(obj.Id,obj.Cohesive,perforated); also moved to
+%         update_enrich_2. 11/27/2020
     end
 end
 obj.checkactive;
