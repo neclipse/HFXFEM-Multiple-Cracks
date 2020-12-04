@@ -20,8 +20,8 @@ if ~isempty(obj.EnrichItems)
     for ienr=1:length(obj.EnrichItems)
         obj.EnrichItems{ienr}.initial_enrich_3;
     end
-    % update the whole dof array
-    obj.updatedofarray_enriched;  % update the linsystem inside
+    % move updatedof_enriched outside to domain.running directly to avoid
+    % the return of obj. 12/04/2020.
 end
 end
 

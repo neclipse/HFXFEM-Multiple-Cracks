@@ -27,7 +27,8 @@ iinc=1;
 % Another reason is that the initial enrich and update_enrich will be
 % carried out in two steps: first we set_enrich and second we use
 % subdomain to the NewElems for EnrichGauss and enrich these elems.
-obj.initiate_enrich; 
+obj.initiate_enrich;
+obj=obj.updatedofarray_enriched; % Bug-Issue #15. 12/04/2020
 obj.LinSysCrt.initialRHS;
 % Add try and catch statements to handle unexpected errors without saving
 % the results to obj.Postprocess.07132019
@@ -36,6 +37,9 @@ try
 %         fprintf('Running at No. %d increment out of %d increments .\n',iinc,obj.NewtonRaphson.NoInc);
         % run into each inc with NewtonRaphson.iterating.
         % include both standard and enriched dofs described by Dirichlet boundary condition.
+        % BUG-ISSUE 13: allpsddofs did not correctly include the
+        % psdenrdofs. Reason is that obj.initiate_enrich did not return
+        % obj. Remember Domain is a value class.
         allpsddofs=[obj.PsdDofs';obj.PsdEnrDofs];        
         obj.NewtonRaphson.iterating(iinc,stdpdofs,allpsddofs,inclist);
         % update the enrichitems and do postprocessing after convergence.
