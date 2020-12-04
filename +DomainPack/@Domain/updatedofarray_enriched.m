@@ -7,6 +7,7 @@ totuenrdof=obj.NoUDofs+obj.NoUenrDofs;
 totpenrdof=obj.NoPDofs+obj.NoPenrDofs;
 % loop over all EnrichItems
 BCTableqEn=[];
+iq=0;
 % BCTableqEn=cell(length(obj.EnrichItems));
 % First loop to update doflocarray by the storage order in obj.EnrichItem
 for iEnrich=1:length(obj.EnrichItems)
@@ -19,9 +20,11 @@ for iEnrich=1:length(obj.EnrichItems)
        obj.ElemDict(enrichitem.NewElems(ielem)).givelocarray_enriched(id);
    end
    if ~isempty(enrichitem.Qtable)
-      BCTableqEn{iEnrich}=enrichitem.Qtable;
+       iq=iq+1;
+       BCTableqEn{iq}=enrichitem.Qtable;
    end
 end
+
 % Second loop to concatenate the crack-specific locarrayenr stored in
 % JacobianMatDict together and store in JacobianMat. 10/12/20
 for iEnrich=1:length(obj.EnrichItems)
@@ -38,7 +41,7 @@ obj.NoPenrDofs=totpenrdof-obj.NoPDofs;              % number of total enriched p
 
 %% add the enriched dofs of the stdnodes in the psddofs
 obj=obj.updatelinsys;                               % update the linsystem here
-obj.LinSysCrt.upbctableen(BCTableqEn);              % update the dirichlet dofs from enrichitems and the injection flow if any
-obj.PsdEnrDofs=obj.LinSysCrt.BCTableEn(:,1);        % all the enriched dofs that need to be dropped
+obj.LinSysCrt.upbctableen(BCTableqEn);        % update the dirichlet dofs from enrichitems and the injection flow if any, used by crtRHS_UP.
+obj.PsdEnrDofs=obj.LinSysCrt.BCTableEn(:,1);        % all the enriched dofs of standard nodes that need to be dropped
 end
 
