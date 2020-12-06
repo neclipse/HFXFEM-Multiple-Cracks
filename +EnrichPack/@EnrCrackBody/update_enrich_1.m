@@ -19,9 +19,12 @@ elems=elems(1:ielem-1);
 obj.NewNodes=nodes;
 obj.NewElems=elems;
 %% Really update crackbody object info and the enrichment
-if any([obj.Mytips.Growcheck.Growflag])
+% Matlab does not allow second-level vectorized property retrieving.
+% Then we use [obj.Mytips.Growcheck] to obtain a intermediate growcheck
+% array. And we do another one on it to retrieve growflag.
+growchecks=[obj.Mytips.Growcheck];
+if any([growchecks.Growflag])
     display(growflags,'crack growth');
-    perforated=false;
     %% update basic info
     obj.setinteractedelem;
     obj.setenrichednode;
