@@ -28,14 +28,15 @@ if obj.Isactive
     newmark.a1=1;
     calstress=true;
     stagecheck=false;
-    gbinp=obj.Elemdict(1).GaussPntDictM(1).GBINP;
+%     gbinp=obj.Elemdict(1).GaussPntDictM(1).GBINP;
     gausspool=[];
     for ie=1:length(elempool)
         if any(obj.Elemdict(elempool(ie)).Enrich)     % Enriched elements
             % HERE ONLY ONE ENRCRACK IS ASSUMED. TO CHANGE. 09/18/20
-            ienrich= find(obj.Elemdict(elempool(ie)).Enrich,1);
-            obj.Elemdict(elempool(ie)).ifstd_enriched(newmark,ienrich,stagecheck,calstress,gbinp);
-            gausspool=[gausspool,obj.Elemdict(elempool(ie)).EnrichGaussDict{1}];
+            % Fixed and ienrich is obsolete. 11/20
+%             ienrich= find(obj.Elemdict(elempool(ie)).Enrich,1);
+            obj.Elemdict(elempool(ie)).ifstd_enriched(newmark,stagecheck,calstress);
+            gausspool=[gausspool,obj.Elemdict(elempool(ie)).EnrichGauss];
         else
             obj.Elemdict(elempool(ie)).ifstd(newmark,calstress);
             gausspool=[gausspool,obj.Elemdict(elempool(ie)).GaussPntDictM];

@@ -32,7 +32,7 @@ function [IntLoadAll,stagechangeflag]=ifstd_enriched( obj,newmark,stagecheck,cal
     if calstress
         for ig=1:length(obj.EnrichGauss)
             % update stresses
-            obj.EnrichGaussDict(ig)=obj.EnrichGaussDict(ig).matsu_enriched(us,ue,ps,pe);
+            obj.EnrichGauss(ig)=obj.EnrichGauss(ig).matsu_enriched(us,ue,ps,pe);
             % calculate the maximum principal stress and its orientation
             % [psmax,gtheta]=obj.EnrichGaussDict{id}.psu;
         end
