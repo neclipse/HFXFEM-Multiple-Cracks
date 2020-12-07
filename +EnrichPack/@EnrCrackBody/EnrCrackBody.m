@@ -30,7 +30,13 @@ classdef EnrCrackBody < EnrichPack.EnrichItem
    methods
        
        function obj = EnrCrackBody(type,elemdict,nodedict,mygeo,perforated,cohesive,alpha)
-           obj = obj@EnrichPack.EnrichItem(type,elemdict,nodedict);
+           % To allow constructor work with empty input, 12/07/20.
+           if nargin==0
+               super_args={};
+           else
+               super_args={type,elemdict,nodedict};
+           end
+           obj = obj@EnrichPack.EnrichItem(super_args{:});
            obj.Mygeo=mygeo;
            obj.Id=mygeo.Id; % Mygeo is the universal id of a crack
            obj.Mesh=mygeo.Mesh;

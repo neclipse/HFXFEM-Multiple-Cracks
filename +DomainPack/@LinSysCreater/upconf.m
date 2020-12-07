@@ -34,7 +34,7 @@ function  upconf( obj,newmark)
     end
     % update the enriched dofs as well, AT ELEMENTAL LEVEL 10/12/20
 	for iEnrich=1:length(obj.EnrichItems)
-		enrichitem=obj.EnrichItems{iEnrich};
+		enrichitem=obj.EnrichItems(iEnrich);
 % 		id=enrichitem.Id;
 		for ielem=1:length(enrichitem.INTELEM)
 			Jacob=enrichitem.INTELEM(ielem).JacobianMat;

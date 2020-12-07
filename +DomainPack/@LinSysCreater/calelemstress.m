@@ -8,7 +8,14 @@ for in=1:length(obj.NodeDict)
     obj.NodeDict(in).Stress=zeros(5,1) ;
     obj.NodeDict(in).Stressp=zeros(5,1) ;
 end
-newelems=[obj.EnrichItems{:}.NewElems];
+% This is a wrong use of cell array "newelems=[obj.EnrichItems.NewElems];"
+% obj.EnrichItems is a cell array not an object array
+% newelems=[];
+% for ienr=1:length(obj.EnrichItems)
+%     newelems=[newelems,obj.EnrichItems{ienr}.NewElems];
+% end
+% At a second thought, change cell array to object array.
+newelems=[obj.EnrichItems.NewElems];
 for ie=1:length(obj.ElemDict)
     elem=obj.ElemDict(ie);
     % Note that the newly enriched element does not have valid enriched dofs

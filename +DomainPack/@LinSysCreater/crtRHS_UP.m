@@ -119,7 +119,7 @@ if ~isempty(obj.BCTableqEn)
         table=obj.BCTableqEn{iqenr};
         for iqn=1:size(table,1)
             id=table(iqn,1);
-            encrack=obj.EnrichItems{id};
+            encrack=obj.EnrichItems(id);
             q=table(iqn,2);              % averaged normal flux rate per m, in 2d the unit is m^2/s
 %             nodes=table(iqn,[3,4]);      % local index of the nodes along the application edge within the enriched element.
 %           no longer use nodes in table to determine the closest nodes

@@ -4,10 +4,11 @@ function [fe,locarray]=cal_qextenr(obj,q,varargin)
 % the enriched parts of qext, so that one do not need specify Qtable_node
 % for preprocessor.
 
-% 12/01/19Note the element edge is treated as an external edge, we do not
+% Noted in Issue #14.
+% 12/01/19 Note the element edge is treated as an external edge, we do not
 % need to do line integral again over the neighboring element. This is
 % equivalent to divide the q by half and integrate twice along the same
-% edge.
+% edge. 
 
 % use the input flow at the crack mouth and local nodes index to calculate
 % the injection volume to the enriched dof

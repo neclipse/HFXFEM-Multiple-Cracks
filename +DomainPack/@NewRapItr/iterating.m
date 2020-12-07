@@ -32,7 +32,7 @@ obj.switching(3);
 obj.LinSysCrt.upconf_trial(obj.Newmark);
 obj.intforcer;                                     % Trial intforcer based on the first trial of u_sup(n+1) and p_sup(n+1)
 % This residual load vector is the difference between external load vector and the trial internal load vector for the new time increment
-obj.LinSysCrt.RHS=obj.ResLoadVec;
+obj.LinSysCrt.updateRHS(obj.ResLoadVec);
 % Loop over equillibrium equations for a load increment
 Ncut=0;                        % Number of times that increment cut procedure has been activated.
 while obj.CutFlag==1
@@ -56,7 +56,7 @@ while obj.CutFlag==1
             obj.switching(3);
             obj.LinSysCrt.upconf_trial(obj.Newmark);
             obj.intforcer;
-            obj.LinSysCrt.RHS=obj.ResLoadVec;
+            obj.LinSysCrt.updateRHS(obj.ResLoadVec);
         end
         obj.IItr=obj.IItr+1;
         % Don't check stagechangeflag for the first iteration as it's not
@@ -102,7 +102,7 @@ while obj.CutFlag==1
         if ~isempty(obj.LinSysCrt.EnrichItems)
             unstablegrowflag=false(1,length(obj.LinSysCrt.EnrichItems));
             for ienr=1:length(obj.LinSysCrt.EnrichItems)
-                [unstablegrowflag(ienr),cutflag]=obj.LinSysCrt.EnrichItems{ienr}.check_grow;
+                [unstablegrowflag(ienr),cutflag]=obj.LinSysCrt.EnrichItems(ienr).check_grow;
                 if cutflag
                     obj.ConvFlag=0;
                     obj.DivFlag=1;
