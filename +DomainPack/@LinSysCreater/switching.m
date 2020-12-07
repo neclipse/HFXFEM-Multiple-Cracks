@@ -14,7 +14,7 @@ if mode==1
     % For the enriched 
     if ~isempty(obj.EnrichItems)
         for iEnrich=1:length(obj.EnrichItems)
-            enrichitem=obj.EnrichItems{iEnrich};
+            enrichitem=obj.EnrichItems(iEnrich);
             id=enrichitem.Id;
             for ielem=1:length(enrichitem.INTELEM)
                 elem=enrichitem.INTELEM(ielem);
@@ -48,7 +48,7 @@ elseif mode==3
     if ~isempty(obj.EnrichItems)
         % For the enriched 
         for iEnrich=1:length(obj.EnrichItems)
-            enrichitem=obj.EnrichItems{iEnrich};
+            enrichitem=obj.EnrichItems(iEnrich);
             id=enrichitem.Id;
             for ielem=1:length(enrichitem.INTELEM)
                 elem=enrichitem.INTELEM(ielem);

@@ -10,7 +10,7 @@ function upbctableen(obj,BCTableqEn)
 obj.BCTableqEn=BCTableqEn;
 BCTableEn=[];
 for iEnrich=1:length(obj.EnrichItems)
-    enrichitem=obj.EnrichItems{iEnrich};
+    enrichitem=obj.EnrichItems(iEnrich);
     id=enrichitem.Id;
     stdnodes=enrichitem.Mygeo.Stdnodes;
 %     bctable=zeros(length(stdnodes)*3,2);

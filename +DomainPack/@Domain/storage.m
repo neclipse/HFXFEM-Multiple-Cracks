@@ -37,7 +37,7 @@ post.P=obj.LinSysCrt.PO(1:obj.NoPDofs)+inipore;                            % Tot
 % Use meta class, actually matlab.mixin.Copyable for automatic clone
 enrichitems=cell(size(obj.EnrichItems));
 for ien=1:numel(enrichitems)
-   enrichitems{ien}=copy(obj.EnrichItems{ien}); 
+   enrichitems{ien}=copy(obj.EnrichItems(ien)); 
 end
 post.EnrichItems=enrichitems;
 %% Avearge the integration results to nodal values, NOT ACCURATE, ESPICICALLY ON THE BOUNDARIES

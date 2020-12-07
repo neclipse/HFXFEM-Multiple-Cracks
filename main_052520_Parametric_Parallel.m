@@ -79,7 +79,7 @@ plate=Quadmesher(meshnode,meshelement);
     [ir,ic]=find(BCmat_line==1);
     psdboundind=[ir,ic];    % Dirichlet boundary, in this case all bounaries are fixed
     imbalancedbound=[];     % Neumann boundary is the 3rd boundary, top edge, must specify if existing  
-    % THE SPECIFIED BOUNDARIES WILL BE USED IN LINSYS.INTIALRHS AND THE
+    % THE SPECIFIED BOUNDARIES WILL BE USED IN LINSYS.INITIALRHS AND THE
     % INSITU STRESS RESULTANT LOAD VECTOR WILL BE CALCULATED. THE CURLOAD
     % SHOULD BE SPECIFIED AND THE BCMAT_LINE SHOULD CHANGE FROM '1' TO '4'.
     predof=[0,0,0;0,0,0;0,0,0;0,0,0]; % Predefined dofs corresponding to the '1's in the BCmat_line;
@@ -114,7 +114,7 @@ plate=Quadmesher(meshnode,meshelement);
 %     crack1=ToolPack.OpenGeo(1,mesh,bdls,nodedict,elemdict,2,des,10);
    % set crack geometry using segment points
     segments1=[1,0,lh/2;2,lc,lh/2];                      % crack segments [n,x,y]
-    segments2=[1,0.1,lh/2-0.05;2,0.2,lh/2+0.05];
+    segments2=[1,0.11,lh/2-0.02;2,0.15,lh/2+0.02];
     crack1=ToolPack.OpenGeo(1,mesh,bdls,nodedict,elemdict,1,segments1,10); % The mouth crack
     crack2=ToolPack.OpenGeo(2,mesh,bdls,nodedict,elemdict,1,segments2,10); % The intersecting crack for debugging at stage1
     crackdict=[crack1,crack2];
@@ -148,9 +148,8 @@ plate=Quadmesher(meshnode,meshelement);
     Alpha2=pi/2-atan(1); % not necessary as perforated is true. 
     encrack1=EnrichPack.EnrCrackBody('crackbody',elemdict,nodedict,crack1,Perforated1,cohesivetype,Alpha1);
     encrack2=EnrichPack.EnrCrackBody('crackbody',elemdict,nodedict,crack2,Perforated2,cohesivetype,Alpha2);
-    crackqtable=[encrack1.Id,q]; % for edge crack, it is okay to ignore the injection point.
-    encrack1.Qtable=crackqtable;
-    Step1.EnrichItems={encrack1,encrack2};           
+    encrack1.Qtable=[encrack1.Id,q]; % for edge crack, it is okay to ignore the injection point.
+    Step1.EnrichItems=[encrack1,encrack2];           
     %% Start the Newton-Raphson iterative analysis
     % ---- Newton-Raphson Iterator
 %     step=[0.005,0.0001;0.2,0.006;1,0.01];          % dimensionless increment size

@@ -102,7 +102,7 @@ while obj.CutFlag==1
         if ~isempty(obj.LinSysCrt.EnrichItems)
             unstablegrowflag=false(1,length(obj.LinSysCrt.EnrichItems));
             for ienr=1:length(obj.LinSysCrt.EnrichItems)
-                [unstablegrowflag(ienr),cutflag]=obj.LinSysCrt.EnrichItems{ienr}.check_grow;
+                [unstablegrowflag(ienr),cutflag]=obj.LinSysCrt.EnrichItems(ienr).check_grow;
                 if cutflag
                     obj.ConvFlag=0;
                     obj.DivFlag=1;
