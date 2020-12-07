@@ -46,6 +46,8 @@ classdef EnrCrackTip < EnrichPack.EnrichItem
             growflag=false;
             unstablegrow=false;
             cutflag=false;
+            % Isactive used to control if look ahead is really implemented
+            % 12/07/2020
             if obj.Isactive
                 obj.findnextelem; % only find the nextelem and find the intersections
                 % but do not extend the crack tip into the nextelem
@@ -75,10 +77,10 @@ classdef EnrCrackTip < EnrichPack.EnrichItem
                         end
                     end
                 end
-                
             end
         end
         function checkactive(obj)
+            % The Isactive is primarily determined by Mygeo.Rtip 12/07/20
             if all(obj.Mygeo.Rtips~=obj.Itip)
                 obj.Isactive = false;
             end

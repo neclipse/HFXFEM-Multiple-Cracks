@@ -66,6 +66,9 @@ try
             end
         end
         % Early termination due to cut through
+        % This module should be updated because the false Isactive may not 
+        % be equivalent to cut through when there are multiple cracks.
+        % 12/07/20.
         if ~isempty(obj.EnrichItems)
             if ~all([obj.EnrichItems.Isactive])
                 if obj.Postprocess(ind).IInc~=iinc

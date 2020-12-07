@@ -111,6 +111,11 @@ classdef OpenGeo < ToolPack.Geometry
         % Give the real crack tips not lying on the boundaries of the
         % domain
         function Rtips = get.Rtips(obj)
+            % This function need to updated before being called in
+            % EnrCrackTip.update. Alternatively, the ACTIVETIPS should be
+            % defined to detect the active tips that are able to propagate.
+            % Then we can leave the Rtips as tip not reaching the
+            % boundaries.
             tip1=obj.Segments(end,2:3);                                       % The last point is defined as the first tip
             tip2=obj.Segments(1,2:3);                                         % The first point is defined as the last tip
             table=ones(length(obj.Boundhandles),2);                           % Table to store the distance of tips to the boundaries
