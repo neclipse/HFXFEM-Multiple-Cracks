@@ -52,7 +52,7 @@ classdef Domain
        obj=storage( obj, postdict, iinc, inc, varargin );
        obj=running(obj,postdict,savemode,varargin);
        assign_arbitrary_flow(obj);
-       snapshot( obj, variable, timesteps, varargin);
+       snapshot( obj, crackid, variable, timesteps, varargin);
        %
    end
 end

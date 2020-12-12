@@ -24,7 +24,7 @@ obj.NewElems=elems;
 % array. And we do another one on it to retrieve growflag.
 growchecks=[obj.Mytips.Growcheck];
 if any([growchecks.Growflag])
-    display(growflags,'crack growth');
+    display([growchecks.Growflag],'crack growth');
     %% update basic info
     obj.setinteractedelem;
     obj.setenrichednode;

@@ -30,6 +30,8 @@ plot3(x,y,uy,'s')
 % obj.showme(1,'Pfrack','second','CTraction','component',2);
 % obj.showme(1,'Aperture','second','CTraction','component',2);
 postprocess.EnrichItems{1}.showme(1,'Aperture','second','CTraction','component',2);
+obj.EnrichItems(1).showme(1,'Aperture')
+obj.EnrichItems(2).showme(3,'Aperture')
 
 %% Plot crack shape history at give time
 Step1.snapshot('crackgeo',47,'timeincs',30,'basecoordinate',30);

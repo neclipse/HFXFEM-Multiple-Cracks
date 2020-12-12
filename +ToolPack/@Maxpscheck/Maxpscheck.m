@@ -132,18 +132,18 @@ methods
     function theta = growdirection(obj)
         % theta should be determined based on the obj.mode and f value 
         theta=obj.Theta(1);
-%         switch obj.Mode
-%             case 'tip'
-%                 % check the tip only
-%                 theta=obj.Theta(1);
-%             case 'center'
-%                 temp=obj.Theta(obj.Dimensionless>1);
-%                 theta=sum(temp)/length(temp);
-%             case 'all'
-%                 % check the gaussian points within the element ahead of the tip
-%                 temp=obj.Theta(obj.Dimensionless>1);
-%                 theta=sum(temp)/length(temp);
-%         end
+        switch obj.Mode
+            case 'tip'
+                % check the tip only
+                theta=obj.Theta(1);
+            case 'center'
+                temp=obj.Theta(obj.Dimensionless>1);
+                theta=sum(temp)/length(temp);
+            case 'all'
+                % check the gaussian points within the element ahead of the tip
+                temp=obj.Theta(obj.Dimensionless>1);
+                theta=sum(temp)/length(temp);
+        end
         % theta is the angle between the current global axes to the
         % principal global axes if positive then counterclockwisely
         % rotated if negative then clockwisely rotated
