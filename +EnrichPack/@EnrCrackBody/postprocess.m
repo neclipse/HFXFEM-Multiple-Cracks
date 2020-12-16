@@ -8,7 +8,7 @@ agl=obj.Elemdict(1).GaussPntDictM(1).GBINP;
 inipore=agl.inipore;
 % skin=agl.skin;
 numle=length(obj.INTELEM);
-numlg=length(obj.INTELEM(1).LineGaussDict{obj.Id});
+numlg=length(obj.INTELEM(1).LineGaussDict{1});% assume all crack segments have the same number of linegauss
 numl=numle*numlg;
 % global coordinates (x,y) of the line gaussian integration points
 intpoints=zeros(numl,2);

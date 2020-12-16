@@ -42,7 +42,7 @@ try
         % obj. Remember Domain is a value class.
         allpsddofs=[obj.PsdDofs';obj.PsdEnrDofs];        
         obj.NewtonRaphson.iterating(iinc,stdpdofs,allpsddofs,inclist);
-        % update the enrichitems and do postprocessing after convergence.
+        % Do postprocessing after convergence, then update the enrichitems.
         obj.update_enrich; 
         %%- Store the converged value for postprocessing
         inc=obj.NewtonRaphson.Timeinc(iinc);            % the value of current time

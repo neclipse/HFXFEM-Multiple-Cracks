@@ -59,7 +59,7 @@ classdef GaussPnt_Cohesive < FEPack.GaussPnt_LE_UP
           lxl=Vx*Vxl;     % cos(theta)
           mxl=Vy*Vxl;     % sin (theta)
           lyl=Vx*Vyl;     % -sin(theta)
-          myl=Vy*Vyl;     % cos(theat)
+          myl=Vy*Vyl;     % cos(theta)
           % 2d-Coordinate transformation matrix from global to the local;
           Amat=[lxl,mxl;lyl,myl];
           if ~obj.Perforated        % Initially Bonded mode

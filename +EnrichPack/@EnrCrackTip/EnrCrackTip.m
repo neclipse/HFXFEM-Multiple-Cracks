@@ -57,7 +57,7 @@ classdef EnrCrackTip < EnrichPack.EnrichItem
                 if obj.NextElem.EnrichNum>0
                     % 1. May use different growcheck criterion
                     fprintf('The NextElem of tip %d of crack %d has existing cracks.\n',obj.Itip, obj.Id);
-                else
+                end
                     % 2. obj.GrowCheck.growcheck;
                     % default mode is tip, change it to center
                     obj.Growcheck.Mode='center';
@@ -76,7 +76,7 @@ classdef EnrCrackTip < EnrichPack.EnrichItem
                             unstablegrow=true;
                         end
                     end
-                end
+%                 end
             end
         end
         function checkactive(obj)
