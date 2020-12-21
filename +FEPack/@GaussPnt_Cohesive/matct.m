@@ -20,7 +20,7 @@ if ~obj.Perforated
     Amat=[lxl,mxl;lyl,myl];
     ul=Amat*obj.CrackDisp;     % ul is local displcaement discontinuity averaged from nodal values
     %% Part 2:Derive Tangent_loc in the local orthogonal coordinate system
-    obj.TractionLaw.Disp=ul;            % Local
+    obj.TractionLaw.Disp=ul;            % Local [dshear, dnormal]
     % if isempty(varargin)
     % obj.TractionLaw.checkseparation (1); % trial separation stage.
     if obj.TractionLaw.AfterPeak

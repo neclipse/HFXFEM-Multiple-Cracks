@@ -18,7 +18,7 @@ addpath(genpath('.\Utility'));
 % crack has length of 40cm.
 lw=45;                                      % The width of the plate
 lh=60;                                      % The height of the plate
-lc=0.15;                                    % The center crack length     
+lc=0.03;                                    % The center crack length     
 % four boundary handles (note that these handles should be adjusted based
 % on where the origin is located on the mesh.)
 fb1= @(p) p(:,2);                    % The bottom side
@@ -114,7 +114,7 @@ plate=Quadmesher(meshnode,meshelement);
 %     crack1=ToolPack.OpenGeo(1,mesh,bdls,nodedict,elemdict,2,des,10);
    % set crack geometry using segment points
     segments1=[1,0,lh/2;2,lc,lh/2];                      % crack segments [n,x,y]
-    segments2=[1,0.11,lh/2-0.02;2,0.15,lh/2+0.02];
+    segments2=[1,0.16,lh/2-0.01;2,0.161,lh/2+0.02];
     crack1=ToolPack.OpenGeo(1,mesh,bdls,nodedict,elemdict,1,segments1,10); % The mouth crack
     crack2=ToolPack.OpenGeo(2,mesh,bdls,nodedict,elemdict,1,segments2,10); % The intersecting crack for debugging at stage1
     crackdict=[crack1,crack2];
@@ -128,8 +128,11 @@ plate=Quadmesher(meshnode,meshelement);
 %         crackdict(icrack).plotme;
 %     end
     % set EnrCrackBody using the initial crack info
-    Perforated1=true;
-    Perforated2=true;
+    % Initialmode 1: perforated; 2:existing fracture, start with compressive mode
+    % 3: newly propagated segment, start with tensile mode.
+    InitialMode1=true; % perforated
+    InitialMode2=false; % 
+    
     cohesivetype='unified';
     % This alpha is used to initiate the initial traction and crack opening
     % for existing open crack with cohesive traction, implemented in 
@@ -145,9 +148,9 @@ plate=Quadmesher(meshnode,meshelement);
     % This approach although more complicated, would be more robust than
     % the current handling of contact modes.
     Alpha1=pi/2;     %pi/2-atan(0.5) the angle between the tensile force and crack plane
-    Alpha2=pi/2-atan(1); % not necessary as perforated is true. 
-    encrack1=EnrichPack.EnrCrackBody('crackbody',elemdict,nodedict,crack1,Perforated1,cohesivetype,Alpha1);
-    encrack2=EnrichPack.EnrCrackBody('crackbody',elemdict,nodedict,crack2,Perforated2,cohesivetype,Alpha2);
+    Alpha2=pi/2; % not necessary as perforated is true. 
+    encrack1=EnrichPack.EnrCrackBody('crackbody',elemdict,nodedict,crack1,InitialMode1,cohesivetype,Alpha1);
+    encrack2=EnrichPack.EnrCrackBody('crackbody',elemdict,nodedict,crack2,InitialMode2,cohesivetype,Alpha2);
     encrack1.Qtable=[encrack1.Id,q]; % for edge crack, it is okay to ignore the injection point.
     Step1.EnrichItems=[encrack1,encrack2];           
     %% Start the Newton-Raphson iterative analysis
@@ -155,7 +158,7 @@ plate=Quadmesher(meshnode,meshelement);
 %     step=[0.005,0.0001;0.2,0.006;1,0.01];          % dimensionless increment size
 %     step=[0.005,0.0002;0.3,0.003;1,0.009];          % dimensionless increment size
     step=[0.004,0.0001;0.2,0.003;0.75,0.008;1,0.01];  % dimensionless increment size
-    tottime=15;                                 % total time
+    tottime=5;                                 % total time
     inctype=1;                                  % inctype: 1-load increments; 2- displacement increments
     % The following three parameters are optional setting to control the speed
     % and the accuracy3 of the Newton-Raphson algorithm. If one is not sure the
@@ -179,7 +182,7 @@ plate=Quadmesher(meshnode,meshelement);
 %     savemode=1;
 %     Step1=Step1.running(postdict,savemode);
     savemode=2;
-    saveinc=int8(10);
+    saveinc=int8(3);
     Step1=Step1.running(postdict,savemode,'interval',saveinc);
 %     savemode=3;
 %     steplist1=[0.01,0.1,1];

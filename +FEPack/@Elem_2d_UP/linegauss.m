@@ -44,6 +44,8 @@ my=-nx;                                         % -y_xi
 ds=sqrt(nx^2+ny^2);
 % THE DIRECTION OF NTAUD MAY MATTER 11/05/2018
 % THE DIRECTION WAS MADE CONSISTENT IN "INTERSECTION.M" ON 11/06/18
+% The direction of ntaud is consistent with the level set calculation in
+% opengeo. confirmed on 12/16/20. 
 ntaud=[nx;ny];
 mtaud=[mx;my];
 Ntaud=ntaud/ds;   % unit normal vector

@@ -56,8 +56,12 @@ function [IntLoadAll,stagechangeflag]=ifstd_enriched( obj,newmark,stagecheck,cal
         for ig=1:length(obj.LineGaussDict{ienr})
             lg= obj.LineGaussDict{ienr}(ig);   % VALUE CLASS, A HARD COPY
             if stagecheck
-                % Do not return lg to lg
-                [traction,stagechangeflag]=lg.matctu(ue,Due);
+                % No return lg to lg for modified newton-raphson? How
+                % about the lg.TractionLaw.AfterPeak? If not returned, I
+                % don't think the afterpeak property is correctly updated.
+                
+                % What if I return lg to lg? 12/21/2020
+                [traction,stagechangeflag,lg]=lg.matctu(ue,Due);
                 if stagechangeflag
                     IntLoadAll=[];
                     return;
@@ -65,7 +69,7 @@ function [IntLoadAll,stagechangeflag]=ifstd_enriched( obj,newmark,stagecheck,cal
             else
                 %for the first iteration, the traction can inherit from the
                 %last increment. 07272019. (Not 100% sure, changed back after trial)
-                traction=lg.matctu(ue,Due);
+                [traction,~,lg]=lg.matctu(ue,Due);
             end
             lg.Traction=traction;
             F_coh_i(istart:iend)=F_coh_i(istart:iend)+lg.H*lg.Nu'*lg.Traction*lg.Ds;

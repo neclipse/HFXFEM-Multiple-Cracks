@@ -1,4 +1,4 @@
-function  [traction,stagechangeflag]=matctu(obj,ua,Due)
+function  [traction,stagechangeflag,obj]=matctu(obj,ua,Due)
 %MATCTU cohesion traction Update method of GaussPnt_Cohesive (value calss)
 % called by elem_2d_UP.ifstd_enriched
 % update crackdisp within obj, note this obj is not returned to the obj
@@ -51,18 +51,24 @@ if ~obj.Perforated
     % the two ways: (Nuenrplus-Nuenrminus)*ua or Nu*ua
     % choose one and keep consistent in this function. 10/22/20
     CrackDisp=(obj.Nuenrplus-obj.Nuenrminus)*ua+obj.IniCrackDisp;
+    % 12/20/20 What if I update crack disp here? Does it make matct in
+    % later iterations calculated based on the crackdisp from this
+    % iteration? No, it does not. because matctu does not return obj.
+%     obj.CrackDisp=CrackDisp; 
     calcrackopening=obj.Ntaud'*CrackDisp;
     %     shearopening=obj.Mtaud'*CrackDisp;
     %% By current opening, change the stiffness matrix also
     if calcrackopening<=0
         Tangent_lol=[obj.TractionLaw.Tshearc,0;0,obj.TractionLaw.Tnormalc];
-        obj.Tangent_coh=Amat'*Tangent_lol*Amat;
+        Tangent_coh=Amat'*Tangent_lol*Amat;
         if any(ua)  % to avoid disturbing the initial call of intforcer when ua are all zeros.
-            temp1=obj.Tangent_coh*(obj.Nuenrplus-obj.Nuenrminus)*ua;
-            temp2=Amat*temp1;
+            temp1=Tangent_coh*(obj.Nuenrplus-obj.Nuenrminus)*ua;
+            temp2=Amat*temp1; % from global x-y to local shear-normal
             tnormal=temp2(2);
-            tshear=traction(1);
-            if tnormal>0  % normal traction
+            % Bug: traction(1) is global traction in x-direction, it may
+            % not be tshear. Change it to temp2(1)
+            tshear=temp2(1);
+            if tnormal>0  % normal traction becomes tensile
                 tnormal=obj.TractionLaw.IniTraction-tnormal;
                 traction=[0;tnormal];
                 traction_eff=sqrt(tshear^2+tnormal^2);
@@ -70,11 +76,10 @@ if ~obj.Perforated
                     %                     release the shear traction if tnormal turns positive
                     traction=Amat'*[0;obj.TractionLaw.IniTraction];
                 end
-            else
-                traction_eff=abs(tshear);
-                if traction_eff>obj.TractionLaw.PeakTraction*1.1
-                    traction=Amat'*[obj.TractionLaw.IniTraction;tnormal];
-                end
+%             else
+%                 % compressive mode, could use mohr-coulomb criterion, not
+%                 % implemented yet. 12/19/20.
+%                 traction=temp1;
             end
         end
     else
