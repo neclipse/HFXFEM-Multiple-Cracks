@@ -87,7 +87,8 @@ for iE=1:length(obj.INTELEM)
     end
     
     %% Calculation at the linegaussian points along the crack curve
-    linegauss=elem.LineGaussDict{elem.Enrich==obj.Id};
+    ind=elem.Enrich==obj.Id;
+    linegauss=elem.LineGaussDict{ind};
     for ig=1:length(linegauss)
         lg=linegauss(ig);
         intpoints(iint,:)=[lg.X,lg.Y];
@@ -109,10 +110,12 @@ for iE=1:length(obj.INTELEM)
         crackvf(iint)=lg.H*(lg.CrackOpening-lg.MinCrackOpening)*lg.Ds;
         % update the crack opening using enriched udofs at the end (03142019)
         % NEED RETURN the lg to elem.LineGaussDict{obj.Id} 03222019
-        elem.LineGaussDict{obj.Id}(ig)=lg;
+        % BUG: related to issue #1, the indexing of enriched cell array.
+        % 12/19/2020
+        linegauss(ig)=lg;
         iint=iint+1;
     end
-    
+    elem.LineGaussDict{ind}=linegauss;
 end
 %% Sort and Store the results
 % cinjection is calculated from cal_qextenr.
