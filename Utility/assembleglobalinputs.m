@@ -5,7 +5,7 @@ function obj=assembleglobalinputs(icase)
 %% Parameters for parallel runs
 tinis=[1.5	0.8	0.8	0.8	0.8	0.8	0.8	0.8	0.8	0.8 0.8 0.8]*1e-3;
 tkrgs=[1.5	1.5	1.5	1.5 2.1	2.1	2.1 2.1 1.5	1.5	1.5	1.5]*1e-3;
-lcrs =[0.4	0.4	0.4	0.4	0.4	0.4	0.4	0.4	0.4 0.4 0.4 0.4];
+lcrs =[0.2	0.4	0.4	0.4	0.4	0.4	0.4	0.4	0.4 0.4 0.4 0.4];
 dcrs =[1.6 2	2 2 2 2 2 2 2.66 2.66 2.66 2.66]*1e-4;
 % Es=[15.96	15.96	15.96	15.96	15.96	15.96 15.96	15.96 15.96	15.96 15.96	15.96];
 % nus=[0.219	0.219	0.219	0.219	0.219	0.219	0.219	0.219 0.219	0.219 0.219	0.219];
@@ -35,14 +35,14 @@ obj.Gc=0.5*(obj.threshold*obj.lcr+obj.tkrg)*obj.dcr;        %GN.m
 obj.lini=0;                 % Dimensionless parameter FOR initial crack separation, NOT USED BY BILINEAR NOR UNIFIED TRACTION LAW.
 obj.perfaperture=obj.dcr;
 obj.minaperture=1e-5;
-obj.mu=5;                   % dynamic viscosity of the fluid, unit cp, mpa.s
+obj.mu=50;                   % dynamic viscosity of the fluid, unit cp, mpa.s
 obj.mul=1;                % dynamic viscosity of leakoff fluid,, unit cp, mpa.s
 obj.poro=poros(icase);              
 % obj.Kf=0.0138;                % Kf, bulk modulus of the fluid phase, GPa?
 obj.Kf=2.1;
-obj.sgmH=-4e-3;
-obj.sgmh=-2e-3;
-obj.sgmv=-5e-3;
+obj.sgmH=0;
+obj.sgmh=0;
+obj.sgmv=0;
 obj.inipore=0;              % total initial pore pressure. 
 obj.G= 0.5*obj.E/(1+obj.nu);
 obj.lambda=2*obj.nu*obj.G/(1-2*obj.nu);
@@ -52,7 +52,9 @@ obj.Biot_alpha=1-obj.K/obj.Ks;
 % obj.Biot_alpha=0;
 obj.Biot_mod_crack=obj.Ks/(obj.Biot_alpha-obj.poro*(1-obj.Ks/obj.Kf));
 obj.Cstar_crack=1/obj.Biot_mod_crack;    
-obj.Biot_mod=obj.Biot_mod_crack;
+% note this biot_mod should be 0.0687 when comparing to the single solid phase
+% obj.Biot_mod=obj.Biot_mod_crack;
+obj.Biot_mod=0.0687;
 obj.Cstar=1/obj.Biot_mod;
 % Effective compressibility, (GPa^-1)
 obj.Delastic=[obj.lambda+2*obj.G,obj.lambda,0,obj.lambda;
@@ -62,7 +64,7 @@ obj.Delastic=[obj.lambda+2*obj.G,obj.lambda,0,obj.lambda;
 obj.muf=obj.mu*1e-12;       % dynamic viscosity of the fracturing fluid, unit (GPa.s)
 obj.mulf=obj.mul*1e-12;       % dynamic viscosity of the leakoff fluid, unit (GPa.s)
 obj.kmat=[1,0;0,1]*1e-18/obj.mulf;  % m^2/(GPa.s)
-obj.kmat_crack=[1,0;0,1]*1e-19/obj.muf; % 
+obj.kmat_crack=[1,0;0,1]*1e-18/obj.muf; % 
 % obj.kmat=obj.k*9.87e-16/obj.muf;
 % Initial total stress state, [sgmx,sgmy,tauxy,sgmz]
 obj.inistress=[obj.sgmH;obj.sgmh;0;obj.sgmv];

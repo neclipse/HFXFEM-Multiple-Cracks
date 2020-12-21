@@ -24,8 +24,8 @@ if ~isempty(obj.EnrichItems)
     for ienr=1:length(obj.EnrichItems)
         obj.EnrichItems(ienr).update_enrich_2;
     end
-    % 4. Update the enritem on level 2: apply subdomain and update
-    % enf.enrichelem after all enichitems have finished level 1 and level 2
+    % 4. Update the enritem on level 2:  update enf.enrichelem after all
+    % enichitems have finished level 1 and level 2
     for ienr=1:length(obj.EnrichItems)
         obj.EnrichItems(ienr).update_enrich_3;
     end

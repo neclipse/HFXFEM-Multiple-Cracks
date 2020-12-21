@@ -59,7 +59,7 @@ classdef GaussPnt_Cohesive < FEPack.GaussPnt_LE_UP
           lxl=Vx*Vxl;     % cos(theta)
           mxl=Vy*Vxl;     % sin (theta)
           lyl=Vx*Vyl;     % -sin(theta)
-          myl=Vy*Vyl;     % cos(theat)
+          myl=Vy*Vyl;     % cos(theta)
           % 2d-Coordinate transformation matrix from global to the local;
           Amat=[lxl,mxl;lyl,myl];
           if ~obj.Perforated        % Initially Bonded mode
@@ -76,8 +76,8 @@ classdef GaussPnt_Cohesive < FEPack.GaussPnt_LE_UP
                   initraction=obj.TractionLaw.Lambdaini/obj.TractionLaw.Lambdacr*obj.TractionLaw.PeakTraction;
               end
               separation=obj.TractionLaw.Lambdaini*obj.TractionLaw.CriticalDisp;
-              ul=[separation*cos(obj.Alpha);separation*sin(obj.Alpha)]; % [us,un]
-              obj.CrackDisp=Amat'*ul;     % ul is local displcaement discontinuity averaged from nodal values
+              ul=[separation*cos(obj.Alpha);separation*sin(obj.Alpha)]; % [us,un], local displcaement discontinuity averaged from nodal values
+              obj.CrackDisp=Amat'*ul;     % 
               obj.IniCrackDisp=obj.CrackDisp;
               obj.MinCrackOpening=minaperture;    % Abaqus setttings
               obj.CrackOpening=separation*sin(obj.Alpha)+obj.MinCrackOpening;
@@ -137,7 +137,7 @@ classdef GaussPnt_Cohesive < FEPack.GaussPnt_LE_UP
        
        %% Prototype
        obj=matsu_enriched(obj,us,ue,ps,pe)
-       [traction,stagechangeflag]=matctu(obj,ue,Due);
+       [traction,stagechangeflag,obj]=matctu(obj,ue,Due);
        obj=preparing(obj,X,Y,EnrichNum);       
        obj=enriching(obj);          % preparing the enrichment matrices, Bmatenr,Nuenr,Npenr
        obj=matct(obj);               % calculate the tangent_cohesive in the global coordinate system

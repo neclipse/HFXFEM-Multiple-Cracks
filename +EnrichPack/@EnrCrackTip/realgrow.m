@@ -18,6 +18,9 @@ if obj.Isactive
 %         if dist/min(obj.INTELEM.Length)>0.1
 %             warning('The current INTELEM may need get updated');
 %         end
+          
+          % THESE INFO COULD NOT ASSIGNED HERE BECAUSE SETENRICH HAS NOT
+          % BEEN CALLED AND COULD NOT CALL {OBJ.ID} AFTER ISSUE #1
 %         obj.NextElem.Seeds{obj.Id}=seeds; % seeds generated in
 %         elem.subdomain
 %         obj.NextElem.LocalInt{obj.Id}=localpnts;
@@ -74,6 +77,16 @@ if obj.Isactive
         %                        Phi(obj.NextElem.NodList==oldnodestoupdate(inold));
         %                    end
         obj.Mygeo.Phi=[AllNodes,AllPhi];
+        % BUG: 12/19/2020 THE PHIPOOL AND NODESPOOL ALSO NEEDS TO BE
+        % UPDATED AS THE ENRCRACKBODY.UPDATE_ENRICH IS DECOMPOSED INTO
+        % THREE SECTIONS AND THE PNTS, LOCALPNTS ARE NO LONGER ASSIGNED IN
+        % THE REALGROW FUNCTION. WHEN THE INTERSECTION FUNCTION WAS CALLED
+        % WITH DEFAULT NODESPOOL AND PHIPOOL, THE OPENGEO SHOULD BE
+        % UPDATED. 
+        [obj.Mygeo.Nodespool,ib,~]=unique([obj.Mygeo.Nodespool;obj.NextElem.NodList']);
+        Phipool=[obj.Mygeo.Phipool;Phi];
+        obj.Mygeo.Phipool=Phipool(ib);
+        
         % To update the obj.Mygeo.Stdnodes;
         obj.Mygeo.Toedge2(obj.Itip);
         % update other info of obj.Mygeo

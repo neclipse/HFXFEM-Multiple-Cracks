@@ -10,7 +10,9 @@ if any([growchecks.Growflag])
         % Yes, subdomain can be called here, together with linegauss.
         % 11/27/20
         obj.Elemdict(obj.NewElems(iE)).subdomain;
-        obj.Elemdict(obj.NewElems(iE)).linegauss(obj.Id,obj.Cohesive,perforated,obj.Alpha);
+        % But: for newly created crack, should not use obj.Alpha but the
+        % default value. Issue #20. 
+        obj.Elemdict(obj.NewElems(iE)).linegauss(obj.Id,obj.Cohesive,perforated);
     end
 end
 end

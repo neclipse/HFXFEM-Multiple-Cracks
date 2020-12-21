@@ -10,8 +10,8 @@ function obj=matsu_enriched(obj,us,ue,ps,pe)
 
 %% poroelstic step
 dirac=[1;1;0;1];
-U=obj.Nu*us+obj.Nuenr*ue;
-obj.Uy=U(2);
+obj.U=obj.Nu*us+obj.Nuenr*ue;
+% obj.Uy=U(2);
 obj.Strainc=obj.Bmat*us+obj.Bmatenr*ue;
 stresspc=obj.GBINP.Delastic*obj.Strainc;      % relative effective stress change comparing to the initial state
 obj.Stressp=stresspc+obj.GBINP.inistressp;

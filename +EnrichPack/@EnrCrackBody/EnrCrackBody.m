@@ -22,7 +22,7 @@ classdef EnrCrackBody < EnrichPack.EnrichItem
        Perforated       % flag to denote if the existing crack is perforated (completely cohesionless)
        Cohesive         % flag for the type of TSL, 'linear'-linear softening; 'bilinear'-bilinear softening.
        Alpha            % angle between the crack plane and the initial loading for inplace mode
-       Isactive = true;
+       Isactive = true; % Indicate if the crack is able to propagate.
    end
    properties(NonCopyable)
        Mytips
@@ -74,12 +74,15 @@ classdef EnrCrackBody < EnrichPack.EnrichItem
        end  
        
        function checkactive(obj)
+           % 12/07/20 The activeness primarily depends on the geometry
+           % checking when the package was designed for single crack.
+           % It should, however, be updated when there are multiple cracks.
            if isempty(obj.Mygeo.Rtips)
                obj.Isactive = false;
            end
        end
-       % function prototyping
        
+       %% function prototyping
        [fe,locarray_enr]=cal_qextenr(obj,q,varargin);
        [unstablegrow,cutflag]=check_grow(obj,varargin);
        initial_enrich_1(obj,varargin);

@@ -42,7 +42,7 @@ try
         % obj. Remember Domain is a value class.
         allpsddofs=[obj.PsdDofs';obj.PsdEnrDofs];        
         obj.NewtonRaphson.iterating(iinc,stdpdofs,allpsddofs,inclist);
-        % update the enrichitems and do postprocessing after convergence.
+        % Do postprocessing after convergence, then update the enrichitems.
         obj.update_enrich; 
         %%- Store the converged value for postprocessing
         inc=obj.NewtonRaphson.Timeinc(iinc);            % the value of current time
@@ -66,6 +66,9 @@ try
             end
         end
         % Early termination due to cut through
+        % This module should be updated because the false Isactive may not 
+        % be equivalent to cut through when there are multiple cracks.
+        % 12/07/20.
         if ~isempty(obj.EnrichItems)
             if ~all([obj.EnrichItems.Isactive])
                 if obj.Postprocess(ind).IInc~=iinc

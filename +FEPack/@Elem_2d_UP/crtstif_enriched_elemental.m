@@ -36,7 +36,7 @@ r1t=2*k*nnodes; % total uenrdofs
 r2t=k*nnodes;   % total penrdofs
 %% May only need one final JacobianMat, no need for discrete crack. 092920.
 JMat=obj.JacobianMat; % elemental comprehensive JacobianMat
-if size(JMat.Kusue,2)~=r1t % stays constant over the simulation                                 
+if size(JMat.Kusue,2)~=r1t % stays constant over the simulation if no new enrichitem in this element                            
     % preallocate the displacement vector for crack opening calculation
     % 02/01/2019
     JMat.Un2iEnr=zeros(r1t,1);

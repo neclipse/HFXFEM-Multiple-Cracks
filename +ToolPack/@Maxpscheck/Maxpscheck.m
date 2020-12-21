@@ -131,7 +131,7 @@ methods
     end
     function theta = growdirection(obj)
         % theta should be determined based on the obj.mode and f value 
-        theta=obj.Theta(1);
+        theta=obj.Theta(1); % Based on the nonlocal tip stress
 %         switch obj.Mode
 %             case 'tip'
 %                 % check the tip only
