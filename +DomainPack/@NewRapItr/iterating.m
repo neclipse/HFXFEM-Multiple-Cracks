@@ -129,7 +129,9 @@ end
 
 % adjust the increment size if unstablegrow is requested.
 if any(unstablegrowflag)
-    minimalinc=0.0001;    % minimal time step =inc*obj.Tottime
+    % minimal time step =inc*obj.Tottime, must be smaller than the step
+    % size defined in the main function.
+    minimalinc=1e-5;    
     allowedsteps=2;
     obj.autoincrem(3,0.25,1.5,inclist,minimalinc,allowedsteps);
 end

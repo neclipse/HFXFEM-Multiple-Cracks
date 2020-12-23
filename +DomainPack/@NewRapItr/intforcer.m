@@ -13,7 +13,6 @@ edict=obj.LinSysCrt.ElemDict;
 % IMPORTANT ERROR: LOADVEC SHOULD BE RESET TO ZERO FOR EVERY ITERATION SINCE 
 % THE ELEMENT INTLOADVEC IS ALREADY ACCUMULATED LOAD, INSTEAD OF LOAD CHANGE
 loadvec=zeros(obj.Dim,1);
-calstress=false;
 for ielem=1:length(edict)
     elem=edict(ielem);
     if any(elem.Enrich)     % Enriched elements
@@ -25,17 +24,17 @@ for ielem=1:length(edict)
         % chaged on 10/22/20, now the load update is elemental. No need to
         % loop over every enrichitem.
         if stagecheck
-            [load,stagechangeflag]=elem.ifstd_enriched(obj.Newmark,stagecheck,calstress);
+            [load,stagechangeflag]=elem.ifstd_enriched(obj.Newmark,stagecheck);
             if stagechangeflag
                 return;  % return without proceedeing to the following
             end
         else
-            load=elem.ifstd_enriched(obj.Newmark,stagecheck,calstress);
+            load=elem.ifstd_enriched(obj.Newmark,stagecheck);
         end
         array=elem.JacobianMat.LocarrayAll;
     else                    % Standard elements
         stagechangeflag=false;
-        load=elem.ifstd(obj.Newmark,calstress);
+        load=elem.ifstd(obj.Newmark);
         array=edict(ielem).Locarray;
     end    
     loadvec(array)=loadvec(array)+load;

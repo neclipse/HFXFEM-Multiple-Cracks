@@ -11,6 +11,6 @@ obj.setinteractedelem(obj.Itip);
 obj.setenrichednode;
 obj.setradius(2);   % the ratio of search radius over element length
 % by default the check and direction are based on maxps
-obj.Growcheck=ToolPack.Maxpscheck(threshold,'tolerance',0.03,'tolerance2',0.10);
+obj.Growcheck=ToolPack.Maxpscheck(threshold,'tolerance',0.05,'tolerance2',0.15);
 % obj.Growdirection=ToolPack.Maxpsdirection(obj.Omega);
 end

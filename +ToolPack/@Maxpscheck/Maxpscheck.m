@@ -50,17 +50,36 @@ methods
         obj.Theta=[];
         obj.Stressp=stressp;    % nonlocal effective stress at the tip
         obj.psu_exact(obj.Stressp,tip,omega);
+        % Note the stress values at guassian points have been
+        % calculated in the call of tip.calstress_nonlocal.
         switch obj.Mode
-            case 'center'
+            case 'tip'
+                % do nothing 
+            case 'center' % not recommended for enriched elemahead.
                 % For current stage, the Elemahead is always standard element.
-                obj.Elemahead.calstress;
-                obj.psu_exact(obj.Elemahead.Stressp,tip,omega);
-            case 'all'
-                % check the gaussian points within the element ahead of the tip
-                for ig=1:length(obj.Elemahead.GaussPntDictM)
-                    gaussstressp=obj.Elemahead.GaussPntDictM(ig).Stressp;
-                    obj.psu_exact(gaussstressp,tip,omega);
+                % Update: the elemahead can be an enriched element.12/22/20
+                if obj.Elemahead.EnrichNum==0
+                    % the stressp at the element center is already calculated
+                    % in the tip.calstress_nonlocal.
+                    obj.psu_exact(obj.Elemahead.Stressp,tip,omega);
                 end
+                % % Need to think about if center stress is appropriate for
+                % element containing a crack.
+            case 'all' % not recommended for enriched elemahead.
+                % check the gaussian points within the element ahead of the
+                % tip 
+                if obj.Elemahead.EnrichNum>0
+                    for ig=1:length(obj.Elemahead.EnrichGauss)
+                        gaussstressp=obj.Elemahead.GaussPntDictM(ig).Stressp;
+                        obj.psu_exact(gaussstressp,tip,omega);
+                    end
+                else
+                    for ig=1:length(obj.Elemahead.GaussPntDictM)
+                        gaussstressp=obj.Elemahead.GaussPntDictM(ig).Stressp;
+                        obj.psu_exact(gaussstressp,tip,omega);
+                    end
+                end
+
         end
     end
     % Check the Pvariable against the threshold (cohesive strength of matrix) 
@@ -80,10 +99,10 @@ methods
                     %             warning('cut back the current time increment');
                     obj.Unstable=true;
                     obj.Growflag=false;
-%                 elseif f>=1+obj.Tol
-%                     %             warning('cut the following increments');
-%                     obj.Unstable=true;
-%                     obj.Growflag=true;
+                elseif f>=1+obj.Tol
+                    %             warning('cut the following increments');
+                    obj.Unstable=true;
+                    obj.Growflag=true;
                 elseif f>1
                     obj.Unstable=false;
                     obj.Growflag=true;
@@ -96,10 +115,10 @@ methods
                     %             warning('cut back the current time increment');
                     obj.Unstable=true;
                     obj.Growflag=false;
-%                 elseif max(f)>=1+obj.Tol 
+                elseif max(f)>=1+obj.Tol 
 %                     warning('cut the following increments');
-%                     obj.Unstable=true;
-%                     obj.Growflag=true;
+                    obj.Unstable=true;
+                    obj.Growflag=true;
                 elseif max(f)>1
                     % Here,as long as the pvariable at the center pass the
                     % threshold, the criterion is met.
