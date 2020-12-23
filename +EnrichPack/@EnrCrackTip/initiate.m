@@ -2,7 +2,7 @@ function initiate(obj,varargin)
 % global threshold;
 % agl=assembleglobalinputs();
 agl=obj.Elemdict(1).GaussPntDictM(1).GBINP;
-threshold=agl.threshold;
+threshold=agl.threshold_formaxps;
 obj.Mesh=obj.Mygeo.Mesh;
 obj.Xct=obj.Mygeo.Tips(obj.Itip,1);
 obj.Yct=obj.Mygeo.Tips(obj.Itip,2);
