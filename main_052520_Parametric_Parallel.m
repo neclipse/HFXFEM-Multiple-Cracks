@@ -5,12 +5,15 @@
 %%  Importing packages
 % -- Initialize the work space
 clear; clc;
+% add the home folder to the matlab search path. Already saved for future
+% session, so I commented this line.
+% addpath('C:\Users\chuan\Documents\HFXFEM-Verified-Github\HFXFEM-Verified-Singlecrack');
 % Import class packages 
 import ToolPack.*;                          % Complimentary tool classes, like Preprocessor
 import FEPack.*;                            % Elementary level classes, like element class, node class and gausspnt class
 import DomainPack.*;                        % Domain level classes, like Domain, LinSysCrt, NewRapItr
 import EnrichPack.*;
-addpath(genpath('.\Utility'));
+% addpath(genpath('.\'));
 % Set up the model
 %% --Preparation for data
 %% --Geometry, loads, BCs settings in Preprocessor
