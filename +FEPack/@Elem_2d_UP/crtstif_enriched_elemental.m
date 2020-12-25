@@ -6,16 +6,13 @@ function crtstif_enriched_elemental( obj, newmark, gbinp, blending)
 %   Each gauss point object calculates the consistent tangent operator,D
 %   matrix. This function is more like a assembler.
 % global  Delastic Density Biot_alpha kmat Cstar Kf muf skin;
+Delastic=gbinp.Delastic;
+Density=gbinp.Density;
+Biot_alpha=gbinp.Biot_alpha;
 if blending
-    Delastic=gbinp.Delastic;
-    Density=gbinp.Density;
-    Biot_alpha=gbinp.Biot_alpha;
     kmat=gbinp.kmat_crack;
     Cstar=gbinp.Cstar_crack;
 else
-    Delastic=gbinp.Delastic;
-    Density=gbinp.Density;
-    Biot_alpha=gbinp.Biot_alpha;
     % use smaller kmat for enriched elements to better control the fracture
     % flow within the crack plane, it may be reversed to domain kmat when
     % viscosity is relatively high.
