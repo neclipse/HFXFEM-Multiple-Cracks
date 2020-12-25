@@ -70,7 +70,7 @@ methods
                 % tip 
                 if obj.Elemahead.EnrichNum>0
                     for ig=1:length(obj.Elemahead.EnrichGauss)
-                        gaussstressp=obj.Elemahead.GaussPntDictM(ig).Stressp;
+                        gaussstressp=obj.Elemahead.EnrichGauss(ig).Stressp;
                         obj.psu_exact(gaussstressp,tip,omega);
                     end
                 else
@@ -139,7 +139,7 @@ methods
                     obj.Unstable=true;
                     obj.Growflag=true;
                     %             obj.Growdirection=sum(obj.Theta)/length(obj.Theta);
-                elseif length(temp)>1
+                elseif length(temp)>2
                     obj.Unstable=false;
                     obj.Growflag=true;
                 else
@@ -168,7 +168,7 @@ methods
         % rotated if negative then clockwisely rotated
         %IMPORTANT BUG: DO NOT USE THETA MIMUS OBJ.OMEGA. 08082019
         % ALSO USE ABS(THETA)
-        if abs(theta)<1e-6
+        if abs(theta)<1e-5
             theta=0;
         end
         obj.Growdirection=theta;

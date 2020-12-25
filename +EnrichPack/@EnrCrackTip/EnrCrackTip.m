@@ -59,7 +59,7 @@ classdef EnrCrackTip < EnrichPack.EnrichItem
                     fprintf('The NextElem of tip %d of crack %d has existing cracks.\n',obj.Itip, obj.Id);
                     % Temporarily increase the tolerance to 100% to allow
                     % the crack extend to the next element.(not adopted)
-                    obj.Growcheck.Mode='tip';
+                    obj.Growcheck.Mode='all';
                     % may use nextelem.stressp determine the possible
                     % interatcion scenario.
                     % if obj.NextElem.Streesp
