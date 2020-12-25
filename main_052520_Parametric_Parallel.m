@@ -21,7 +21,7 @@ import EnrichPack.*;
 % crack has length of 40cm.
 lw=45;                                      % The width of the plate
 lh=60;                                      % The height of the plate
-lc=0.03;                                    % The center crack length     
+lc=0.08;                                    % The center crack length     
 % four boundary handles (note that these handles should be adjusted based
 % on where the origin is located on the mesh.)
 fb1= @(p) p(:,2);                    % The bottom side
