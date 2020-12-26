@@ -17,8 +17,26 @@ if ~isempty(obj.EnrichItems)
         obj.EnrichItems(ienr).initial_enrich_2;
     end
     % 3. enf.enrichelem after all enichitems have finished level 2
-    for ienr=1:length(obj.EnrichItems)
-        obj.EnrichItems(ienr).initial_enrich_3;
+%     for ienr=1:length(obj.EnrichItems)
+%         obj.EnrichItems(ienr).initial_enrich_3;
+%     end
+
+    % Alternative approach to fix issue #19. The old approach should have
+    % no problems but it is changed just to be consistent with
+    % Domain.update_enrich 12/25/2020.
+    allnewelems=unique([obj.EnrichItems.NewElems]);
+    % Loop from the newelem level
+    for ielem=1:length(allnewelems)
+        newelem=obj.ElemDict(allnewelems(ielem));
+        % loop over all EnrichItems involved with the newelem
+        for ienr=1:newelem.EnrichNum
+            EnrItem=obj.EnrichItems(newelem.Enrich(ienr));
+            % loop over the Myenfs of the EnrItem
+            for ienf=1:length(EnrItem.Myenfs)
+                myenf=EnrItem.Myenfs{ienf};
+                myenf.enrichelem(newelem,EnrItem.Id);
+            end
+        end
     end
     % move updatedof_enriched outside to domain.running directly to avoid
     % the return of obj. 12/04/2020.

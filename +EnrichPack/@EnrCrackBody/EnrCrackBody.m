@@ -47,8 +47,8 @@ classdef EnrCrackBody < EnrichPack.EnrichItem
            obj.setinteractedelem;
            obj.setenrichednode;
            % Initially the new elems and nodes are all nodes interacted
-           obj.NewElems=obj.Interactedelem;
-           obj.NewNodes=obj.Enrichednode;
+           obj.NewElems=obj.Interactedelem';
+           obj.NewNodes=obj.Enrichednode';
            % Later on the new elems and nodes are updated in
            % obj.update_enrich per crack propagation.
        end
