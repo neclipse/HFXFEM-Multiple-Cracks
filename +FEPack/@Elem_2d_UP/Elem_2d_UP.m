@@ -121,16 +121,16 @@ classdef Elem_2d_UP < handle
 %         crtstif_enriched_1Dflow( obj, newmark, id , gbinp); % 1D crack fluid flow adopted and compressibility of fracking fluid ignored
         givelocarray(obj,varargin);
         givelocarray_enriched(obj,crackid,varargin);
-		load=ifstd(obj,newmark , calstress);     			% compute internal force vectors; call listra and matsu
-        [IntLoadAll,stagechangeflag]=ifstd_enriched( obj,newmark, stagecheck , calstress);
+		load=ifstd(obj,newmark);     			% compute internal force vectors; call listra and matsu
+        [IntLoadAll,stagechangeflag]=ifstd_enriched( obj,newmark, stagecheck);
         calarea(obj);
 %         flag=isinside(obj,x,y);				% check if point(x,y) is inside or on the edge of the element
 		[flagie,flagi,flage,flagoe,area] = isinside_vec(obj,plist);
 		subdomain(obj, varargins);
         linegauss( obj,id,cohesive,perforated,varargin );
         [stressp, stress]=extraplstress( obj, xi, eta);
-        calstress(obj);
-        calstress_enriched(obj);
+        calstress(obj,storage);
+        calstress_enriched(obj,storage);
     end
     
 end

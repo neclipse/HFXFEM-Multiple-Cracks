@@ -16,15 +16,18 @@ end
 % end
 % At a second thought, change cell array to object array.
 newelems=[obj.EnrichItems.NewElems];
+% use storage flag to indicate that nodal stress is to be accumulated.
+% 12/22/20
+storage=true;
 for ie=1:length(obj.ElemDict)
     elem=obj.ElemDict(ie);
     % Note that the newly enriched element does not have valid enriched dofs
     % Cannot use calstress_enriched to update stress. 09272019
     if any(elem.Enrich) && ~any(newelems==elem.Ind)     % Enriched elements
 %         ienrich= find(elem.Enrich);
-        elem.calstress_enriched;
+        elem.calstress_enriched(storage);
     else                    % Standard elements
-        elem.calstress;
+        elem.calstress(storage);
     end
 end
 end

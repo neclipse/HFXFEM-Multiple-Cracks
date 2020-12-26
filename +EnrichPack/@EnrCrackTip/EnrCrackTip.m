@@ -57,26 +57,31 @@ classdef EnrCrackTip < EnrichPack.EnrichItem
                 if obj.NextElem.EnrichNum>0
                     % 1. May use different growcheck criterion
                     fprintf('The NextElem of tip %d of crack %d has existing cracks.\n',obj.Itip, obj.Id);
-                end
+                    % Temporarily increase the tolerance to 100% to allow
+                    % the crack extend to the next element.(not adopted)
+                    obj.Growcheck.Mode='all';
+                    % may use nextelem.stressp determine the possible
+                    % interatcion scenario.
+                    % if obj.NextElem.Streesp
+                else
                     % 2. obj.GrowCheck.growcheck;
-                    % default mode is tip, change it to center
                     obj.Growcheck.Mode='center';
-                    obj.Growcheck.cal_pvariable(obj.Stressp,obj.Itip, obj.Omega,obj.NextElem);
-                    obj.Growcheck.growcheck;  % unstable flag can be the output
-                    growflag=obj.Growcheck.Growflag;
-                    unstable=obj.Growcheck.Unstable;
-                    % The current time increment is too large for a good crack
-                    % growth prediction, return to cut back the current inc.
-                    % Added on 07112019
-                    if unstable==true
-                        if growflag==false
-                            cutflag=true;
-                            return;
-                        else
-                            unstablegrow=true;
-                        end
+                end
+                obj.Growcheck.cal_pvariable(obj.Stressp,obj.Itip, obj.Omega,obj.NextElem);
+                obj.Growcheck.growcheck;  % unstable flag can be the output
+                growflag=obj.Growcheck.Growflag;
+                unstable=obj.Growcheck.Unstable;
+                % The current time increment is too large for a good crack
+                % growth prediction, return to cut back the current inc.
+                % Added on 07112019
+                if unstable==true
+                    if growflag==false
+                        cutflag=true;
+                        return;
+                    else
+                        unstablegrow=true;
                     end
-%                 end
+                end
             end
         end
         function checkactive(obj)

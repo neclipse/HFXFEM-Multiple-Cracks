@@ -5,12 +5,15 @@
 %%  Importing packages
 % -- Initialize the work space
 clear; clc;
+% add the home folder to the matlab search path. Already saved for future
+% session, so I commented this line.
+% addpath('C:\Users\chuan\Documents\HFXFEM-Verified-Github\HFXFEM-Verified-Singlecrack');
 % Import class packages 
 import ToolPack.*;                          % Complimentary tool classes, like Preprocessor
 import FEPack.*;                            % Elementary level classes, like element class, node class and gausspnt class
 import DomainPack.*;                        % Domain level classes, like Domain, LinSysCrt, NewRapItr
 import EnrichPack.*;
-addpath(genpath('.\Utility'));
+% addpath(genpath('.\'));
 % Set up the model
 %% --Preparation for data
 %% --Geometry, loads, BCs settings in Preprocessor
@@ -18,7 +21,7 @@ addpath(genpath('.\Utility'));
 % crack has length of 40cm.
 lw=45;                                      % The width of the plate
 lh=60;                                      % The height of the plate
-lc=0.03;                                    % The center crack length     
+lc=0.08;                                    % The center crack length     
 % four boundary handles (note that these handles should be adjusted based
 % on where the origin is located on the mesh.)
 fb1= @(p) p(:,2);                    % The bottom side

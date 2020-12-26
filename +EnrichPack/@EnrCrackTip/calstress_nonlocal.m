@@ -24,21 +24,18 @@ if obj.Isactive
     %     elempool=setdiff(elempool_temp,obj.Mygeo.Intelements);
     
     % Real fix: call ifstd within the method for all elems in elempool_temp
-    % 09222019
-    newmark.a1=1;
-    calstress=true;
-    stagecheck=false;
-%     gbinp=obj.Elemdict(1).GaussPntDictM(1).GBINP;
+    % 09222019, replaced by calstress, 12/22/2020
+    storage=false;
     gausspool=[];
     for ie=1:length(elempool)
         if any(obj.Elemdict(elempool(ie)).Enrich)     % Enriched elements
             % HERE ONLY ONE ENRCRACK IS ASSUMED. TO CHANGE. 09/18/20
             % Fixed and ienrich is obsolete. 11/20
 %             ienrich= find(obj.Elemdict(elempool(ie)).Enrich,1);
-            obj.Elemdict(elempool(ie)).ifstd_enriched(newmark,stagecheck,calstress);
+            obj.Elemdict(elempool(ie)).calstress_enriched(storage);
             gausspool=[gausspool,obj.Elemdict(elempool(ie)).EnrichGauss];
         else
-            obj.Elemdict(elempool(ie)).ifstd(newmark,calstress);
+            obj.Elemdict(elempool(ie)).calstress(storage);
             gausspool=[gausspool,obj.Elemdict(elempool(ie)).GaussPntDictM];
         end
     end

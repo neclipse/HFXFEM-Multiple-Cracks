@@ -1,5 +1,5 @@
 %% stress, pressure and disp in one encriched elemeent during debugging
-allgauss=obj.INTELEM(1,3).EnrichGauss;
+allgauss=encrack2.INTELEM(1,2).EnrichGauss;
 % allgauss=obj.EnrichItems(1).INTELEM(1,2).EnrichGauss;
 % allgauss=obj.Mytips.NextElem.GaussPntDictM;
 % elems=mesh.findelems([6.35,30],elemdict);
@@ -14,14 +14,14 @@ u=[allgauss.U];
 ux=u(1,:);
 uy=u(2,:);
 spn=[allgauss.Stressp];
+figure
+plot3(x,y,spn(2,:),'o')
 % figure
-% plot3(x,y,spn(1,:),'o')
-figure
-plot3(x,y,p,'*')
-figure
-plot3(x,y,uy,'s')
-figure
-plot3(x,y,ux,'s')
+% plot3(x,y,p,'*')
+% figure
+% plot3(x,y,uy,'s')
+% figure
+% plot3(x,y,ux,'s')
 %% Common postprocessing
 % obj.LeakoffVolume/obj.CrackVolume
 % encrack.LeakoffVolume/encrack.CrackVolume

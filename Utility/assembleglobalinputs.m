@@ -3,10 +3,10 @@ function obj=assembleglobalinputs(icase)
 % This file is set to for "main-03152020_Abaqus_Ruhrsandstone.m"
 % 4.2 Storage-toughness dominated regime
 %% Parameters for parallel runs
-tinis=[1.5	0.8	0.8	0.8	0.8	0.8	0.8	0.8	0.8	0.8 0.8 0.8]*1e-3;
-tkrgs=[1.5	1.5	1.5	1.5 2.1	2.1	2.1 2.1 1.5	1.5	1.5	1.5]*1e-3;
+tinis=[0	0.8	0.8	0.8	0.8	0.8	0.8	0.8	0.8	0.8 0.8 0.8]*1e-3;
+tkrgs=[0	1.5	1.5	1.5 2.1	2.1	2.1 2.1 1.5	1.5	1.5	1.5]*1e-3;
 lcrs =[0.2	0.4	0.4	0.4	0.4	0.4	0.4	0.4	0.4 0.4 0.4 0.4];
-dcrs =[1.6 2	2 2 2 2 2 2 2.66 2.66 2.66 2.66]*1e-4;
+dcrs =[2 2	2 2 2 2 2 2 2.66 2.66 2.66 2.66]*1e-4;
 % Es=[15.96	15.96	15.96	15.96	15.96	15.96 15.96	15.96 15.96	15.96 15.96	15.96];
 % nus=[0.219	0.219	0.219	0.219	0.219	0.219	0.219	0.219 0.219	0.219 0.219	0.219];
 % Kss=[22	26	30 34 22 26	30 34 22 26	30 34]; % case 47-58
@@ -24,9 +24,8 @@ obj.nu=0.219;
 obj.Density=0;
 obj.lcr=lcrs(icase);
 obj.dcr=dcrs(icase);  % critical crack displacement where cohesion vanishes (m) from Khoei
-% (2011), which will be used as initial crack disp for perforated mode      
-% obj.threshold=0.5e-3;      % set to a large value so that stationary crack is obtained
-obj.threshold=tinis(icase);       % tini
+obj.threshold=tinis(icase);       % this is actually tini.
+obj.threshold_formaxps=1.5e-3; % only used for maxps grow check
 obj.tkrg=tkrgs(icase);           % tkrg
 obj.Gc=0.5*(obj.threshold*obj.lcr+obj.tkrg)*obj.dcr;        %GN.m
 % lcoh=obj.E*obj.Gc/(1-obj.nu^2)/obj.tkrg^2;                  % Estimated cohesive zone size based on Hillerborg et al. 
@@ -35,7 +34,7 @@ obj.Gc=0.5*(obj.threshold*obj.lcr+obj.tkrg)*obj.dcr;        %GN.m
 obj.lini=0;                 % Dimensionless parameter FOR initial crack separation, NOT USED BY BILINEAR NOR UNIFIED TRACTION LAW.
 obj.perfaperture=obj.dcr;
 obj.minaperture=1e-5;
-obj.mu=50;                   % dynamic viscosity of the fluid, unit cp, mpa.s
+obj.mu=10;                   % dynamic viscosity of the fluid, unit cp, mpa.s
 obj.mul=1;                % dynamic viscosity of leakoff fluid,, unit cp, mpa.s
 obj.poro=poros(icase);              
 % obj.Kf=0.0138;                % Kf, bulk modulus of the fluid phase, GPa?
@@ -64,7 +63,8 @@ obj.Delastic=[obj.lambda+2*obj.G,obj.lambda,0,obj.lambda;
 obj.muf=obj.mu*1e-12;       % dynamic viscosity of the fracturing fluid, unit (GPa.s)
 obj.mulf=obj.mul*1e-12;       % dynamic viscosity of the leakoff fluid, unit (GPa.s)
 obj.kmat=[1,0;0,1]*1e-18/obj.mulf;  % m^2/(GPa.s)
-obj.kmat_crack=[1,0;0,1]*1e-18/obj.muf; % 
+% kmat_crack is also for the element domain flow, mulf should be used. (not significant?)
+obj.kmat_crack=[1,0;0,1]*1e-18/obj.mulf; % 
 % obj.kmat=obj.k*9.87e-16/obj.muf;
 % Initial total stress state, [sgmx,sgmy,tauxy,sgmz]
 obj.inistress=[obj.sgmH;obj.sgmh;0;obj.sgmv];

@@ -1,4 +1,4 @@
-function [IntLoadAll,stagechangeflag]=ifstd_enriched( obj,newmark,stagecheck,calstress)
+function [IntLoadAll,stagechangeflag]=ifstd_enriched( obj,newmark,stagecheck)
 % internal force vector calculation and the stress update
 % global skin;
 % skin=gbinp.skin;
@@ -25,28 +25,8 @@ function [IntLoadAll,stagechangeflag]=ifstd_enriched( obj,newmark,stagecheck,cal
 	pde=Jacob.Pn2t1Enr;
 	% Dynamic parameter: Newmark
     a1=newmark.a1;
-    %% update stress at GaussPntDictM
-    %  called by encracktip.calstress_nonlocal and elem.calstress in this
-    %  version and the
-    % newmark value is arbitrarily set as it is not used in matsu.
-    if calstress
-        for ig=1:length(obj.EnrichGauss)
-            % update stresses
-            obj.EnrichGauss(ig)=obj.EnrichGauss(ig).matsu_enriched(us,ue,ps,pe);
-            % calculate the maximum principal stress and its orientation
-            % [psmax,gtheta]=obj.EnrichGaussDict{id}.psu;
-        end
-        for ienr=1:obj.EnrichNum
-            for ig=1:length(obj.LineGaussDict{ienr})
-                % update stresses at the discontinuity
-                obj.LineGaussDict{ienr}(ig)=obj.LineGaussDict{ienr}(ig).matsu_enriched(us,ue,ps,pe);
-                % calculate the maximum principal stress and its orientation
-                % [psmax,gtheta]=obj.EnrichGaussDict{id}.psu;
-            end
-        end
-        return;
-        % return because the newmark value is arbitrarily set
-    end
+    %% update stress at GaussPntDictM, moved to elem.calstress or elem.calstress_enriched
+    %12/22/2020
     %% update cohesive traction at linegauss_cohesive
     % NEED TO RETHINK ABOUT THE SIZE AND LOCATION OF F_COH_I 10/16/20.
     F_coh_i=zeros(size(Due)); % This preallocates the elemental comprehensive F_coh_i

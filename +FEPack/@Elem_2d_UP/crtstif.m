@@ -6,18 +6,14 @@ function crtstif( obj, newmark, iinc, gbinp, blending )
 %   Each gauss point object calculates the consistent tangent operator,D
 %   matrix. This function is more like a assembler.
 % global  Delastic Density Biot_alpha kmat Cstar; 
+    D=gbinp.Delastic;
+    rho=gbinp.Density;
+    alpha=gbinp.Biot_alpha;
+    Cstar=gbinp.Cstar;
 if blending
-    D=gbinp.Delastic;
-    rho=gbinp.Density;
-    alpha=gbinp.Biot_alpha;
     kmat=gbinp.kmat_crack;
-    Cstar=gbinp.Cstar;
 else
-    D=gbinp.Delastic;
-    rho=gbinp.Density;
-    alpha=gbinp.Biot_alpha;
     kmat=gbinp.kmat;
-    Cstar=gbinp.Cstar;
 end
 if blending || iinc==1                            % compute all components for blending elements
     nnodes=obj.NoNodes;

@@ -1,22 +1,11 @@
-function load=ifstd( obj, newmark, calstress)
+function load=ifstd( obj, newmark)
     u=obj.Un2i;      % elemental iterative total displacement vector, u_sup(n+1)_sub(i+1)
     p=obj.Pn2i;      % elemental iterative total pore pressure vector, p_sup(n+1)_sub(i+1)
     v=obj.Un2t1;
     a=obj.Un2t2;
     pd=obj.Pn2t1;
-    %% update stress at GaussPntDictM
-    % only called by encracktip.calstress_nonlocal in this version and the
-    % newmark value is arbitrarily set as it is not used in matsu.
-    if calstress
-        for ig=1:length(obj.GaussPntDictM)
-%             update stresses
-            obj.GaussPntDictM(ig)=obj.GaussPntDictM(ig).matsu(u,p);
-%             calculate the maximum principal stress and its orientation
-%             [psmax,gtheta]=obj.GaussPntDictM(ig).psu;
-        end
-        % return because the newmark value is arbitrarily set
-        return;
-    end
+    %% update stress at GaussPntDictM, obsolete after 12/22/20
+    % moved to calstress
     a1=newmark.a1;
     % calculate internal loadu, -a1(M*a+K*u-Q*p)
     loadu=-a1*(obj.M*a+obj.K*u-obj.Q*p);

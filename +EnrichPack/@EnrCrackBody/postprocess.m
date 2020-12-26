@@ -121,12 +121,20 @@ end
 % cinjection is calculated from cal_qextenr.
 cinjection=[obj.ENNODE.CInjection];       % positive is injection, the sign is already flipped in cal_qextenr
 allleakvf=[obj.ENNODE.Leakoff];
+% reorder the nodes and integration points and other practical information
+tip=obj.Mygeo.Tips(2,:);
+nodescoord_x=[obj.ENNODE.X];
+nodescoord_y=[obj.ENNODE.Y];
+nodescoord=[nodescoord_x',nodescoord_y'];
+temp=nodescoord-repmat(tip,length(obj.ENNODE),1);
+dist=sqrt(temp(:,1).^2+temp(:,2).^2);
+[~,I]=sort(dist);
+cinjection=cinjection(I);
+allleakvf=allleakvf(I);
 effectivelkf=sum(allleakvf)+sum(cinjection);
 % leakvf=allleakvf(cinjection==0);
 % leakvf=leakvfstd+leakvfenr;             % The combined leakoff volume spreaded to the discrete nodes of the element, (80% percent sure 03182019)
 % LEAKOFF FLUX INTEGRATED WITH TIME GIVES THE LEAKOFF VOLUME (NOT FINISHED,04022019)
-% reorder the integration points and other practical information
-tip=obj.Mygeo.Tips(2,:);
 temp=intpoints-repmat(tip,numl,1);
 dist=sqrt(temp(:,1).^2+temp(:,2).^2);
 [~,I]=sort(dist);
@@ -138,6 +146,7 @@ obj.Pfrack=pfrack(I);
 obj.CTraction=ctraction(I,:);
 obj.CrackVf=crackvf(I);
 obj.CrackVolume=sum(crackvf);
+
 % monitoring leak-off FLUX, to recover Carter's leakoff coefficient
 % mesh01082020
 % obj.LeakoffFlux=[obj.Nodedict([574,584,594,604]).Leakoff];% m^2/s
