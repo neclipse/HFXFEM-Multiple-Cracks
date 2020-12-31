@@ -6,7 +6,7 @@ function obj=assembleglobalinputs(icase)
 tinis=[0	0.8	0.8	0.8	0.8	0.8	0.8	0.8	0.8	0.8 0.8 0.8]*1e-3;
 tkrgs=[0	1.5	1.5	1.5 2.1	2.1	2.1 2.1 1.5	1.5	1.5	1.5]*1e-3;
 lcrs =[0.2	0.4	0.4	0.4	0.4	0.4	0.4	0.4	0.4 0.4 0.4 0.4];
-dcrs =[2 2	2 2 2 2 2 2 2.66 2.66 2.66 2.66]*1e-4;
+dcrs =[1 2	2 2 2 2 2 2 2.66 2.66 2.66 2.66]*1e-4;
 % Es=[15.96	15.96	15.96	15.96	15.96	15.96 15.96	15.96 15.96	15.96 15.96	15.96];
 % nus=[0.219	0.219	0.219	0.219	0.219	0.219	0.219	0.219 0.219	0.219 0.219	0.219];
 % Kss=[22	26	30 34 22 26	30 34 22 26	30 34]; % case 47-58
@@ -33,7 +33,7 @@ obj.Gc=0.5*(obj.threshold*obj.lcr+obj.tkrg)*obj.dcr;        %GN.m
 % % 1990 and 1991
 obj.lini=0;                 % Dimensionless parameter FOR initial crack separation, NOT USED BY BILINEAR NOR UNIFIED TRACTION LAW.
 obj.perfaperture=obj.dcr;
-obj.minaperture=1e-5;
+obj.minaperture=5e-5;
 obj.mu=10;                   % dynamic viscosity of the fluid, unit cp, mpa.s
 obj.mul=1;                % dynamic viscosity of leakoff fluid,, unit cp, mpa.s
 obj.poro=poros(icase);              

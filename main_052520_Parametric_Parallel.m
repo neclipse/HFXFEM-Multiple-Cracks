@@ -117,7 +117,7 @@ plate=Quadmesher(meshnode,meshelement);
 %     crack1=ToolPack.OpenGeo(1,mesh,bdls,nodedict,elemdict,2,des,10);
    % set crack geometry using segment points
     segments1=[1,0,lh/2;2,lc,lh/2];                      % crack segments [n,x,y]
-    segments2=[1,0.16,lh/2-0.01;2,0.161,lh/2+0.02];
+    segments2=[1,0.16,lh/2-0.01;2,0.1601,lh/2+0.01];
     crack1=ToolPack.OpenGeo(1,mesh,bdls,nodedict,elemdict,1,segments1,10); % The mouth crack
     crack2=ToolPack.OpenGeo(2,mesh,bdls,nodedict,elemdict,1,segments2,10); % The intersecting crack for debugging at stage1
     crackdict=[crack1,crack2];
@@ -132,7 +132,8 @@ plate=Quadmesher(meshnode,meshelement);
 %     end
     % set EnrCrackBody using the initial crack info
     % Initialmode 1: perforated; 2:existing fracture, start with compressive mode
-    % 3: newly propagated segment, start with tensile mode.
+    % 3: "smeared crack" or cemented crack, seemingly continuum
+    % 4: newly propagated segment, start with tensile mode.
     InitialMode1=true; % perforated
     InitialMode2=false; % 
     
