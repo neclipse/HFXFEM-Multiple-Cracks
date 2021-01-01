@@ -30,8 +30,6 @@ for iE=1:length(obj.INTELEM)
     %% Withdraw data
     elem=obj.INTELEM(iE);
     Jacob=elem.JacobianMat;
-    % ua is the current displacement discontinuity of all nodes for the
-    % specified (id) enrichement item.
     % Standard Dofs
     us=elem.Un2i;
     ps=elem.Pn2i;      % elemental iterative total pore pressure vector, p_sup(n+1)_sub(i+1)
@@ -41,51 +39,22 @@ for iE=1:length(obj.INTELEM)
     pe=Jacob.Pn2iEnr;
     ve=Jacob.Un2t1Enr;
     pde=Jacob.Pn2t1Enr;
-    % Enriched Dofs, zero initial values if they are newly enriched, added
-    % on 07132019
-    % 11/06/20 The NewElems are made empty by NewRapItr.update_enrich
-    % because the postprocessing comes before real crack growth.
-%     if ~isempty(obj.NewElems)
-%         if any(obj.NewElems==elem.Ind)
-%             %  due=zeros(size(us));
-%             ue=zeros(size(us));
-%             pe=zeros(size(ps));
-%             ve=zeros(size(us));
-%             pde=zeros(size(pds));
-%             
-%         end
-%     end
-    %% Leakoff calculation
-    % Integrate the leak off volume, from two parts: standard and enriched
-    % NOTE HERE JACOB MATRICES ARE UPDATED FROM THE UPDATED CRACK
-    % OPENING. (03132019)
-    % It is confirmed that qint has such a sign convention: positive
-    % for flow into the domain from the crack; negative for flow
-    % from the domain to the crack.(04232019)
-%     if ~isempty(obj.NewElems)
-%         if any(obj.NewElems==elem.Ind)
-%             qintps=zeros(size(ps));
-%             qintpe=zeros(size(ps));
-%         else
-%             qintps=Jacob.Hintpsps*ps+Jacob.Hintpspe*pe+Jacob.Sintpsps*pds+Jacob.Sintpspe*pde-Jacob.Qintueps'*ve;
-%             qintpe=Jacob.Hintpeps*ps+Jacob.Hintpepe*pe+Jacob.Sintpeps*pds+Jacob.Sintpepe*pde-Jacob.Qintuepe'*ve;
-%         end
-%     else
+    % Uncomment the if condition to apply the changes for issue #30. 1/1/21
+%     MinEnrichIndex=min(elem.Enrich(elem.Enrich>0)); % Find the enrichitem of lower id
+    %% Leakoff calculation for the enrichitem of lower id number
+%     if obj.Id==MinEnrichIndex
         qintps=Jacob.Hintpsps*ps+Jacob.Hintpspe*pe+Jacob.Sintpsps*pds+Jacob.Sintpspe*pde-Jacob.Qintueps'*ve;
         qintpe=Jacob.Hintpeps*ps+Jacob.Hintpepe*pe+Jacob.Sintpeps*pds+Jacob.Sintpepe*pde-Jacob.Qintuepe'*ve;
+        % 04292019, need subtract the node.Leakoff calculated from the
+        % cal_qextenr.
+        % Bug: should sum on the Leakoff but not CInjection, fixed on 05092019
+        % Bug: should zero NodDict.Leakoff in every step. 05302019, changed back
+        % to old method for efficiency.
+        for in=1:elem.NoNodes
+            elem.NodDict(in).Leakoff= elem.NodDict(in).Leakoff+qintps(in)+qintpe(in);
+            elem.NodDict(in).ALeakoff= elem.NodDict(in).ALeakoff+(qintps(in)+qintpe(in))*dt;
+        end
 %     end
-    %    leakvfstd(iE,:)=transpose(qintps);      % The leak-off FLUX distributed to the standard dofs of the nodes within iE element
-    %    leakvfenr(iE,:)=transpose(qintpe);      % The leak-off FLUX distributed to the enriched dofs of the nodes within iE element
-    % 04292019, need subtract the node.Leakoff calculated from the
-    % cal_qextenr.
-    % Bug: should sum on the Leakoff but not CInjection, fixed on 05092019
-    % Bug: should zero NodDict.Leakoff in every step. 05302019, changed back
-    % to old method for efficiency.
-    for in=1:elem.NoNodes
-        elem.NodDict(in).Leakoff= elem.NodDict(in).Leakoff+qintps(in)+qintpe(in);
-        elem.NodDict(in).ALeakoff= elem.NodDict(in).ALeakoff+(qintps(in)+qintpe(in))*dt;
-    end
-    
     %% Calculation at the linegaussian points along the crack curve
     ind=elem.Enrich==obj.Id;
     linegauss=elem.LineGaussDict{ind};
