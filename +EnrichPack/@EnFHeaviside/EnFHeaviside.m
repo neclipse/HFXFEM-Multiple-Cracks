@@ -34,7 +34,7 @@ classdef EnFHeaviside < EnrichPack.EnrichFun
            % purely calculate the enrichment function value(s) based on the
            % given phi value(s)
            switch obj.Type
-               case 1 %[-1,1]
+               case 1 %[0,1]
                    if ~obj.Smoothed
                        enf=heaviside(phi);
                    else
@@ -120,7 +120,11 @@ classdef EnFHeaviside < EnrichPack.EnrichFun
            % loop over all line gaussian points for the current enrich item
            % enrichind, 11/27/2020.
            for ienr=1:elem.EnrichNum
-               GaussPnt_line=obj.enrichgauss(nodes_phi,elem.LineGaussDict{ienr},enrichind);
+               % a flag to tell how nuenrplus should be calculated. 12/31/2020 
+               % if the current enrichitem is enriching the linegauss of
+               % on that enrichitem.
+               self_enrich=elem.Enrich(ienr)==id; 
+               GaussPnt_line=obj.enrichgauss(nodes_phi,elem.LineGaussDict{ienr},enrichind,self_enrich);
                elem.LineGaussDict{ienr}=GaussPnt_line;
            end
        end
@@ -141,9 +145,14 @@ classdef EnFHeaviside < EnrichPack.EnrichFun
            node.NoEnrDofs=node.NoUenrDofs+node.NoPenrDofs;
        end
        
-       function [GaussPnt,Nuenrplus,Nuenrminus]=enrichgauss(obj,nodes_phi,GaussPnt,enrichind)
+       function [GaussPnt,Nuenrplus,Nuenrminus]=enrichgauss(obj,nodes_phi,GaussPnt,enrichind,varargin)
           % enrichind; % the logical array of the current enrichitem in
           % elem.Enrich.
+          if ~isempty(varargin)
+              % if the current enrichitem is enriching the linegauss of
+              % on that enrichitem.
+              self_enrich=varargin{1}; 
+          end
           for igauss=1:length(GaussPnt)
                N=GaussPnt(igauss).Np;
                Nu=GaussPnt(igauss).Nu;
@@ -190,14 +199,17 @@ classdef EnFHeaviside < EnrichPack.EnrichFun
                if isa(GaussPnt(igauss),'FEPack.GaussPnt_Cohesive')
                    % To calculate the displacement right above and below
                    % the crack
-                   Phishiftplus=obj.calculate(1)-heaviside_enrnodes;
-                   Phishiftminus=obj.calculate(-1)-heaviside_enrnodes;
-                   Nuenrplus=Nuenr;
+                   Nuenrplus=Nuenr; % will be refilled
                    Nuenrminus=Nuenr;
-                   Nuenrplus(1,1:2:end)=N.*Phishiftplus';
-                   Nuenrplus(2,2:2:end)=N.*Phishiftplus';
-                   Nuenrminus(1,1:2:end)=N.*Phishiftminus';
-                   Nuenrminus(2,2:2:end)=N.*Phishiftminus';
+                   % BUG 2 BELONGING TO ISSUE 19, SPECIFICALLY ISSUE #29
+                   if self_enrich
+                       Phishiftplus=obj.calculate(1)-heaviside_enrnodes;
+                       Phishiftminus=obj.calculate(-1)-heaviside_enrnodes;
+                       Nuenrplus(1,1:2:end)=N.*Phishiftplus';
+                       Nuenrplus(2,2:2:end)=N.*Phishiftplus';
+                       Nuenrminus(1,1:2:end)=N.*Phishiftminus';
+                       Nuenrminus(2,2:2:end)=N.*Phishiftminus';
+                   end
                    GaussPnt(igauss).Nuenrplus(:,startind:endind)=Nuenrplus;
                    GaussPnt(igauss).Nuenrminus(:,startind:endind)=Nuenrminus;
                end

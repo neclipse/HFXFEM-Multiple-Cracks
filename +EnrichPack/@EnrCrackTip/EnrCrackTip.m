@@ -60,11 +60,13 @@ classdef EnrCrackTip < EnrichPack.EnrichItem
                     % Temporarily increase the tolerance to 100% to allow
                     % the crack extend to the next element.(not adopted)
                     obj.Growcheck.Mode='all';
+                    obj.Growcheck.Tol2=0.5;
                     % may use nextelem.stressp determine the possible
                     % interatcion scenario.
                     % if obj.NextElem.Streesp
                 else
                     % 2. obj.GrowCheck.growcheck;
+                    obj.Growcheck.Tol2=0.15;
                     obj.Growcheck.Mode='center';
                 end
                 obj.Growcheck.cal_pvariable(obj.Stressp,obj.Itip, obj.Omega,obj.NextElem);

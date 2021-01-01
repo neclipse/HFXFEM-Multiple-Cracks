@@ -228,17 +228,19 @@ for ienr=1:obj.EnrichNum
     % Linegauss is a descendent of value class 
     obj.LineGaussDict{ienr}=linegauss;
     % Store the enrichitem specific fractions
-    obj.JacobianMatDict(ienr).Kc=Kc;
-    obj.JacobianMatDict(ienr).Qintueps=Qintueps;
-    obj.JacobianMatDict(ienr).Qintuepe=Qintuepe;
-    obj.JacobianMatDict(ienr).Hintpsps=Hintpsps;
-    obj.JacobianMatDict(ienr).Hintpspe=Hintpspe;
-    obj.JacobianMatDict(ienr).Hintpeps=Hintpeps;
-    obj.JacobianMatDict(ienr).Hintpepe=Hintpepe;
-    obj.JacobianMatDict(ienr).Sintpsps=Sintpsps;
-    obj.JacobianMatDict(ienr).Sintpspe=Sintpspe;
-    obj.JacobianMatDict(ienr).Sintpeps=Sintpeps;
-    obj.JacobianMatDict(ienr).Sintpepe=Sintpepe;
+    % Noticed it is unnecessary to store these terms after issue #30
+    % because we will use elemental terms and elemental unknowns 1/1/2021
+%     obj.JacobianMatDict(ienr).Kc=Kc;
+%     obj.JacobianMatDict(ienr).Qintueps=Qintueps;
+%     obj.JacobianMatDict(ienr).Qintuepe=Qintuepe;
+%     obj.JacobianMatDict(ienr).Hintpsps=Hintpsps;
+%     obj.JacobianMatDict(ienr).Hintpspe=Hintpspe;
+%     obj.JacobianMatDict(ienr).Hintpeps=Hintpeps;
+%     obj.JacobianMatDict(ienr).Hintpepe=Hintpepe;
+%     obj.JacobianMatDict(ienr).Sintpsps=Sintpsps;
+%     obj.JacobianMatDict(ienr).Sintpspe=Sintpspe;
+%     obj.JacobianMatDict(ienr).Sintpeps=Sintpeps;
+%     obj.JacobianMatDict(ienr).Sintpepe=Sintpepe;
     % store the elemental comprehensive matrices
     % Fractioned Kc lies along the main diagnal of elemental comprehensive Kc 
     istart=1+(ienr-1)*r1;
