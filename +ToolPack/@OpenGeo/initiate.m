@@ -89,6 +89,7 @@ function  initiate( obj,varargin )
 %     % Special care to the last point of the (extended)crack 06292019 change
 %     % np to np+2 because extended curve has two more points.
     minind(minind==np+2)=np+1;
+    % The 1st point comes first (the leftmost) in the point list, not the reverse. 1/2/21
     x1=extendedcurvexy(minind,1);
     y1=extendedcurvexy(minind,2);
     x2=extendedcurvexy(minind+1,1);
