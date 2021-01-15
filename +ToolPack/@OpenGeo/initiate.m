@@ -163,9 +163,12 @@ function  initiate( obj,varargin )
     obj.Phi=Phi;                                                            % The signed distance function, ie., level set function phi  
 %   6. use obj.Toedge_2 to find the nodes on the tipped element edges
     rtipelems2=obj.Toedge2;
-    rtipelems=[rtipelems1;rtipelems2];
-    rtipelems(rtipelems==0)=[];
-    rtipelems=unique(rtipelems);
+    % BUG: Issue #33 - the order of rtipelems may be altered by unique
+    % function.
+    rtipelems=rtipelems2;
+%     rtipelems=[rtipelems1;rtipelems2];
+%     rtipelems(rtipelems==0)=[];
+%     rtipelems=unique(rtipelems);
 %     obj.Phipool=[nodespool,Phipool];
 %   7. Find tip nodes (all nodes in the tip elements)
     numnode=8*length(rtipelems);
