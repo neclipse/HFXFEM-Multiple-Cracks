@@ -48,7 +48,7 @@ ds=sqrt(nx^2+ny^2);
 % opengeo. confirmed on 12/16/20. 
 %No, actually it is not consistent as the order of globalpnts changed when
 %the order of opengeo.segments was from right to left. Fixed in
-%opengeo.discretize. 
+%opengeo.discretize, as for issue #32.
 ntaud=[nx;ny];
 mtaud=[mx;my];
 Ntaud=ntaud/ds;   % unit normal vector
