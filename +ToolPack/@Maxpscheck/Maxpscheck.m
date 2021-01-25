@@ -138,7 +138,8 @@ methods
                 obj.Unstable=false;
                 obj.Growflag=false;
                 temp=f(f>1);
-                if f(1)>0.7 && length(temp)>2
+                midvalue=min(0.7,quantile(f(2:end),0.25));
+                if f(1)>midvalue && length(temp)>2
                     obj.Unstable=false;
                     obj.Growflag=true;
                 end
