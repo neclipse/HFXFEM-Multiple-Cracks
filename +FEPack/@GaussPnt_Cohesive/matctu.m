@@ -54,7 +54,7 @@ if ~obj.Perforated
     % 12/20/20 What if I update crack disp here? Does it make matct in
     % later iterations calculated based on the crackdisp from this
     % iteration? No, it does not. because matctu does not return obj.
-%     obj.CrackDisp=CrackDisp; 
+    obj.CrackDisp=CrackDisp; 
     calcrackopening=obj.Ntaud'*CrackDisp;
     %     shearopening=obj.Mtaud'*CrackDisp;
     %% By current opening, change the stiffness matrix also
@@ -76,10 +76,10 @@ if ~obj.Perforated
                     %                     release the shear traction if tnormal turns positive
                     traction=Amat'*[0;obj.TractionLaw.IniTraction];
                 end
-%             else
-%                 % compressive mode, could use mohr-coulomb criterion, not
-%                 % implemented yet. 12/19/20.
-%                 traction=temp1;
+            else
+                % compressive mode, could use mohr-coulomb criterion, not
+                % implemented yet. 12/19/20.
+                traction=temp1;
             end
         end
     else

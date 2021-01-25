@@ -83,8 +83,13 @@ if obj.Isactive
         % THE REALGROW FUNCTION. WHEN THE INTERSECTION FUNCTION WAS CALLED
         % WITH DEFAULT NODESPOOL AND PHIPOOL, THE OPENGEO SHOULD BE
         % UPDATED. 
-        [obj.Mygeo.Nodespool,ib,~]=unique([obj.Mygeo.Nodespool;obj.NextElem.NodList']);
-        Phipool=[obj.Mygeo.Phipool;Phi];
+        % BUG: 01/22/2021 The way Nodespool is updated is wrong because the
+        % Phi may be discarded if the Nodespool already includes the nodes
+        % in the obj.NextElem. Should feed obj.Mygeo.Phi instead of
+        % Mygeo.Phipool to update_enrich_1.intersection.
+        % Put the updated Phi infront of the old Phipool. Checked.
+        [obj.Mygeo.Nodespool,ib,~]=unique([obj.NextElem.NodList';obj.Mygeo.Nodespool]);
+        Phipool=[Phi;obj.Mygeo.Phipool];
         obj.Mygeo.Phipool=Phipool(ib);
         
         % To update the obj.Mygeo.Stdnodes;

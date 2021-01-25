@@ -129,22 +129,19 @@ methods
                     obj.Growflag=false;
                 end
             case 'all'
+                % Temporary fix of issue #34. 1/15/2021
+                % This criterion is specifically for the approaching cracks
+                % 1. First of all, the nonlocal tip stress should be close
+                % to tensile strength.
+                % 2. There are more than 2 gaussian points at which the
+                % maximum principal stress exceeds the tensile strength
+                obj.Unstable=false;
+                obj.Growflag=false;
                 temp=f(f>1);
-                if max(f)>1+obj.Tol2
-                    %             warning('cut back the current time increment');
-                    obj.Unstable=true;
-                    obj.Growflag=false;
-                elseif max(f)>=1+obj.Tol && sum(f)/length(f)>=1
-                    %             warning('cut the following increments');
-                    obj.Unstable=true;
-                    obj.Growflag=true;
-                    %             obj.Growdirection=sum(obj.Theta)/length(obj.Theta);
-                elseif length(temp)>2
+                midvalue=min(0.7,quantile(f(2:end),0.25));
+                if f(1)>midvalue && length(temp)>2
                     obj.Unstable=false;
                     obj.Growflag=true;
-                else
-                    obj.Unstable=false;
-                    obj.Growflag=false;
                 end
         end
     end

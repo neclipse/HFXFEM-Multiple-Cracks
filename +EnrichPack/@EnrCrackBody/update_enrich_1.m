@@ -42,6 +42,11 @@ if any([growchecks.Growflag])
         % element
         elem=obj.Elemdict(elems(iE));
         elem.setenrich(obj.Id);
+        % Should use obj.Mygeo.Phi because the Phi values are updated based
+        % on the new crack geometry. 01/22/2021 
+        % [~,pnts,localpnts] = obj.Mygeo.intersection(elem, obj.Mygeo.Nodespool, obj.Mygeo.Phipool(:,2));
+        % Now the Phipool are also correctly updated in tip.realgrow, so
+        % this call does not need to be changed.
         [~,pnts,localpnts] = obj.Mygeo.intersection(elem);
         id=elem.Enrich==obj.Id;
         elem.LocalInt{id}=localpnts;

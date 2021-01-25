@@ -31,6 +31,10 @@ r1=2*nnodes;    % uenrdofs for 1 enrichitem
 r2=nnodes;      % penrdofs for 1 enrichitem
 r1t=2*k*nnodes; % total uenrdofs
 r2t=k*nnodes;   % total penrdofs
+% 01/21/20201 Attemp to resolve the blocked pressure by existing crack. #19
+if k>1
+   kmat= 1000; % A big number to allow the pressure connection between cracks.
+end
 %% May only need one final JacobianMat, no need for discrete crack. 092920.
 JMat=obj.JacobianMat; % elemental comprehensive JacobianMat
 if size(JMat.Kusue,2)~=r1t % stays constant over the simulation if no new enrichitem in this element                            

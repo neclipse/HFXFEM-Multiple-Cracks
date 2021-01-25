@@ -4,6 +4,6 @@ obj.Yct=obj.Mygeo.Tips(obj.Itip,2);
 obj.Omega=obj.Mygeo.Omegas(obj.Itip);
 obj.setinteractedelem(obj.Itip);
 obj.setenrichednode;
-obj.setradius(2);
+obj.setradius(3);
 obj.checkactive; % not finished 06212019
 end

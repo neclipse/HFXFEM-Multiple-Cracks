@@ -89,6 +89,7 @@ function  initiate( obj,varargin )
 %     % Special care to the last point of the (extended)crack 06292019 change
 %     % np to np+2 because extended curve has two more points.
     minind(minind==np+2)=np+1;
+    % The 1st point comes first (the leftmost) in the point list, not the reverse. 1/2/21
     x1=extendedcurvexy(minind,1);
     y1=extendedcurvexy(minind,2);
     x2=extendedcurvexy(minind+1,1);
@@ -162,9 +163,12 @@ function  initiate( obj,varargin )
     obj.Phi=Phi;                                                            % The signed distance function, ie., level set function phi  
 %   6. use obj.Toedge_2 to find the nodes on the tipped element edges
     rtipelems2=obj.Toedge2;
-    rtipelems=[rtipelems1;rtipelems2];
-    rtipelems(rtipelems==0)=[];
-    rtipelems=unique(rtipelems);
+    % BUG: Issue #33 - the order of rtipelems may be altered by unique
+    % function.
+    rtipelems=rtipelems2;
+%     rtipelems=[rtipelems1;rtipelems2];
+%     rtipelems(rtipelems==0)=[];
+%     rtipelems=unique(rtipelems);
 %     obj.Phipool=[nodespool,Phipool];
 %   7. Find tip nodes (all nodes in the tip elements)
     numnode=8*length(rtipelems);

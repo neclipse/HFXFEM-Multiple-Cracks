@@ -15,7 +15,12 @@ if obj.Linetype == 2
     end
 elseif obj.Linetype ==1
     % with discrete point list
-    xlist=obj.Segments(:,2);
+    [xlist,I]=sort(obj.Segments(:,2));
+    obj.Segments=obj.Segments(I,:);
+    % As the tip direction, the sign of phi in opengeo.initiate and ntaud
+    % of line in opengeo.intersection all assumes that the order of x is
+    % ascending, we had better enforce this condition to guarantee the
+    % consistency.
     ylist=obj.Segments(:,3);
     if all(xlist-xlist(1)==0)
         limits=[obj.Segments(1,3),obj.Segments(end,3)];               % ylimits of the segments

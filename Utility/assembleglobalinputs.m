@@ -32,9 +32,9 @@ obj.Gc=0.5*(obj.threshold*obj.lcr+obj.tkrg)*obj.dcr;        %GN.m
 % % tmax is, however, usually size dependent according to Bazant, and Kazemi
 % % 1990 and 1991
 obj.lini=0;                 % Dimensionless parameter FOR initial crack separation, NOT USED BY BILINEAR NOR UNIFIED TRACTION LAW.
-obj.perfaperture=obj.dcr;
-obj.minaperture=5e-5;
-obj.mu=10;                   % dynamic viscosity of the fluid, unit cp, mpa.s
+obj.perfaperture=1e-4;
+obj.minaperture=8e-5;
+obj.mu=1;                   % dynamic viscosity of the fluid, unit cp, mpa.s
 obj.mul=1;                % dynamic viscosity of leakoff fluid,, unit cp, mpa.s
 obj.poro=poros(icase);              
 % obj.Kf=0.0138;                % Kf, bulk modulus of the fluid phase, GPa?
@@ -48,13 +48,14 @@ obj.lambda=2*obj.nu*obj.G/(1-2*obj.nu);
 obj.K=obj.lambda+2*obj.G/3;
 obj.Ks=34;               % Ks, bulk modulus of the solid phase, GPa 37.778
 obj.Biot_alpha=1-obj.K/obj.Ks;
-% obj.Biot_alpha=0;
-obj.Biot_mod_crack=obj.Ks/(obj.Biot_alpha-obj.poro*(1-obj.Ks/obj.Kf));
-obj.Cstar_crack=1/obj.Biot_mod_crack;    
+% obj.Biot_alpha=0;  
 % note this biot_mod should be 0.0687 when comparing to the single solid phase
 % obj.Biot_mod=obj.Biot_mod_crack;
 obj.Biot_mod=0.0687;
 obj.Cstar=1/obj.Biot_mod;
+obj.Biot_mod_crack=obj.Biot_mod;
+% obj.Biot_mod_crack=obj.Ks/(obj.Biot_alpha-obj.poro*(1-obj.Ks/obj.Kf));
+obj.Cstar_crack=1/obj.Biot_mod_crack;  
 % Effective compressibility, (GPa^-1)
 obj.Delastic=[obj.lambda+2*obj.G,obj.lambda,0,obj.lambda;
                 obj.lambda,obj.lambda+2*obj.G,0,obj.lambda;
@@ -62,9 +63,9 @@ obj.Delastic=[obj.lambda+2*obj.G,obj.lambda,0,obj.lambda;
                 obj.lambda,obj.lambda,0,obj.lambda+2*obj.G];
 obj.muf=obj.mu*1e-12;       % dynamic viscosity of the fracturing fluid, unit (GPa.s)
 obj.mulf=obj.mul*1e-12;       % dynamic viscosity of the leakoff fluid, unit (GPa.s)
-obj.kmat=[1,0;0,1]*1e-18/obj.mulf;  % m^2/(GPa.s)
+obj.kmat=[1,0;0,1]*1e-19/obj.mulf;  % m^2/(GPa.s)
 % kmat_crack is also for the element domain flow, mulf should be used. (not significant?)
-obj.kmat_crack=[1,0;0,1]*1e-18/obj.mulf; % 
+obj.kmat_crack=[1,0;0,1]*1e-17/obj.mulf; % 
 % obj.kmat=obj.k*9.87e-16/obj.muf;
 % Initial total stress state, [sgmx,sgmy,tauxy,sgmz]
 obj.inistress=[obj.sgmH;obj.sgmh;0;obj.sgmv];

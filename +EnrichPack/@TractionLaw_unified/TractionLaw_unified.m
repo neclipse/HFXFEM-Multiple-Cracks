@@ -22,7 +22,7 @@ methods
 %        obj.Lambdaini=lambdaini;% not used FOR THIS CLASS AS LAMBDAINI
 %        SHOULD BE ZERO.
         %% Added on 08152019 to replace the Lambdacr
-        obj.Tnormalc=gbinp.E;
+        obj.Tnormalc=gbinp.E*1e3;
         obj.Tshearc=obj.Mufric*gbinp.E;
     end
     function stage=checkseparation (obj,mode)
