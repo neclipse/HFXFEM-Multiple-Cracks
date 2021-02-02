@@ -78,7 +78,7 @@ plate=Quadmesher(meshnode,meshelement);
     % rest two boundaries are impervious and free from deformation in y
     % direction.
     BCmat_line=[1,1,1,0;1,1,1,0;1,1,1,0;1,0,0,0];% The description is in the Precessor class.
-%     BCmat_line=[0,1,1,0;0,0,1,0;0,0,1,4;1,0,0,0];% The description is in the Precessor class.
+%     BCmat_line=[1,1,1,0;1,1,1,0;1,0,1,4;1,0,0,0];% The description is in the Precessor class.
     [ir,ic]=find(BCmat_line==1);
     psdboundind=[ir,ic];    % Dirichlet boundary, in this case all bounaries are fixed
     imbalancedbound=[];     % Neumann boundary is the 3rd boundary, top edge, must specify if existing  
@@ -87,7 +87,7 @@ plate=Quadmesher(meshnode,meshelement);
     % SHOULD BE SPECIFIED AND THE BCMAT_LINE SHOULD CHANGE FROM '1' TO '4'.
     predof=[0,0,0;0,0,0;0,0,0;0,0,0]; % Predefined dofs corresponding to the '1's in the BCmat_line;
 %     curloads1m=[0,3.7e-3];   % [Tx,Ty] are the current traction to the top side, GPa 
-%     curloads3m=[0,-2e-3];   % [Tx,Ty] are the current traction to the top
+%     curloads3m=[0,-5.2e-3];   % [Tx,Ty] are the current traction to the top
 %     side, GPa. 
     curloads3m=[];
 %     curloads3q=q;       % OUTWARD POSITIVE, INJECTION NEGATIVE.
@@ -127,18 +127,18 @@ plate=Quadmesher(meshnode,meshelement);
     crack1.initiate(injectionpoint);
     crack2.initiate; 
     % visual check of the cracks and the nodes detection.
-    mesh.plotmesh;
-    hold on;
-    for icrack=1:length(crackdict)
-        crackdict(icrack).plotme;
-    end
+%     mesh.plotmesh;
+%     hold on;
+%     for icrack=1:length(crackdict)
+%         crackdict(icrack).plotme;
+%     end
     % set EnrCrackBody using the initial crack info
-    % Initialmode 1: perforated; 2:existing fracture, start with compressive mode
-    % 3: "smeared crack" or cemented crack, seemingly continuum
+    % Initialmode 1: perforated, completely traction free; 
+    % 2: "smeared crack" or cemented crack, seemingly continuum
+    % 3:existing fracture, start with compressive mode
     % 4: newly propagated segment, start with tensile mode.
-    InitialMode1=true; % perforated
-    InitialMode2=false; % 
-    
+    InitialMode1=3; % 1:perforated
+    InitialMode2=3; % 3:compressive mode
     cohesivetype='unified';
     % This alpha is used to initiate the initial traction and crack opening
     % for existing open crack with cohesive traction, implemented in 
@@ -153,10 +153,10 @@ plate=Quadmesher(meshnode,meshelement);
     % calculated cohesive traction exceeds the threshold. 11/04/2020
     % This approach although more complicated, would be more robust than
     % the current handling of contact modes.
-    Alpha1=pi/2;     %pi/2-atan(0.5) the angle between the tensile force and crack plane
-    Alpha2=pi/2; % not necessary as perforated is true. 
-    encrack1=EnrichPack.EnrCrackBody('crackbody',elemdict,nodedict,crack1,InitialMode1,cohesivetype,Alpha1);
-    encrack2=EnrichPack.EnrCrackBody('crackbody',elemdict,nodedict,crack2,InitialMode2,cohesivetype,Alpha2);
+%     Alpha1=pi/2;     %pi/2-atan(0.5) the angle between the tensile force and crack plane
+%     Alpha2=pi/2; % not necessary as perforated is true. 
+    encrack1=EnrichPack.EnrCrackBody('crackbody',elemdict,nodedict,crack1,InitialMode1,cohesivetype);
+    encrack2=EnrichPack.EnrCrackBody('crackbody',elemdict,nodedict,crack2,InitialMode2,cohesivetype);
     encrack1.Qtable=[encrack1.Id,q]; % for edge crack, it is okay to ignore the injection point.
     Step1.EnrichItems=[encrack1,encrack2];           
     %% Start the Newton-Raphson iterative analysis
@@ -170,7 +170,7 @@ plate=Quadmesher(meshnode,meshelement);
     % and the accuracy3 of the Newton-Raphson algorithm. If one is not sure the
     % impact of the setting, one can leave them blank.
     maxinc=1000;
-    maxitr=11;
+    maxitr=11; % set to an odd number upon issue # 35.
     tol=1E-7;
     pincallowed=[];      % upper limit for pinc, may cause continuous increment cut if too small
     pinclimit=0.00001;       % a threshold to increase increment size
