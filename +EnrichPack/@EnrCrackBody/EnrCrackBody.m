@@ -19,9 +19,10 @@ classdef EnrCrackBody < EnrichPack.EnrichItem
        % injection point,y_coord of the injection point];
        NewNodes         % Newly found nodes to be enriched at this increment
        NewElems         % These info will be used in obj.postprocess for skipping.
-       Perforated       % flag to denote if the existing crack is perforated (completely cohesionless)
+       InitialMode      % Initial crack mode: 1-perforated; 2-smeared 3-compressive; 4-tensile.
+       Smeared=false;   % Boolean flag to tell if the initial crack is smeared, dependent on InitialMode
        Cohesive         % flag for the type of TSL, 'linear'-linear softening; 'bilinear'-bilinear softening.
-       Alpha            % angle between the crack plane and the initial loading for inplace mode
+       Alpha=pi/2;      % angle between the crack plane and the initial loading for inplace mode
        Isactive = true; % Indicate if the crack is able to propagate.
    end
    properties(NonCopyable)
@@ -29,7 +30,7 @@ classdef EnrCrackBody < EnrichPack.EnrichItem
    end
    methods
        
-       function obj = EnrCrackBody(type,elemdict,nodedict,mygeo,perforated,cohesive,alpha)
+       function obj = EnrCrackBody(type,elemdict,nodedict,mygeo,initialmode,cohesive,varargin)
            % To allow constructor work with empty input, 12/07/20.
            if nargin==0
                super_args={};
@@ -40,9 +41,20 @@ classdef EnrCrackBody < EnrichPack.EnrichItem
            obj.Mygeo=mygeo;
            obj.Id=mygeo.Id; % Mygeo is the universal id of a crack
            obj.Mesh=mygeo.Mesh;
-           obj.Perforated=perforated;   
+           obj.InitialMode=initialmode;   
            obj.Cohesive=cohesive;       
-           obj.Alpha=alpha;
+           if ~isempty(varargin)
+               obj.Alpha=varargin{1}; % the default value of alpha is pi/2
+           end
+           % think about how to do with smeared crack...01/31/2021
+           % Perhaps, I can set up a derived EnrCrackBody_smeared with almost every
+           % attribute of the current EnrCrackBody. With smeared==true, the
+           % methods of EnrCrackBody_smeared will be called instead of the
+           % not smeared. In this way, it may be easier to transfer
+           % attributes between the smeared to open crack. (a proposal) 
+           if initialmode==2
+               obj.Smeared=true;
+           end
            obj.generatetips;
            obj.setinteractedelem;
            obj.setenrichednode;

@@ -4,7 +4,7 @@ dshear=obj.Disp(1);
 % In case of Mode I crack, shear displacement is minmal. It is
 % better to drop tiny shear displacement and related shear traction
 % which are mainly caused by numerical error. 07072019
-if abs(dshear)<1e-12
+if abs(dshear)<1e-10
     dshear=0;
 end
 dnormal=obj.Disp(2);
@@ -15,9 +15,9 @@ sini=obj.IniTraction;
 nds=dshear/dcr;
 ndn=dnormal/dcr;
 kfirst=(scr-sini)/lcr;
+lambdae=sqrt(nds^2+ndn^2);      % nondimensional effective displacement
 if dnormal>=0
     % The tensile mode
-    lambdae=sqrt(nds^2+ndn^2);      % nondimensional effective displacement
     if obj.Lambdacr>0 && lambdae<=obj.Lambdacr % first stage
         obj.Stage=1;
 %         if lambdae>=obj.LambdaeL*0.98
@@ -74,15 +74,14 @@ if dnormal>=0
     end
 else
     %0825 Add the compressive mode, (temporary relationship)
-    lambdae=abs(nds);      % nondimensional effective displacement has only shear component
     obj.Stage=-1;
-    if lambdae>=obj.LambdaeL
-        % Loading
+    if lambdae>=obj.LambdaeL % we define the direction of crack opening as loading, 02/01/21
+        % UnLoading 
         obj.LambdaeL=lambdae;
-        obj.Loading=1;
-    else
-        % unloading
         obj.Loading=-1;
+    else
+        % Loading
+        obj.Loading=1;
     end
     Tss=obj.Tshearc; Tsn=0; Tnn=obj.Tnormalc; 
 end

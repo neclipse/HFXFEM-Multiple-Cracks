@@ -7,7 +7,7 @@ for iE=1:length(obj.NewElems)
     % Yes, subdomain can be called here, together with linegauss.
     % 11/27/20
     obj.Elemdict(obj.NewElems(iE)).subdomain;
-    obj.Elemdict(obj.NewElems(iE)).linegauss(obj.Id,obj.Cohesive,obj.Perforated,obj.Alpha);
+    obj.Elemdict(obj.NewElems(iE)).linegauss(obj.Id,obj.Cohesive,obj.InitialMode,obj.Alpha);
 end
 end
 

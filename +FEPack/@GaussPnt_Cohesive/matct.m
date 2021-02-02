@@ -6,7 +6,7 @@ function  obj=matct(obj,varargin)
 % the cohesive tangent matrix is a function of the ua according to the
 % cohesive crack model.
 %% Part 1:Transformation matrix A in Khoei 2012,from the global to the local
-if ~obj.Perforated
+if obj.InitialMode>2 % matct is not needed for perforated or smeared crack
     Vx=[1,0];
     Vy=[0,1];
     Vxl=obj.Mtaud;

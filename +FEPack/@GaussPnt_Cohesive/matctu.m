@@ -16,7 +16,7 @@ function  [traction,stagechangeflag,obj]=matctu(obj,ua,Due)
 % fracturing process so the scheme is not changed to full NR scheme yet.
 
 %%
-if ~obj.Perforated
+if obj.InitialMode>2 % matctu is not needed for perforated or smeared crack
     Vx=[1,0];
     Vy=[0,1];
     Vxl=obj.Mtaud;

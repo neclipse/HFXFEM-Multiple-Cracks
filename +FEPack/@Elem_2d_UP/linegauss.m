@@ -1,4 +1,4 @@
-function [ gp,gw ] = linegauss( obj,id,cohesive,perforated,varargin )
+function [ gp,gw ] = linegauss( obj,id,cohesive,initialmode,varargin )
 % LINEGAUSS is a method of Enriched Elem_2d_UP, called by EnrCrackBody
 % Use the seeds to create local gaussian points for line integral
 % The number of line integral gaussian points are better to be at least 2 as 
@@ -59,7 +59,7 @@ Mtaud=mtaud/ds;   % unit tangent vector
 
 gaussdictm(1,p)=FEPack.GaussPnt_Cohesive(); % generate an void object array
 for igauss=1:p
-    gaussdictm(igauss)=FEPack.GaussPnt_Cohesive(gp(igauss,1),gp(igauss,2),gw(igauss),nnodes,gbinp,perforated,Alpha);
+    gaussdictm(igauss)=FEPack.GaussPnt_Cohesive(gp(igauss,1),gp(igauss,2),gw(igauss),nnodes,gbinp,initialmode,Alpha);
     gaussdictm(igauss)=gaussdictm(igauss).preparing(obj.X,obj.Y,obj.EnrichNum);
     % Explicit linear softening
     if strcmp(cohesive,'unified')

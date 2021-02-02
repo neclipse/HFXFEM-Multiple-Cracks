@@ -12,7 +12,7 @@ classdef TractionLaw_linearsoftening < EnrichPack.TractionLaw
 %             obj.IniTraction=tini; % not assigned after 08252019 as initial cohesion is determind from lambdaini
             obj.Lambdaini=lambdaini;
             % Added on 08152019 to replace the Lambdacr
-            obj.Tnormalc=gbinp.E;
+            obj.Tnormalc=gbinp.E*1e3;
             obj.Tshearc=obj.Mufric*gbinp.E;
         end
         peaktangent=givepeaktangent(obj);
