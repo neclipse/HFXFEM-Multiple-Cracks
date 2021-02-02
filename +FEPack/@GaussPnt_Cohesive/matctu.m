@@ -58,7 +58,7 @@ if obj.InitialMode>2 % matctu is not needed for perforated or smeared crack
     calcrackopening=obj.Ntaud'*CrackDisp;
     %     shearopening=obj.Mtaud'*CrackDisp;
     %% By current opening, change the stiffness matrix also
-    if calcrackopening<=0
+    if calcrackopening<=0 
         Tangent_lol=[obj.TractionLaw.Tshearc,0;0,obj.TractionLaw.Tnormalc];
         Tangent_coh=Amat'*Tangent_lol*Amat;
         if any(ua)  % to avoid disturbing the initial call of intforcer when ua are all zeros.
@@ -82,7 +82,8 @@ if obj.InitialMode>2 % matctu is not needed for perforated or smeared crack
                 traction=temp1;
             end
         end
-    else
+    else % current opening is positive
+        % if the previous increment is already stage 1
         if obj.TractionLaw.Stage==1 % only need to worry about stage change at stage 1
             traction_eff=sqrt(traction(1)^2+traction(2)^2);
             traction_effold=sqrt(obj.TractionO(1)^2+obj.TractionO(2)^2);
@@ -103,7 +104,14 @@ if obj.InitialMode>2 % matctu is not needed for perforated or smeared crack
                     return;
                 end
             end
-        end  
+            % if the previous increment is still at stage -1
+        elseif obj.TractionLaw.Stage==-1
+            traction_eff=sqrt(traction(1)^2+traction(2)^2);
+            if traction_eff>obj.TractionLaw.PeakTraction
+                stagechangeflag=true;
+                return;
+            end
+        end
     end
 else
     stagechangeflag=false;
