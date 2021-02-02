@@ -80,7 +80,7 @@ classdef GaussPnt_Cohesive < FEPack.GaussPnt_LE_UP
                   obj.CrackOpening=obj.Ntaud'*obj.CrackDisp; % should be un
                   obj.Traction=Amat'*[initraction*cos(obj.Alpha);initraction*sin(obj.Alpha)];
                   obj.TractionO=obj.Traction;
-              case 4 % tensile mode
+              case 4 % tensile mode for newly propagated crack segment
                   % The initraction can also be directly calculated from the
                   % stress states at the linegauss points given the linegauss
                   % points are predefined. 10/06/20 if developed from smeared crack

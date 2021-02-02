@@ -137,7 +137,7 @@ plate=Quadmesher(meshnode,meshelement);
     % 2: "smeared crack" or cemented crack, seemingly continuum
     % 3:existing fracture, start with compressive mode
     % 4: newly propagated segment, start with tensile mode.
-    InitialMode1=3; % 1:perforated
+    InitialMode1=1; % 1:perforated
     InitialMode2=3; % 3:compressive mode
     cohesivetype='unified';
     % This alpha is used to initiate the initial traction and crack opening

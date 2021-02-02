@@ -11,9 +11,11 @@ function [ gp,gw ] = linegauss( obj,id,cohesive,initialmode,varargin )
 inp=inputParser;
 addOptional(inp,'Alpha',pi/2);
 addOptional(inp,'p',2);
+addParameter(inp,'inplace',false);
 parse(inp,varargin{:});
 Alpha=inp.Results.Alpha;
 p=inp.Results.p;
+inplace=inp.Results.inplace;
 % global lcr dcr tmax lini;
 % agl=assembleglobalinputs();
 gbinp=obj.GaussPntDictM(1).GBINP;
@@ -21,7 +23,11 @@ lcr=gbinp.lcr;
 dcr=gbinp.dcr;
 tkrg=gbinp.tkrg;
 lini=gbinp.lini;
-tini=gbinp.threshold;
+if inplace
+    tini=0; % assign initial traction as zero for in-place tensile crack
+else
+    tini=gbinp.threshold;
+end
 minaperture=gbinp.minaperture;
 perfaperture=gbinp.perfaperture;
 % use logical array id to relieve the single index id. 10/02/20
