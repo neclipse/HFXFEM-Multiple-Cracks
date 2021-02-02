@@ -170,7 +170,7 @@ plate=Quadmesher(meshnode,meshelement);
     % and the accuracy3 of the Newton-Raphson algorithm. If one is not sure the
     % impact of the setting, one can leave them blank.
     maxinc=1000;
-    maxitr=11; % set to an odd number upon issue # 35.
+    maxitr=9; % set to an odd number upon issue # 35.
     tol=1E-7;
     pincallowed=[];      % upper limit for pinc, may cause continuous increment cut if too small
     pinclimit=0.00001;       % a threshold to increase increment size

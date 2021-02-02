@@ -38,7 +38,9 @@ Ncut=0;                        % Number of times that increment cut procedure ha
 while obj.CutFlag==1
     while obj.ConvFlag==0
         % Check if load increment should be cut down
-        if obj.IItr>=obj.MaxItr || obj.DivFlag==1
+        % one way to switch the maxitr number between odd and even number.
+        % 02/02/2021.
+        if obj.IItr>=obj.MaxItr+Ncut || obj.DivFlag==1
             Ncut=Ncut+1;
             if Ncut>10
 %                 cutratio=0.45;
