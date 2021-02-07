@@ -30,9 +30,10 @@ function [IntLoadAll,stagechangeflag]=ifstd_enriched( obj,newmark,stagecheck)
     %% update cohesive traction at linegauss_cohesive
     % NEED TO RETHINK ABOUT THE SIZE AND LOCATION OF F_COH_I 10/16/20.
     F_coh_i=zeros(size(Due)); % This preallocates the elemental comprehensive F_coh_i
-    for ienr=1:obj.EnrichNum
-        istart=1+(ienr-1)*2*obj.NoNodes;
-        iend=ienr*2*obj.NoNodes;
+    for i=1:obj.EnrichNum
+        istart=1+(i-1)*2*obj.NoNodes;
+        iend=i*2*obj.NoNodes;
+        ienr=obj.get_realenrichind(i);
         for ig=1:length(obj.LineGaussDict{ienr})
             lg= obj.LineGaussDict{ienr}(ig);   % VALUE CLASS, A HARD COPY
             if stagecheck

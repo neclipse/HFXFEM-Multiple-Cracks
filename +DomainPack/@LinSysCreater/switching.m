@@ -18,10 +18,16 @@ if mode==1
             id=enrichitem.Id;
             for ielem=1:length(enrichitem.INTELEM)
                 elem=enrichitem.INTELEM(ielem);
-                Jacob=elem.JacobianMatDict(id);
-                Jacob.F_coh_old=Jacob.F_coh_i;
-                for ig=1:length(elem.LineGaussDict{id})
-                    elem.LineGaussDict{id}(ig).TractionO=elem.LineGaussDict{id}(ig).Traction;
+                % when the enrichitem.Smeared==false, there is still a
+                % chance that some of its involved elements has opened.
+                ind=elem.Enrich==id; % should have been fixed for issue #1.
+                    Jacob=elem.JacobianMatDict(ind);
+                    % There may be bug when there is change in elem.Enrich.
+                    % 02/05/21
+                    Jacob.F_coh_old=Jacob.F_coh_i;
+                    for ig=1:length(elem.LineGaussDict{ind})
+                        elem.LineGaussDict{ind}(ig).TractionO=elem.LineGaussDict{ind}(ig).Traction;
+                    end
                 end
             end
         end
@@ -52,10 +58,14 @@ elseif mode==3
             id=enrichitem.Id;
             for ielem=1:length(enrichitem.INTELEM)
                 elem=enrichitem.INTELEM(ielem);
-                Jacob=enrichitem.INTELEM(ielem).JacobianMatDict(id);
-                Jacob.F_coh_i=Jacob.F_coh_old; % initial F_coh_old should be assigned in the JacobianMat.
-                for ig=1:length(elem.LineGaussDict{id})
-                    elem.LineGaussDict{id}(ig).Traction=elem.LineGaussDict{id}(ig).TractionO;
+                % when the enrichitem.Smeared==false, there is still a
+                % chance that some of its involved elements has opened.
+                ind=elem.Enrich==id;
+                    Jacob=enrichitem.INTELEM(ielem).JacobianMatDict(ind);
+                    Jacob.F_coh_i=Jacob.F_coh_old; % initial F_coh_old should be assigned in the JacobianMat.
+                    for ig=1:length(elem.LineGaussDict{ind})
+                        elem.LineGaussDict{ind}(ig).Traction=elem.LineGaussDict{ind}(ig).TractionO;
+                    end
                 end
             end
         end

@@ -119,7 +119,7 @@ plate=Quadmesher(meshnode,meshelement);
     segments1=[1,0,lh/2;2,lc,lh/2];                      % crack segments [n,x,y]
     % x should always start from left to right. 
     % Enforced this condition in opengeo.discretize 01/02/21
-    segments2=[1,0.12,lh/2-0.012;2,0.22,lh/2+0.012]; 
+    segments2=[1,0.16,lh/2-0.012;2,0.1601,lh/2+0.012]; 
     crack1=ToolPack.OpenGeo(1,mesh,bdls,nodedict,elemdict,1,segments1,10); % The mouth crack
     crack2=ToolPack.OpenGeo(2,mesh,bdls,nodedict,elemdict,1,segments2,10); % The intersecting crack for debugging at stage1
     crackdict=[crack1,crack2];
@@ -138,7 +138,7 @@ plate=Quadmesher(meshnode,meshelement);
     % 3:existing fracture, start with compressive mode
     % 4: newly propagated segment, start with tensile mode.
     InitialMode1=1; % 1:perforated
-    InitialMode2=3; % 3:compressive mode
+    InitialMode2=2; % 3:compressive mode
     cohesivetype='unified';
     % This alpha is used to initiate the initial traction and crack opening
     % for existing open crack with cohesive traction, implemented in 

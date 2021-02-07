@@ -17,18 +17,7 @@ function  [traction,stagechangeflag,obj]=matctu(obj,ua,Due)
 
 %%
 if obj.InitialMode>2 % matctu is not needed for perforated or smeared crack
-    Vx=[1,0];
-    Vy=[0,1];
-    Vxl=obj.Mtaud;
-    Vyl=obj.Ntaud;
-    % Refer to the coordinate transformation
-    lxl=Vx*Vxl;     % cos(theta)
-    mxl=Vy*Vxl;     % sin (theta)
-    lyl=Vx*Vyl;     % -sin(theta)
-    myl=Vy*Vyl;     % cos(theat)
-    % 2d-Coordinate transformation matrix from global to the local;
-    Amat=[lxl,mxl;lyl,myl];
-    % ul=Amat*obj.CrackDisp;     % ul is local displcaement discontinuity averaged from nodal values
+    % ul=obj.Amat*obj.CrackDisp;     % ul is local displcaement discontinuity averaged from nodal values
     %% Part 2:Derive Tangent_loc in the local orthogonal coordinate system
     % obj.TractionLaw.Disp=ul;            % Local
     % if isempty(varargin)
@@ -43,9 +32,9 @@ if obj.InitialMode>2 % matctu is not needed for perforated or smeared crack
     traction=obj.TractionO+obj.Tangent_coh*(obj.Nuenrplus-obj.Nuenrminus)*Due;
     %% Validate or modify the traction
     % crack opening in the last increment
-    %     localdisp=Amat*obj.CrackDisp;
+    %     localdisp=obj.Amat*obj.CrackDisp;
     %     lastopening=localdisp(2);
-    %     initialdisp=Amat*obj.IniCrackDisp;
+    %     initialdisp=obj.Amat*obj.IniCrackDisp;
     %     initialopening=initialdisp(2);
     % calculate the current crack opening
     % the two ways: (Nuenrplus-Nuenrminus)*ua or Nu*ua
@@ -60,10 +49,10 @@ if obj.InitialMode>2 % matctu is not needed for perforated or smeared crack
     %% By current opening, change the stiffness matrix also
     if calcrackopening<=0 
         Tangent_lol=[obj.TractionLaw.Tshearc,0;0,obj.TractionLaw.Tnormalc];
-        Tangent_coh=Amat'*Tangent_lol*Amat;
+        Tangent_coh=obj.Amat'*Tangent_lol*obj.Amat;
         if any(ua)  % to avoid disturbing the initial call of intforcer when ua are all zeros.
             temp1=Tangent_coh*(obj.Nuenrplus-obj.Nuenrminus)*ua;
-            temp2=Amat*temp1; % from global x-y to local shear-normal
+            temp2=obj.Amat*temp1; % from global x-y to local shear-normal
             tnormal=temp2(2);
             % Bug: traction(1) is global traction in x-direction, it may
             % not be tshear. Change it to temp2(1)
@@ -74,7 +63,7 @@ if obj.InitialMode>2 % matctu is not needed for perforated or smeared crack
                 traction_eff=sqrt(tshear^2+tnormal^2);
                 if traction_eff>obj.TractionLaw.PeakTraction*1.1
                     %                     release the shear traction if tnormal turns positive
-                    traction=Amat'*[0;obj.TractionLaw.IniTraction];
+                    traction=obj.Amat'*[0;obj.TractionLaw.IniTraction];
                 end
             else
                 % compressive mode, could use mohr-coulomb criterion, not
@@ -100,7 +89,7 @@ if obj.InitialMode>2 % matctu is not needed for perforated or smeared crack
                 else
                     obj.TractionLaw.AfterPeak=true;
                     % stagechangeflag=true;
-                    traction=Amat'*obj.TractionO;   % Just use the old traction
+                    traction=obj.Amat'*obj.TractionO;   % Just use the old traction
                     return;
                 end
             end

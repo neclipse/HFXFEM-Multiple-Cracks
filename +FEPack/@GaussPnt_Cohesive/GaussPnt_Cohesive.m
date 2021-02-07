@@ -13,6 +13,7 @@ classdef GaussPnt_Cohesive < FEPack.GaussPnt_LE_UP
        Ds               % The interval length for integral
        Ntaud            % unit normal vector
        Mtaud            % unit tangent vector
+       Amat             % 2d-Coordinate transformation matrix from global to the local;
        TractionO;       % Converged traction 
        Traction;        % Traction (MPa), [tx,ty] 
        TractionLaw      % An object of TractionLaw
@@ -55,30 +56,30 @@ classdef GaussPnt_Cohesive < FEPack.GaussPnt_LE_UP
           lyl=Vx*Vyl;     % -sin(theta)
           myl=Vy*Vyl;     % cos(theta)
           % 2d-Coordinate transformation matrix from global to the local;
-          Amat=[lxl,mxl;lyl,myl];
+          obj.Amat=[lxl,mxl;lyl,myl];
           switch obj.InitialMode
               case 1 % perforated mode
                   obj.MinCrackOpening=perfapeture;
                   obj.CrackOpening=obj.MinCrackOpening;
-                  obj.CrackDisp=Amat'*[0;0];
+                  obj.CrackDisp=obj.Amat'*[0;0];
                   obj.IniCrackDisp=obj.CrackDisp;
                   obj.Traction=[0;0];
                   obj.TractionO=obj.Traction;
               case 2 % smeared mode
                   obj.MinCrackOpening=0;
                   obj.CrackOpening=0;
-                  obj.CrackDisp=Amat'*[0;0]; % initially 
+                  obj.CrackDisp=obj.Amat'*[0;0]; % initially 
                   obj.IniCrackDisp=obj.CrackDisp;
                   obj.Traction=[0;0];
                   obj.TractionO=obj.Traction;
               case 3 % compressive mode
                   initraction=0; % will be updated after first increment
                   ul=[0;-1e-16]; % [us;un], local displcaement discontinuity averaged from nodal values
-                  obj.CrackDisp=Amat'*ul;
+                  obj.CrackDisp=obj.Amat'*ul;
                   obj.IniCrackDisp=obj.CrackDisp;
                   obj.MinCrackOpening=0;    % Abaqus setttings
                   obj.CrackOpening=obj.Ntaud'*obj.CrackDisp; % should be un
-                  obj.Traction=Amat'*[initraction*cos(obj.Alpha);initraction*sin(obj.Alpha)];
+                  obj.Traction=obj.Amat'*[initraction*cos(obj.Alpha);initraction*sin(obj.Alpha)];
                   obj.TractionO=obj.Traction;
               case 4 % tensile mode for newly propagated crack segment
                   % The initraction can also be directly calculated from the
@@ -96,11 +97,11 @@ classdef GaussPnt_Cohesive < FEPack.GaussPnt_LE_UP
                   end
                   separation=obj.TractionLaw.Lambdaini*obj.TractionLaw.CriticalDisp;
                   ul=[separation*cos(obj.Alpha);separation*sin(obj.Alpha)]; % [us,un], local displcaement discontinuity averaged from nodal values
-                  obj.CrackDisp=Amat'*ul;
+                  obj.CrackDisp=obj.Amat'*ul;
                   obj.IniCrackDisp=obj.CrackDisp;
                   obj.MinCrackOpening=minaperture;    % Abaqus setttings
                   obj.CrackOpening=separation*sin(obj.Alpha)+obj.MinCrackOpening;
-                  obj.Traction=Amat'*[initraction*cos(obj.Alpha);initraction*sin(obj.Alpha)];
+                  obj.Traction=obj.Amat'*[initraction*cos(obj.Alpha);initraction*sin(obj.Alpha)];
                   obj.TractionO=obj.Traction;
                   % BUG:SHOULD NOT CHANGE THE TRACTIONLAW.INITRACTION AS IT
                   % IS USED TO CALCULATE THE TANGENT. 02/01/2021
@@ -116,14 +117,16 @@ classdef GaussPnt_Cohesive < FEPack.GaussPnt_LE_UP
            % and Nuenrminus are good for these calculation but not Uplus
            % and Uminus. 
            % reverted 11/27/20, Uplus and Uminus are not outdated.
-           obj.Uplus=obj.Nu*us+obj.Nuenrplus*ua;
-           obj.Uminus=obj.Nu*us+obj.Nuenrminus*ua;
-           % add the obj.IniCrackDisp as the resultant crackdisp should be
-           % used for givetangent.
-           obj.CrackDisp=(obj.Nuenrplus-obj.Nuenrminus)*ua+obj.IniCrackDisp;
-           % it is equivalent to obj.Nu*ua+obj.IniCrackDisp;
-           crackopening=obj.Ntaud'*obj.CrackDisp;
-           obj.CrackOpening=crackopening+heaviside(crackopening)*obj.MinCrackOpening;
+           if obj.InitialMode~=2
+               obj.Uplus=obj.Nu*us+obj.Nuenrplus*ua;
+               obj.Uminus=obj.Nu*us+obj.Nuenrminus*ua;
+               % add the obj.IniCrackDisp as the resultant crackdisp should be
+               % used for givetangent.
+               obj.CrackDisp=(obj.Nuenrplus-obj.Nuenrminus)*ua+obj.IniCrackDisp;
+               % it is equivalent to obj.Nu*ua+obj.IniCrackDisp;
+               crackopening=obj.Ntaud'*obj.CrackDisp;
+               obj.CrackOpening=crackopening+heaviside(crackopening)*obj.MinCrackOpening;
+           end
            % one place to prevent interpenetration, 07052019
            % Other places to prevent interpenetration, cohesive and contact
            % behavior. (partially done)
@@ -132,7 +135,8 @@ classdef GaussPnt_Cohesive < FEPack.GaussPnt_LE_UP
        end
        
        %% Prototype
-       obj=matsu_enriched(obj,us,ue,ps,pe)
+       obj=matsu(obj,us,ps);
+       obj=matsu_enriched(obj,us,ue,ps,pe);
        [traction,stagechangeflag,obj]=matctu(obj,ue,Due);
        obj=preparing(obj,X,Y,EnrichNum);       
        obj=enriching(obj);          % preparing the enrichment matrices, Bmatenr,Nuenr,Npenr

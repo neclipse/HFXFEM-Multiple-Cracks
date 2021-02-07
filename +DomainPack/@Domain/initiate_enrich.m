@@ -24,12 +24,15 @@ if ~isempty(obj.EnrichItems)
     % Alternative approach to fix issue #19. The old approach should have
     % no problems but it is changed just to be consistent with
     % Domain.update_enrich 12/25/2020.
+    % NewElems already excludes the elements that only involve with smeared
+    % cracks. 02/04/2021.
     allnewelems=unique([obj.EnrichItems.NewElems]);
     % Loop from the newelem level
     for ielem=1:length(allnewelems)
         newelem=obj.ElemDict(allnewelems(ielem));
-        % loop over all EnrichItems involved with the newelem
-        for ienr=1:newelem.EnrichNum
+        % loop over all real EnrichItems involved with the newelem
+        for i=1:newelem.EnrichNum
+            ienr=newelem.get_realenrichind(i); % 
             EnrItem=obj.EnrichItems(newelem.Enrich(ienr));
             % loop over the Myenfs of the EnrItem
             for ienf=1:length(EnrItem.Myenfs)

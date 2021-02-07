@@ -12,6 +12,7 @@ iq=0;
 % First loop to update doflocarray by the storage order in obj.EnrichItem
 for iEnrich=1:length(obj.EnrichItems)
    enrichitem=obj.EnrichItems(iEnrich);
+%    if enrichitem.InitialMode~=2
    % update the dofs indices for all the interacted nodes
    [totnenrdof, totuenrdof, totpenrdof]=updatedofarray(enrichitem,totnenrdof, totuenrdof, totpenrdof);
    % update the crack specific locarrayenr within the enriched elements

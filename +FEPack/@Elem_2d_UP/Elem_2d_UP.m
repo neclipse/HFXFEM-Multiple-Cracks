@@ -20,7 +20,7 @@ classdef Elem_2d_UP < handle
         X
         Y
         Area
-        GaussPntDictM;                 % object array of class standard GaussPnt
+        GaussPntDictM;          % object array of class standard GaussPnt
         NoNodes                 % Number of total nodes in this element
         IntLoadVec              % Element internal load vector
         ExtLoadVec              % Element external load vector
@@ -34,15 +34,18 @@ classdef Elem_2d_UP < handle
         Locarray                % global location array of mixed dofs,[ux,uy,p]
         LocarrayU               % global location array of only U, [ux,uy],  not obsolete, used in linsys.upconf
         LocarrayP               % global location array of only p, [p]
-        EnrichNum=0;           % Enrichment flags: special structure:[id1,id2,id3...]
+        EnrichNum=0;           % Number of Enrichment items involved with this element
         Enrich=zeros(1,3);    % Enrichment flags: special structure:[id1,id2,id3...]
+        Smeared=false(1,3);   % Smeared flags: corresponding to the obj.Enrich.
         PolygonNum=0;         % number of sub polygons created by the cracks. default=1, to keep track of subdomain
         JacobianMat           % The comprehensive elemental JocobianMat, object of FEPack.JacobianMat
         JacobianMatDict       % Enriched Jacobian matrix for the enriched element, objects of FEPack.JacobianMat
         Stress                 % Total stresses at the element centroid
         Stressp                % Effective stresses at the element centroid
     end
-    
+    properties (Dependent)
+        RealEnrich             % obj.Enrich(~obj.Smeared)
+    end
     
     methods
         function obj=Elem_2d_UP(index,elemtype,mattype,nodlist,noddict,gaussdictm)
@@ -63,7 +66,6 @@ classdef Elem_2d_UP < handle
                obj.GaussPntDictM=gaussdictm;
             end
         end
-        
 		function dislist = callength(obj) 
             if obj.NoNodes == 3||4
                 xlist1=obj.X;
@@ -79,44 +81,46 @@ classdef Elem_2d_UP < handle
             end
         end
         
-        function setenrich(obj,id)
+        function setenrich(obj,id,initialmode)
             % obj.Enrich stores all the ids of involved enrichitem with
             % this element
-           L=id~=obj.Enrich;
-           if isempty(obj.JacobianMatDict)
-               % preallocate the Jacobian matrices for potential cracks
-               % CHANGE SEMICOLON TO COMMA AS SEMICOLON WOULD GIVE A DICTIONARY OF ALL
+            L=id~=obj.Enrich;
+            if isempty(obj.JacobianMatDict)
+                % preallocate the Jacobian matrices for potential cracks
+                % CHANGE SEMICOLON TO COMMA AS SEMICOLON WOULD GIVE A DICTIONARY OF ALL
                 % REPEATED HANDLE 11/16/2018.
-               JMatDict(1,3)=FEPack.JacobianMat();
-               obj.JacobianMatDict=JMatDict;
-               % prepare the assembled elemental Jacobian matrix 
-               obj.JacobianMat=FEPack.JacobianMat();
-           end
-           if all(L)
-               % the indexing is not good 092820, to change
-               % Changed on 10/02/20
-               obj.EnrichNum=obj.EnrichNum+1; 
-               obj.Enrich(obj.EnrichNum)=id; 
-               obj.JacobianMatDict(obj.EnrichNum)=FEPack.JacobianMat(id);
-               
-%                NOT necessary after the revision on 02262019, stdnodes are
-%                now stored in the "mygeo" of the encrack.
-%                stdnodes=1:length(obj.NodList);
-%                L=false(1,length(obj.NodList));
-%                for iN=1:length(obj.NodList)
-%                    if all(obj.NodDict(iN).Enrich~=id)
-%                        L(iN)=true;
-%                    end
-%                end
-%                stdnodeslist=stdnodes(L);
-%                obj.NodstdList{id}=stdnodeslist;
-           end
+                JMatDict(1,3)=FEPack.JacobianMat();
+                obj.JacobianMatDict=JMatDict;
+                % prepare the assembled elemental Jacobian matrix
+                obj.JacobianMat=FEPack.JacobianMat();
+            end
+            if all(L)
+                % the indexing is not good 092820, to change
+                % Changed on 10/02/20
+                newnum=nnz(obj.Enrich)+1;
+                if initialmode~=2 % not "smeared crack mode"
+                    obj.EnrichNum=obj.EnrichNum+1;
+                    obj.Enrich(newnum)=id;
+                    obj.JacobianMatDict(newnum)=FEPack.JacobianMat(id);
+                elseif initialmode==2  %'smeared crack'
+                    obj.Enrich(newnum)=id;
+                    obj.Smeared(newnum)=true;
+                    obj.JacobianMatDict(newnum)=FEPack.JacobianMat(id);
+                end
+            end
         end
-        
+        function real_ind=get_realenrichind(obj,i)
+            % i is the numerical index for obj.Enrich
+            % real_ind is the correct index for the real enrcrack in obj.Enrich 
+            notsmeared=find(~obj.Smeared);
+            real_ind=notsmeared(i);
+        end
+        function value=get.RealEnrich(obj)
+            value=obj.Enrich(~obj.Smeared);
+        end
         %% Function Prototyping
         assemble_locarray( obj );                           % assemble enriched locarray from JacobianMatDict to obj.JacobianMat.
         crtstif(obj,newmark,iinc,gbinp, blending);           % create element stiffness matrix, call matct in gausspnt
-        crtstif_enriched(obj,newmark,id,gbinp,blending);    % create element stiffness matrix, call matct in gausspnt, for enrichitem id.
         crtstif_enriched_elemental( obj, newmark, gbinp, blending);
 %         crtstif_enriched_1Dflow( obj, newmark, id , gbinp); % 1D crack fluid flow adopted and compressibility of fracking fluid ignored
         givelocarray(obj,varargin);
@@ -124,7 +128,6 @@ classdef Elem_2d_UP < handle
 		load=ifstd(obj,newmark);     			% compute internal force vectors; call listra and matsu
         [IntLoadAll,stagechangeflag]=ifstd_enriched( obj,newmark, stagecheck);
         calarea(obj);
-%         flag=isinside(obj,x,y);				% check if point(x,y) is inside or on the edge of the element
 		[flagie,flagi,flage,flagoe,area] = isinside_vec(obj,plist);
 		subdomain(obj, varargins);
         linegauss( obj,id,cohesive,perforated,varargin );

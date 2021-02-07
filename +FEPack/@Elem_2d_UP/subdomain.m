@@ -25,6 +25,7 @@ function subdomain(obj,varargin)
 % 1.  Read the cracks intersections with the boundaries (obj.LocalInt) and
 % express the crack segements in functions
 NLines=obj.EnrichNum;
+% RealEnrichLines=find(~obj.Smeared);
 MaxPart=NLines*(NLines+1)/2+1; % Maximum possible partitions from NLines
 polygons=cell(1,MaxPart);
 localints=zeros(NLines*2,2);
@@ -32,6 +33,7 @@ localints_inrow=zeros(NLines,4);
 LineHandles=cell(1,NLines); % a cell array to store the function handles
 % create line function handles by two points
 for iline=1:NLines
+%     iline=RealEnrichLines(i); % TO find the not smeared line index.
     x1=obj.LocalInt{iline}(1,1);
     y1=obj.LocalInt{iline}(1,2);
     x2=obj.LocalInt{iline}(2,1);
@@ -70,6 +72,7 @@ signmat=zeros(size(allvertices,1),NLines);
 groupmat=true(size(signmat,1),2,NLines);
 tol=1e-6; % The numerical calculation of the intersection point may be off the lines
 for iline=1:NLines
+%     iline=RealEnrichLines(i); % TO find the not smeared line index.
     temp=LineHandles{iline}(allvertices(:,1),allvertices(:,2));
     temp(abs(temp)<tol)=0;
     signmat(:,iline)=sign(temp);                % real sign matrix

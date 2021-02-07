@@ -28,7 +28,7 @@ if obj.Isactive
     storage=false;
     gausspool=[];
     for ie=1:length(elempool)
-        if any(obj.Elemdict(elempool(ie)).Enrich)     % Enriched elements
+        if any(obj.Elemdict(elempool(ie)).RealEnrich)     % Enriched elements
             % HERE ONLY ONE ENRCRACK IS ASSUMED. TO CHANGE. 09/18/20
             % Fixed and ienrich is obsolete. 11/20
 %             ienrich= find(obj.Elemdict(elempool(ie)).Enrich,1);

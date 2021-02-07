@@ -21,12 +21,14 @@ inplace=inp.Results.inplace;
 gbinp=obj.GaussPntDictM(1).GBINP;
 lcr=gbinp.lcr;
 dcr=gbinp.dcr;
-tkrg=gbinp.tkrg;
+% tkrg=gbinp.tkrg;
 lini=gbinp.lini;
 if inplace
     tini=0; % assign initial traction as zero for in-place tensile crack
+    tkrg=0;
 else
     tini=gbinp.threshold;
+    tkrg=gbinp.tkrg;
 end
 minaperture=gbinp.minaperture;
 perfaperture=gbinp.perfaperture;

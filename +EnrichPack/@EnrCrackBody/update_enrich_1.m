@@ -3,8 +3,8 @@ function update_enrich_1(obj,varargin)
 % and nodes, change the enrich flag of these elements and nodes, but do not
 % update the subdomain and update the enrichment function.
 %% Really grow the crack if cutflag is not true for any tip
-nodes=NaN(1,100);
-elems=NaN(1,100);
+nodes=NaN(100,1);
+elems=NaN(100,1);
 inode=1;ielem=1;
 for itip=1:length(obj.Mytips)
     % really propagate mygeo if needed
