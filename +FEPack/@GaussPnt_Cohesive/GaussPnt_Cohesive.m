@@ -66,7 +66,7 @@ classdef GaussPnt_Cohesive < FEPack.GaussPnt_LE_UP
                   obj.Traction=[0;0];
                   obj.TractionO=obj.Traction;
               case 2 % smeared mode
-                  obj.MinCrackOpening=0;
+                  obj.MinCrackOpening=minaperture;
                   obj.CrackOpening=0;
                   obj.CrackDisp=obj.Amat'*[0;0]; % initially 
                   obj.IniCrackDisp=obj.CrackDisp;
@@ -81,11 +81,7 @@ classdef GaussPnt_Cohesive < FEPack.GaussPnt_LE_UP
                   obj.CrackOpening=obj.Ntaud'*obj.CrackDisp; % should be un
                   obj.Traction=obj.Amat'*[initraction*cos(obj.Alpha);initraction*sin(obj.Alpha)];
                   obj.TractionO=obj.Traction;
-              case 4 % tensile mode for newly propagated crack segment
-                  % The initraction can also be directly calculated from the
-                  % stress states at the linegauss points given the linegauss
-                  % points are predefined. 10/06/20 if developed from smeared crack
-                  % THE SWITCH BLOCK NEED TO BE UPDATED AFTER THE SMEARED CRACK 01/31/2021
+              otherwise % tensile mode for in-place crack or newly propagated crack
                   switch obj.TractionLaw.Type
                       case 'linear'
                           initraction=(1-obj.TractionLaw.Lambdaini)*obj.TractionLaw.PeakTraction;
@@ -132,6 +128,19 @@ classdef GaussPnt_Cohesive < FEPack.GaussPnt_LE_UP
            % behavior. (partially done)
            % IMPORTANT BUG: DO NOT ADD CALCRACKOPENING AGAIN AS
            % OBJ.INICRACKDISP IS ALREADY ADDED TO THE OBJ.CRACKDISP. 091319
+       end
+       function obj=transit(obj)
+           % transit from smeared crack to tensile crack
+%            traction_local=obj.Amat*obj.Traction;
+           % 0 for shear opening.
+%            obj.Alpha=max(0,atan(traction_local(2)/abs(traction_local(1))));
+           separation=obj.TractionLaw.Lambdaini*obj.TractionLaw.CriticalDisp;
+           ul=[separation*cos(obj.Alpha);separation*sin(obj.Alpha)]; % [us,un], local displcaement discontinuity averaged from nodal values
+           obj.CrackDisp=obj.Amat'*ul;
+           obj.IniCrackDisp=obj.CrackDisp;
+%            obj.MinCrackOpening=minaperture;    % Abaqus setttings
+           obj.CrackOpening=separation*sin(obj.Alpha)+obj.MinCrackOpening;
+           obj.TractionO=obj.Traction;
        end
        
        %% Prototype

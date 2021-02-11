@@ -86,6 +86,7 @@ for iE=1:length(obj.INTELEM)
             iint=iint+1;
         end
     else  % smeared crack, only calculated the effective traction
+        smeared=true(1,length(linegauss));
         for ig=1:length(linegauss)
             lg=linegauss(ig);
             intpoints(iint,:)=[lg.X,lg.Y];
@@ -94,16 +95,22 @@ for iE=1:length(obj.INTELEM)
             stressp=[lg.Stressp(1),lg.Stressp(3);lg.Stressp(3),lg.Stressp(2)]; % convert stressp to tensor form
             ShearTraction=lg.Mtaud'*stressp*lg.Ntaud; %
             NormalTraction=lg.Ntaud'*stressp*lg.Ntaud;
-            Effective_Traction=sqrt(ShearTraction^2+max(0,NormalTraction)^2); 
+            lg.Traction=lg.Amat'*[ShearTraction;NormalTraction]; % store the traction in [tx,ty].
+%             Effective_Traction=sqrt(ShearTraction^2+max(0,NormalTraction)^2); 
             ctraction(iint,:)=[ShearTraction,NormalTraction]; % [ts,tn]
-            if  Effective_Traction>agl.threshold_smeared
-                fprintf('The %d element is no longer smeared.\n',elem.Ind);
-                obj.Smeared=false;
-                obj.NewElems=[obj.NewElems;elem.Ind];
-                obj.NewNodes=[obj.NewNodes;elem.NodList'];
+            if  NormalTraction>agl.threshold_smeared
+                smeared(ig)=false;
             end
             linegauss(ig)=lg;
             iint=iint+1;
+        end
+        if all(~smeared)
+            fprintf('The %d element is no longer smeared.\n',elem.Ind);
+            % update the elem.Enrich and Smeared.
+            elem.opensmeared(obj.Id);
+            obj.TransElems=[obj.TransElems;elem.Ind];
+            obj.NewNodes=[obj.NewNodes;elem.NodList'];
+            obj.Smeared=false; % also change the flag of this enrichitem.
         end
     end
     elem.LineGaussDict{ind}=linegauss;

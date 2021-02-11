@@ -118,6 +118,12 @@ classdef Elem_2d_UP < handle
         function value=get.RealEnrich(obj)
             value=obj.Enrich(~obj.Smeared);
         end
+        function opensmeared(obj,enrichid)
+            % update the flags and EnrichNum when the element opens in
+            % enrcrack.postprocess
+            obj.EnrichNum=obj.EnrichNum+1;
+            obj.Smeared(obj.Enrich==enrichid)=false;
+        end
         %% Function Prototyping
         assemble_locarray( obj );                           % assemble enriched locarray from JacobianMatDict to obj.JacobianMat.
         crtstif(obj,newmark,iinc,gbinp, blending);           % create element stiffness matrix, call matct in gausspnt

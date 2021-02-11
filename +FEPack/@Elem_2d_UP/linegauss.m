@@ -11,11 +11,10 @@ function [ gp,gw ] = linegauss( obj,id,cohesive,initialmode,varargin )
 inp=inputParser;
 addOptional(inp,'Alpha',pi/2);
 addOptional(inp,'p',2);
-addParameter(inp,'inplace',false);
+% addParameter(inp,'inplace',false);
 parse(inp,varargin{:});
 Alpha=inp.Results.Alpha;
 p=inp.Results.p;
-inplace=inp.Results.inplace;
 % global lcr dcr tmax lini;
 % agl=assembleglobalinputs();
 gbinp=obj.GaussPntDictM(1).GBINP;
@@ -23,12 +22,22 @@ lcr=gbinp.lcr;
 dcr=gbinp.dcr;
 % tkrg=gbinp.tkrg;
 lini=gbinp.lini;
-if inplace
-    tini=0; % assign initial traction as zero for in-place tensile crack
-    tkrg=0;
-else
-    tini=gbinp.threshold;
-    tkrg=gbinp.tkrg;
+switch initialmode
+    case 1 % 'perforated', totally traction-free
+        tini=0; % assign initial traction as zero for in-place tensile crack
+        tkrg=0;
+    case 2 % 'Smeared mode'
+        tini=gbinp.threshold_smeared;
+        tkrg=gbinp.threshold_smeared;
+        lini=0.1;
+        lcr=0.1;
+    case 3 % in place initially compressive 
+        tini=0; tkrg=0;
+    case 4 % in place initially tensile
+        tini=0; tkrg=gbinp.tkrg;
+    case 5 % newly propagated, tensile
+        tini=gbinp.threshold;
+        tkrg=gbinp.tkrg;
 end
 minaperture=gbinp.minaperture;
 perfaperture=gbinp.perfaperture;

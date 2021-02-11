@@ -12,7 +12,7 @@ for iE=1:length(obj.Interactedelem)
         % called with no problem. 02/04/2021.
         obj.Elemdict(obj.Interactedelem(iE)).subdomain;
     end
-    obj.Elemdict(obj.Interactedelem(iE)).linegauss(obj.Id,obj.Cohesive,obj.InitialMode,obj.Alpha,'inplace',true);
+    obj.Elemdict(obj.Interactedelem(iE)).linegauss(obj.Id,obj.Cohesive,obj.InitialMode,obj.Alpha);
 end
 end
 

@@ -19,6 +19,7 @@ classdef EnrCrackBody < EnrichPack.EnrichItem
        % injection point,y_coord of the injection point];
        NewNodes         % Newly found nodes to be enriched at this increment
        NewElems         % These info will be used in obj.postprocess for skipping.
+       TransElems   % Part of the NewElems that are actually transited from previously smeared element.
        InitialMode      % Initial crack mode: 1-perforated; 2-smeared 3-compressive; 4-tensile.
        Smeared=false;   % Boolean flag to tell if the initial crack is smeared, dependent on InitialMode
        Cohesive         % flag for the type of TSL, 'linear'-linear softening; 'bilinear'-bilinear softening.
@@ -102,10 +103,10 @@ classdef EnrCrackBody < EnrichPack.EnrichItem
        [unstablegrow,cutflag]=check_grow(obj,varargin);
        initial_enrich_1(obj,varargin);
        initial_enrich_2(obj,varargin);
-       initial_enrich_3(obj,varargin);
+%        initial_enrich_3(obj,varargin);
        update_enrich_1(obj,varargin);
        update_enrich_2(obj,varargin);
-       update_enrich_3(obj,varargin)
+%        update_enrich_3(obj,varargin)
        showme( obj,typex,varargin );
    end
 end
