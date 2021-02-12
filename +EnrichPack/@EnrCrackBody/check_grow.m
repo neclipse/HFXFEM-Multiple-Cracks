@@ -11,10 +11,12 @@ cutflags=false(1,length(obj.Mytips));
 unstablegrow=false;
 cutflag=false;
 for itip=1:length(obj.Mytips)
-    % calculate the stress at tip
-    obj.Mytips(itip).calstress_nonlocal;
-    % look ahead to see if the crack shall propagate
-    [growflags(itip),unstablegrowflags(itip),cutflags(itip)]=obj.Mytips(itip).lookahead;
+    if any(obj.Stdnodes(itip,:)) % the call of Stdnodes will check the smeared flag of tip element.
+        % calculate the stress at tip
+        obj.Mytips(itip).calstress_nonlocal;
+        % look ahead to see if the crack shall propagate
+        [growflags(itip),unstablegrowflags(itip),cutflags(itip)]=obj.Mytips(itip).lookahead;
+    end
 end
 if any(cutflags)
 %     disp('cut back the current time increment');
