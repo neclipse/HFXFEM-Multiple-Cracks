@@ -24,10 +24,13 @@ classdef EnrCrackBody < EnrichPack.EnrichItem
        Smeared=false;   % Boolean flag to tell if the initial crack is smeared, dependent on InitialMode
        Cohesive         % flag for the type of TSL, 'linear'-linear softening; 'bilinear'-bilinear softening.
        Alpha=pi/2;      % angle between the crack plane and the initial loading for inplace mode
-       Isactive = true; % Indicate if the crack is able to propagate.
+       Isactive = true; % Indicate if the crack is able to propagate from the ti.
    end
    properties(NonCopyable)
        Mytips
+   end
+   properties(Dependent)
+       Stdnodes
    end
    methods
        
@@ -88,6 +91,15 @@ classdef EnrCrackBody < EnrichPack.EnrichItem
            end
            obj.Mytips=val;
        end  
+       function stdnodes=get.Stdnodes(obj)
+           stdnodes=zeros(length(obj.Mytips),2);
+           for itip=1:length(obj.Mytips)
+               tipelem=obj.Mytips(itip).INTELEM;
+               if ~tipelem.Smeared(tipelem.Enrich==obj.Id)
+                   stdnodes(itip,:)=obj.Mygeo.Stdnodes(2*itip-1:2*itip);
+               end
+           end
+       end
        
        function checkactive(obj)
            % 12/07/20 The activeness primarily depends on the geometry

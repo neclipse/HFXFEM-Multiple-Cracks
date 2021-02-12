@@ -7,9 +7,7 @@ nodes=NaN(100,1);
 elems=NaN(100,1);
 inode=1;ielem=1;
 for itip=1:length(obj.Mytips)
-    tipelem=obj.Mytips(itip).INTELEM;
-    % only call checkgrow when the tipelem is already open
-    if ~tipelem.Smeared(tipelem.Enrich==obj.Id)
+    if any(obj.Stdnodes(itip,:)) % the call of Stdnodes will check the smeared flag of tip element.
         % really propagate mygeo if needed
         obj.Mytips(itip).realgrow;
         nodes(inode:inode+length(obj.Mytips(itip).NewNodes)-1)=obj.Mytips(itip).NewNodes;
@@ -29,7 +27,7 @@ obj.NewElems=[obj.TransElems;elems];
 growchecks=[obj.Mytips.Growcheck];
 if any(obj.NewElems)
     if any([growchecks.Growflag])
-        fprintf('\n The %d has crack growth at tips',obj.Id);
+        fprintf('\n The No.%d crack has crack growth at tips',obj.Id);
         disp(growchecks.Growflag);
     else
         fprintf('Part of the smeared crack %d opens.\n',obj.Id);

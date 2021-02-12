@@ -102,8 +102,6 @@ classdef EnFHeaviside < EnrichPack.EnrichFun
                % obtain the nodes_phi from obj.Lsv.
                % enrich the gauss points inside
                nodes=elem.NodList;
-               %            stdnodes=elem.NodstdList;
-               %            stdnodes=stdnodes{id};                  % standard nodes list for the current enrichitem id;
                nodespool=obj.Lsv(:,1);                  % all nodes in the interacted elems
                phipool=obj.Lsv(:,2);
                [Lia,Lcob]=ismember(nodes,nodespool);    % find the relative index of nodes in the nodespool

@@ -24,7 +24,8 @@ for i=1:length(realenrich)
     % If some of the elements do open later on, the corresponding stdnodes
     % should also be updated. 
     id=enrichitem.Id;
-    stdnodes=enrichitem.Mygeo.Stdnodes;
+    stdnodes=enrichitem.Stdnodes(:);
+    stdnodes=stdnodes(stdnodes~=0); % Now the stdnodes are updated based on the smeared flag 02112021
     %     bctable=zeros(length(stdnodes)*3,2);
     bctable=zeros(length(stdnodes)*2,2);
     for istd=1:length(stdnodes)

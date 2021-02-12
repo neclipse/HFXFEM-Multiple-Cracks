@@ -136,7 +136,8 @@ plate=Quadmesher(meshnode,meshelement);
     % Initialmode 1: perforated, completely traction free; 
     % 2: "smeared crack" or cemented crack, seemingly continuum
     % 3:existing fracture, start with compressive mode
-    % 4: newly propagated segment, start with tensile mode.
+    % 4: existing fracture, start with tensile mode.
+    % 5: newly propagated fracture started from tensile mode.
     InitialMode1=1; % 1:perforated
     InitialMode2=2; % 3:compressive mode
     cohesivetype='unified';
@@ -188,7 +189,7 @@ plate=Quadmesher(meshnode,meshelement);
 %     savemode=1;
 %     Step1=Step1.running(postdict,savemode);
     savemode=2;
-    saveinc=int8(3);
+    saveinc=int8(10);
     Step1=Step1.running(postdict,savemode,'interval',saveinc);
 %     savemode=3;
 %     steplist1=[0.01,0.1,1];

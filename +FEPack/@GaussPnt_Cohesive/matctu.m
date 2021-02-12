@@ -16,7 +16,7 @@ function  [traction,stagechangeflag,obj]=matctu(obj,ua,Due)
 % fracturing process so the scheme is not changed to full NR scheme yet.
 
 %%
-if obj.InitialMode>2 % matctu is not needed for perforated or smeared crack
+if obj.InitialMode~=1 && ~obj.Smeared % matctu is not needed for perforated or smeared crack
     % ul=obj.Amat*obj.CrackDisp;     % ul is local displcaement discontinuity averaged from nodal values
     %% Part 2:Derive Tangent_loc in the local orthogonal coordinate system
     % obj.TractionLaw.Disp=ul;            % Local

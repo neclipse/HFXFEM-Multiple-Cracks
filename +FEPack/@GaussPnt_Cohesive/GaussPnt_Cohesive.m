@@ -17,7 +17,8 @@ classdef GaussPnt_Cohesive < FEPack.GaussPnt_LE_UP
        TractionO;       % Converged traction 
        Traction;        % Traction (MPa), [tx,ty] 
        TractionLaw      % An object of TractionLaw
-       InitialMode      % Same flag as inherited from EnrCrackBody, but may change for newly created tensile fractures.
+       InitialMode      % Same flag as inherited from EnrCrackBody, not changed
+       Smeared=false;          % the current flag for smeared or not
        Alpha=pi/2;            % the angle between the loading and the crack plane for
                         % initially inplace mode, counterclockwise from plane to
                         % loading.
@@ -36,7 +37,11 @@ classdef GaussPnt_Cohesive < FEPack.GaussPnt_LE_UP
            if nargin>=5
                obj.InitialMode=initialmode;
                obj.Alpha=alpha;
+               if initialmode==2
+                   obj.Smeared=true;
+               end
            end
+
        end
        
        function obj=initiate(obj,varargin) 
@@ -113,7 +118,7 @@ classdef GaussPnt_Cohesive < FEPack.GaussPnt_LE_UP
            % and Nuenrminus are good for these calculation but not Uplus
            % and Uminus. 
            % reverted 11/27/20, Uplus and Uminus are not outdated.
-           if obj.InitialMode~=2
+           if ~obj.Smeared
                obj.Uplus=obj.Nu*us+obj.Nuenrplus*ua;
                obj.Uminus=obj.Nu*us+obj.Nuenrminus*ua;
                % add the obj.IniCrackDisp as the resultant crackdisp should be
@@ -134,6 +139,7 @@ classdef GaussPnt_Cohesive < FEPack.GaussPnt_LE_UP
 %            traction_local=obj.Amat*obj.Traction;
            % 0 for shear opening.
 %            obj.Alpha=max(0,atan(traction_local(2)/abs(traction_local(1))));
+           obj.Smeared=false;
            separation=obj.TractionLaw.Lambdaini*obj.TractionLaw.CriticalDisp;
            ul=[separation*cos(obj.Alpha);separation*sin(obj.Alpha)]; % [us,un], local displcaement discontinuity averaged from nodal values
            obj.CrackDisp=obj.Amat'*ul;

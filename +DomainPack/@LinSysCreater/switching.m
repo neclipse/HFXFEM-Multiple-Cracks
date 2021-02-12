@@ -25,7 +25,7 @@ if mode==1
                 % chance that some of its involved elements has opened.
                 ind=elem.Enrich==id; % should have been fixed for issue #1.
                 if ~elem.Smeared(ind) % the crack is open at this element
-                    Jacob=elem.JacobianMatDict(ind);
+                    Jacob=elem.JacobianMat;
                     % There may be bug when there is change in elem.Enrich.
                     % 02/05/21
                     Jacob.F_coh_old=Jacob.F_coh_i;
@@ -69,7 +69,7 @@ elseif mode==3
                 % chance that some of its involved elements has opened.
                 ind=elem.Enrich==id;
                 if ~elem.Smeared(ind) % the crack is open at this element
-                    Jacob=enrichitem.INTELEM(ielem).JacobianMatDict(ind);
+                    Jacob=enrichitem.INTELEM(ielem).JacobianMat;
                     Jacob.F_coh_i=Jacob.F_coh_old; % initial F_coh_old should be assigned in the JacobianMat.
                     for ig=1:length(elem.LineGaussDict{ind})
                         elem.LineGaussDict{ind}(ig).Traction=elem.LineGaussDict{ind}(ig).TractionO;

@@ -2,6 +2,8 @@ function update_enrich_2(obj,varargin)
 % method of EnrCrackBody
 % update the subdomain and line gaussian points for obj.TransElems
 for iE=1:length(obj.TransElems)
+    % update the elem.Enrich and Smeared.
+    obj.Elemdict(obj.TransElems(iE)).opensmeared(obj.Id);
     % divide the element into triangular subdomains for 2d integral
     % THINK IF THE SUBDOMAIN AND ERNICHELEME CAN BE CALLED HERE. 11/06/20
     % Yes, subdomain can be called here, together with linegauss.
@@ -10,6 +12,7 @@ for iE=1:length(obj.TransElems)
     ind=obj.Elemdict(obj.TransElems(iE)).Enrich==obj.Id;
     % LineGauss already called for previously smeared elements.
     linegaussdict=obj.Elemdict(obj.TransElems(iE)).LineGaussDict{ind};
+    % update linegauss.smeared and traction, etc.
     for ip=1:length(linegaussdict)
         linegaussdict(ip)=linegaussdict(ip).transit;
     end

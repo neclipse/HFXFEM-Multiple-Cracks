@@ -106,8 +106,6 @@ for iE=1:length(obj.INTELEM)
         end
         if all(~smeared)
             fprintf('The %d element is no longer smeared.\n',elem.Ind);
-            % update the elem.Enrich and Smeared.
-            elem.opensmeared(obj.Id);
             obj.TransElems=[obj.TransElems;elem.Ind];
             obj.NewNodes=[obj.NewNodes;elem.NodList'];
             obj.Smeared=false; % also change the flag of this enrichitem.

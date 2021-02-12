@@ -9,6 +9,7 @@ if ~isempty(obj.EnrichItems)
     for ienr=1:length(obj.EnrichItems)
         enritem=obj.EnrichItems(ienr);
         enritem.NewElems=[];
+        enritem.TransElems=[]; % 02/12/2021.
         enritem.NewNodes=[];
         enritem.postprocess(obj.NewtonRaphson.Dt);      % obtain crack aperture and other practical information.
     end
