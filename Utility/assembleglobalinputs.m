@@ -3,8 +3,8 @@ function obj=assembleglobalinputs(icase)
 % This file is set to for "main-03152020_Abaqus_Ruhrsandstone.m"
 % 4.2 Storage-toughness dominated regime
 %% Parameters for parallel runs
-tinis=[0	0.8	0.8	0.8	0.8	0.8	0.8	0.8	0.8	0.8 0.8 0.8]*1e-3;
-tkrgs=[0	1.5	1.5	1.5 2.1	2.1	2.1 2.1 1.5	1.5	1.5	1.5]*1e-3;
+tinis=[1	0.8	0.8	0.8	0.8	0.8	0.8	0.8	0.8	0.8 0.8 0.8]*1e-3;
+tkrgs=[1	1.5	1.5	1.5 2.1	2.1	2.1 2.1 1.5	1.5	1.5	1.5]*1e-3;
 lcrs =[0.2	0.4	0.4	0.4	0.4	0.4	0.4	0.4	0.4 0.4 0.4 0.4];
 dcrs =[1 2	2 2 2 2 2 2 2.66 2.66 2.66 2.66]*1e-4;
 % Es=[15.96	15.96	15.96	15.96	15.96	15.96 15.96	15.96 15.96	15.96 15.96	15.96];
