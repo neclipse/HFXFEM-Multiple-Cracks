@@ -25,7 +25,7 @@ obj.Density=0;
 obj.lcr=lcrs(icase);
 obj.dcr=dcrs(icase);  % critical crack displacement where cohesion vanishes (m) from Khoei
 obj.threshold=tinis(icase);       % this is actually tini.
-obj.threshold_formaxps=1.5e-3; % only used for maxps grow check, when I intentionally put tini=tkrg=0 for brittle material.
+obj.threshold_formaxps=1e-3; % only used for maxps grow check, when I intentionally put tini=tkrg=0 for brittle material.
 obj.threshold_smeared=5e-4;    % threshold to convert "smeared" crack to open.
 obj.tkrg=tkrgs(icase);           % tkrg
 obj.Gc=0.5*(obj.threshold*obj.lcr+obj.tkrg)*obj.dcr;        %GN.m
