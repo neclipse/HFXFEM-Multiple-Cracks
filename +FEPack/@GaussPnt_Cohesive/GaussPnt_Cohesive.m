@@ -146,7 +146,8 @@ classdef GaussPnt_Cohesive < FEPack.GaussPnt_LE_UP
            obj.IniCrackDisp=obj.CrackDisp;
 %            obj.MinCrackOpening=minaperture;    % Abaqus setttings
            obj.CrackOpening=separation*sin(obj.Alpha)+obj.MinCrackOpening;
-           obj.TractionO=obj.Traction;
+%            obj.TractionO=obj.Traction;
+            obj.TractionO=[0;0]; % For simplicity, after transit, cohesionless. 03/09/2021
        end
        
        %% Prototype

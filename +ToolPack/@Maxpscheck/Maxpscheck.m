@@ -95,11 +95,11 @@ methods
         % AFFECT THE CRACK PROPAGATION.
         switch obj.Mode
             case 'tip'
-                if f>1+obj.Tol2
-                    %             warning('cut back the current time increment');
-                    obj.Unstable=true;
-                    obj.Growflag=false;
-                elseif f>=1+obj.Tol
+%                 if f>1+obj.Tol2
+%                     %             warning('cut back the current time increment');
+%                     obj.Unstable=true;
+%                     obj.Growflag=true; % don't cut back now 03/09/21
+                if f>=1+obj.Tol
                     %             warning('cut the following increments');
                     obj.Unstable=true;
                     obj.Growflag=true;
@@ -111,11 +111,11 @@ methods
                     obj.Growflag=false;
                 end
             case 'center'
-                if max(f)>1+obj.Tol2
-                    %             warning('cut back the current time increment');
-                    obj.Unstable=true;
-                    obj.Growflag=false;
-                elseif max(f)>=1+obj.Tol 
+%                 if max(f)>1+obj.Tol2
+%                     %             warning('cut back the current time increment');
+%                     obj.Unstable=true;
+%                     obj.Growflag=true;
+                if max(f)>=1+obj.Tol 
 %                     warning('cut the following increments');
                     obj.Unstable=true;
                     obj.Growflag=true;

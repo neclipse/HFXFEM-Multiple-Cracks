@@ -27,8 +27,10 @@ switch initialmode
         tini=0; % assign initial traction as zero for in-place tensile crack
         tkrg=0;
     case 2 % 'Smeared mode'
-        tini=gbinp.threshold_smeared;
-        tkrg=gbinp.threshold_smeared;
+%         tini=gbinp.threshold_smeared;
+%         tkrg=gbinp.threshold_smeared;
+        tini=0;
+        tkrg=0;
         lini=0.1;
         lcr=0.1;
     case 3 % in place initially compressive 
