@@ -50,7 +50,7 @@ end
 figure; hold on;
 patch(X,Y,[0.8 0.8 0.8])
 axis equal
-title(titlename)
+% title(titlename)
 xlabel('X'); ylabel('Y'); axis off; axis equal; 
 
 %% Plot the node numbers

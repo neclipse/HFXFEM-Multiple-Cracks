@@ -139,7 +139,7 @@ plate=Quadmesher(meshnode,meshelement);
     % 4: existing fracture, start with tensile mode.
     % 5: newly propagated fracture started from tensile mode.
     InitialMode1=1; % 1:perforated
-    InitialMode2=2; % 3:compressive mode
+    InitialMode2=2; % 2:smeared
     cohesivetype='unified';
     % This alpha is used to initiate the initial traction and crack opening
     % for existing open crack with cohesive traction, implemented in 

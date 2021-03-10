@@ -21,7 +21,8 @@ import EnrichPack.*;
 % crack has length of 40cm.
 lw=45;                                      % The width of the plate
 lh=60;                                      % The height of the plate
-lc=0.08;                                    % The center crack length     
+lc=0.08;                                    % The center crack length 
+ls=8;                                       % The spacing between two HF
 % four boundary handles (note that these handles should be adjusted based
 % on where the origin is located on the mesh.)
 fb1= @(p) p(:,2);                    % The bottom side
@@ -48,7 +49,7 @@ meshelement=readmatrix('elemfile_Double_HF_0223.txt','Delimiter',',');
 meshnode=meshnode(:,2:3);
 meshelement=meshelement(:,2:5);
 plate=Quadmesher(meshnode,meshelement);
-plate.plotmesh;
+% plate.plotmesh;
 %% Inputs and Parfor setting
 % % To display the progress
 % proT=uitable('ColumnName','numbered');
@@ -115,31 +116,43 @@ plate.plotmesh;
 %     xlimits=[-0.10,0.10];
 %     des={crackfunhandle,1,xlimits};
 %     crack1=ToolPack.OpenGeo(1,mesh,bdls,nodedict,elemdict,2,des,10);
-   % set crack geometry using segment points
-    segments1=[1,0,lh/2;2,lc,lh/2];                      % crack segments [n,x,y]
+   % set crack geometry using segment points for Two HFs
+    segments1=[1,0,33.9996;2,lc,33.9996];      % The mesh file is a little bit shifted, to adjust.         
+    segments2=[1,0,lh/2-ls/2;2,lc,lh/2-ls/2];  % crack segments [n,x,y]
     % x should always start from left to right. 
     % Enforced this condition in opengeo.discretize 01/02/21
-    segments2=[1,0.16,lh/2-0.012;2,0.1601,lh/2+0.012]; 
-    crack1=ToolPack.OpenGeo(1,mesh,bdls,nodedict,elemdict,1,segments1,10); % The mouth crack
-    crack2=ToolPack.OpenGeo(2,mesh,bdls,nodedict,elemdict,1,segments2,10); % The intersecting crack for debugging at stage1
-    crackdict=[crack1,crack2];
-    injectionpoint=[0,lh/2]; % needed for opengeo.findblending.
-    crack1.initiate(injectionpoint);
-    crack2.initiate; 
+    % set crack geometry for two NFs (3m long=1+2)
+    theta1=80*pi/180;
+    theta2=20*pi/180;
+    segments3=[1,1-cos(theta1),lh/2+ls/2-sin(theta1);2,1+2*cos(theta1),lh/2+ls/2+2*sin(theta1)]; 
+    segments4=[1,5-cos(theta2),lh/2-ls/2-sin(theta2);2,5+2*cos(theta2),lh/2-ls/2+2*sin(theta2)]; 
+    HF1=ToolPack.OpenGeo(1,mesh,bdls,nodedict,elemdict,1,segments1,10); % The HF1
+%     HF2=ToolPack.OpenGeo(2,mesh,bdls,nodedict,elemdict,1,segments2,10); % The HF2
+    NF1=ToolPack.OpenGeo(2,mesh,bdls,nodedict,elemdict,1,segments3,10); % The NF1
+%     NF2=ToolPack.OpenGeo(4,mesh,bdls,nodedict,elemdict,1,segments4,10); % The NF2
+    crackdict=[HF1,NF1];
+    injectionpoint1=[0,lh/2+ls/2]; % needed for opengeo.findblending.
+%     injectionpoint2=[0,lh/2-ls/2]; % needed for opengeo.findblending.
+    HF1.initiate(injectionpoint1);
+%     HF2.initiate(injectionpoint2); 
+    NF1.initiate;
+%     NF2.initiate;
     % visual check of the cracks and the nodes detection.
-%     mesh.plotmesh;
-%     hold on;
-%     for icrack=1:length(crackdict)
-%         crackdict(icrack).plotme;
-%     end
+    mesh.plotmesh;
+    hold on;
+    for icrack=1:length(crackdict)
+        crackdict(icrack).plotme;
+    end
     % set EnrCrackBody using the initial crack info
     % Initialmode 1: perforated, completely traction free; 
     % 2: "smeared crack" or cemented crack, seemingly continuum
     % 3:existing fracture, start with compressive mode
     % 4: existing fracture, start with tensile mode.
     % 5: newly propagated fracture started from tensile mode.
-    InitialMode1=1; % 1:perforated
-    InitialMode2=2; % 3:compressive mode
+    InitialMode1=1; % 1:perforated for HF
+    InitialMode2=1; 
+    InitialMode3=2; % 2: smeared for NF. 
+    InitialMode4=2;
     cohesivetype='unified';
     % This alpha is used to initiate the initial traction and crack opening
     % for existing open crack with cohesive traction, implemented in 
@@ -156,15 +169,18 @@ plate.plotmesh;
     % the current handling of contact modes.
 %     Alpha1=pi/2;     %pi/2-atan(0.5) the angle between the tensile force and crack plane
 %     Alpha2=pi/2; % not necessary as perforated is true. 
-    encrack1=EnrichPack.EnrCrackBody('crackbody',elemdict,nodedict,crack1,InitialMode1,cohesivetype);
-    encrack2=EnrichPack.EnrCrackBody('crackbody',elemdict,nodedict,crack2,InitialMode2,cohesivetype);
+    encrack1=EnrichPack.EnrCrackBody('crackbody',elemdict,nodedict,HF1,InitialMode1,cohesivetype);
+%     encrack2=EnrichPack.EnrCrackBody('crackbody',elemdict,nodedict,HF2,InitialMode2,cohesivetype);
+    encrack3=EnrichPack.EnrCrackBody('crackbody',elemdict,nodedict,NF1,InitialMode3,cohesivetype);
+%     encrack4=EnrichPack.EnrCrackBody('crackbody',elemdict,nodedict,NF2,InitialMode4,cohesivetype);
     encrack1.Qtable=[encrack1.Id,q]; % for edge crack, it is okay to ignore the injection point.
-    Step1.EnrichItems=[encrack1,encrack2];           
+%     encrack2.Qtable=[encrack2.Id,q]; % for edge crack, it is okay to ignore the injection point.
+    Step1.EnrichItems=[encrack1,encrack3];           
     %% Start the Newton-Raphson iterative analysis
     % ---- Newton-Raphson Iterator
 %     step=[0.005,0.0001;0.2,0.006;1,0.01];          % dimensionless increment size
 %     step=[0.005,0.0002;0.3,0.003;1,0.009];          % dimensionless increment size
-    step=[0.004,0.0001;0.2,0.003;0.75,0.008;1,0.01];  % dimensionless increment size
+    step=[0.004,0.0005;0.5,0.002;0.8,0.004;1,0.008];  % dimensionless increment size
     tottime=5;                                 % total time
     inctype=1;                                  % inctype: 1-load increments; 2- displacement increments
     % The following three parameters are optional setting to control the speed

@@ -50,13 +50,13 @@ obj.K=obj.lambda+2*obj.G/3;
 obj.Ks=34;               % Ks, bulk modulus of the solid phase, GPa 37.778
 obj.Biot_alpha=1-obj.K/obj.Ks;
 % obj.Biot_alpha=0;  
-% note this biot_mod should be 0.0687 when comparing to the single solid phase
-% obj.Biot_mod=obj.Biot_mod_crack;
-obj.Biot_mod=0.0687;
-obj.Cstar=1/obj.Biot_mod;
-obj.Biot_mod_crack=obj.Biot_mod;
-% obj.Biot_mod_crack=obj.Ks/(obj.Biot_alpha-obj.poro*(1-obj.Ks/obj.Kf));
+% obj.Biot_mod_crack=obj.Biot_mod;
+obj.Biot_mod_crack=obj.Ks/(obj.Biot_alpha-obj.poro*(1-obj.Ks/obj.Kf));
 obj.Cstar_crack=1/obj.Biot_mod_crack;  
+% note this biot_mod should be 0.0687 when comparing to the single solid phase
+% obj.Biot_mod=0.0687;
+obj.Biot_mod=obj.Biot_mod_crack;
+obj.Cstar=1/obj.Biot_mod;
 % Effective compressibility, (GPa^-1)
 obj.Delastic=[obj.lambda+2*obj.G,obj.lambda,0,obj.lambda;
                 obj.lambda,obj.lambda+2*obj.G,0,obj.lambda;

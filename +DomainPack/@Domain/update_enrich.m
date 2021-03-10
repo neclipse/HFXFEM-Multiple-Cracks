@@ -42,7 +42,7 @@ if ~isempty(obj.EnrichItems)
         newelem=obj.ElemDict(allnewelems(ielem));
         % loop over all EnrichItems involved with the newelem
         for i=1:newelem.EnrichNum
-            ienr=newelem.get_realenrichind(i); % 
+            ienr=newelem.get_realenrichind(i); % the index in elem.Enrich
             EnrItem=obj.EnrichItems(newelem.Enrich(ienr));
             % loop over the Myenfs of the EnrItem
             for ienf=1:length(EnrItem.Myenfs)
