@@ -26,10 +26,12 @@ switch mode
             %             obj.Increments=newincrem:newincrem:1;
             increments=[newincrem,obj.Increments(2:end)];
         elseif iinc>1
-%             % May introduce too many increments
+%             %% Approach 1: May introduce too many increments
 %             step=dratio*(obj.Increments(iinc)-obj.Increments(iinc-1));
 %             newincrem=obj.Increments(iinc-1)+step;
 %             front=obj.Increments(1:iinc-1);
+%             tail=obj.Increments(iinc:end);
+%             increments=[front,newincrem,tail];
 %             % To find the checkpoint within obj.Steps
 %             temp1=obj.Steps(:,1);
 %             % BUG: SHOULD NOT USE TEMP1(TEMP1>0) TO FIND THE MINIMUM POSITIVE 08092019
@@ -37,7 +39,7 @@ switch mode
 %             nextstage=newincrem:step:checkpoint;
 %             tail= obj.Increments(obj.Increments>checkpoint);          
 %             increments=[front,nextstage,tail];
-            % Did not affect the steps afterawards
+            %% Approach 2: Did not significantly affect the number steps afterawards
             front=obj.Increments(1:iinc-1);
             current=obj.Increments(iinc-1:end-1);
             back=obj.Increments(iinc:end);
@@ -67,7 +69,7 @@ switch mode
             increments=[front,back,rest];
         end
     case 3 % for unstablegrow insert several small time steps
-%         fprintf('Increment size is cut after No.%d increment to allow unstable crack growth\n',obj.IInc);
+        fprintf('Increment size is cut after No.%d increment to allow unstable crack growth\n',obj.IInc);
         front=obj.Increments(1:iinc-1);
         insertion=obj.Increments(iinc):minimalinc:(obj.Increments(iinc)+minimalinc*allowedsteps);
         current=obj.Increments(iinc:end-1);

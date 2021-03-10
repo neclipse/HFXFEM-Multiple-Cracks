@@ -5,7 +5,7 @@ function obj=running(obj,postdict,savemode,varargin)
 % Assemble, solve Linear equation system and update
 p=inputParser();
 defaultsaveinterval=1;
-defaultinclist=[0.01,0.1,1];
+defaultinclist=[];
 checkinterval = @(x) isinteger(x) && x<obj.NewtonRaphson.NoInc;
 % addRequired(p,'savemode');
 addOptional(p,'interval',defaultsaveinterval,checkinterval);
@@ -32,63 +32,58 @@ obj=obj.updatedofarray_enriched; % Bug-Issue #15. 12/04/2020
 obj.LinSysCrt.initialRHS;
 % Add try and catch statements to handle unexpected errors without saving
 % the results to obj.Postprocess.07132019
-try
-    while iinc<=obj.NewtonRaphson.NoInc                 % For loop is not proper for this kind loop whose loop number will change during the loop
-%         fprintf('Running at No. %d increment out of %d increments .\n',iinc,obj.NewtonRaphson.NoInc);
-        % run into each inc with NewtonRaphson.iterating.
-        % include both standard and enriched dofs described by Dirichlet boundary condition.
-        % BUG-ISSUE 13: allpsddofs did not correctly include the
-        % psdenrdofs. Reason is that obj.initiate_enrich did not return
-        % obj. Remember Domain is a value class.
-        allpsddofs=[obj.PsdDofs';obj.PsdEnrDofs];        
-        obj.NewtonRaphson.iterating(iinc,stdpdofs,allpsddofs,inclist);
-        % Do postprocessing after convergence, then update the enrichitems.
-        obj.update_enrich; 
-        %%- Store the converged value for postprocessing
-        inc=obj.NewtonRaphson.Timeinc(iinc);            % the value of current time
-        if savemode==1
-            % iterating over one single increment  
+
+while iinc<=obj.NewtonRaphson.NoInc                 % For loop is not proper for this kind loop whose loop number will change during the loop
+    %         fprintf('Running at No. %d increment out of %d increments .\n',iinc,obj.NewtonRaphson.NoInc);
+    % run into each inc with NewtonRaphson.iterating.
+    % include both standard and enriched dofs described by Dirichlet boundary condition.
+    % BUG-ISSUE 13: allpsddofs did not correctly include the
+    % psdenrdofs. Reason is that obj.initiate_enrich did not return
+    % obj. Remember Domain is a value class.
+    allpsddofs=[obj.PsdDofs';obj.PsdEnrDofs];
+    obj.NewtonRaphson.iterating(iinc,stdpdofs,allpsddofs,inclist);
+    % Do postprocessing after convergence, then update the enrichitems.
+    obj.update_enrich;
+    %%- Store the converged value for postprocessing
+    inc=obj.NewtonRaphson.Timeinc(iinc);            % the value of current time
+    if savemode==1
+        % iterating over one single increment
+        obj=obj.storage(postdict,iinc,inc);
+        ind=iinc;
+    elseif savemode==2
+        % store the results every specified inc
+        if iinc==1
             obj=obj.storage(postdict,iinc,inc);
-            ind=iinc;
-        elseif savemode==2
-            % store the results every specified inc
-            if iinc==1
-                obj=obj.storage(postdict,iinc,inc);
-            elseif ~mod(iinc,saveinc)||iinc==obj.NewtonRaphson.NoInc
-                ind=ind+1;
-                obj=obj.storage(postdict,iinc,inc,ind);
-            end
-        elseif savemode==3
-            % store the results at the specified increment
-            if ismembertol(inc,timelist)
-                obj=obj.storage(postdict,iinc,inc,ind);
-                ind=ind+1;
-            end
+        elseif ~mod(iinc,saveinc)||iinc==obj.NewtonRaphson.NoInc
+            ind=ind+1;
+            obj=obj.storage(postdict,iinc,inc,ind);
         end
-        % Early termination due to cut through
-        % This module should be updated because the false Isactive may not 
-        % be equivalent to cut through when there are multiple cracks.
-        % 12/07/20.
-        if ~isempty(obj.EnrichItems)
-            if ~all([obj.EnrichItems.Isactive])
-                if obj.Postprocess(ind).IInc~=iinc
-                    ind=ind+1;
-                    obj=obj.storage(postdict,iinc,inc,ind);
-                end
-                fprintf('The simulation is ended early at %f seconds as crack cut through the domain\n', inc);
-                break;
-            end
-            obj=obj.updatedofarray_enriched; % added on 06282019
-            obj.LinSysCrt.initialRHS;
+    elseif savemode==3
+        % store the results at the specified increment
+        if ismembertol(inc,timelist)
+            obj=obj.storage(postdict,iinc,inc,ind);
+            ind=ind+1;
         end
-        iinc=iinc+1;
     end
-catch ME
-    warning('Some unexpected error occured and the program exit before completion');
-    % For debugging use, it is better to rethrow the error. Later on,
-    % delete rethrow (ME).
-    rethrow(ME);
+    % Early termination due to cut through
+    % This module should be updated because the false Isactive may not
+    % be equivalent to cut through when there are multiple cracks.
+    % 12/07/20.
+    if ~isempty(obj.EnrichItems)
+        if ~all([obj.EnrichItems.Isactive])
+            if obj.Postprocess(ind).IInc~=iinc
+                ind=ind+1;
+                obj=obj.storage(postdict,iinc,inc,ind);
+            end
+            fprintf('The simulation is ended early at %f seconds as crack cut through the domain\n', inc);
+            break;
+        end
+        obj=obj.updatedofarray_enriched; % added on 06282019
+        obj.LinSysCrt.initialRHS;
+    end
+    iinc=iinc+1;
 end
+
 if savemode==3
     postdict=postdict(1:ind-1);
 else

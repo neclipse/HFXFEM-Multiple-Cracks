@@ -84,7 +84,7 @@ classdef NewRapItr < handle
 %            if length(increments)>obj.MaxInc
 %                warning('Too many increments are involved.');
 %            end
-           temp=uniquetol(increments);
+           temp=uniquetol(increments,1.5e-5); % To exclude too many close increments
            temp(1-temp<1e-4)=[];
            obj.Increments=[temp,1];
        end
