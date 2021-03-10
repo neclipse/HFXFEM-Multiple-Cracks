@@ -6,7 +6,7 @@ if isempty(varargin)
 else
     ratio=varargin{1};
 end
-baselength=min(obj.INTELEM.Length);
+baselength=max(obj.INTELEM.Length);
 length= ratio*baselength;
 obj.Radius=length;
 end
