@@ -49,7 +49,7 @@ classdef GaussPnt_Cohesive < FEPack.GaussPnt_LE_UP
           % not adopted in the latest version 06042019.
           if ~isempty(varargin)
               minaperture=varargin{1};
-              perfapeture=varargin{2};
+              perfaperture=varargin{2};
           end
           Vx=[1,0];
           Vy=[0,1];
@@ -64,14 +64,14 @@ classdef GaussPnt_Cohesive < FEPack.GaussPnt_LE_UP
           obj.Amat=[lxl,mxl;lyl,myl];
           switch obj.InitialMode
               case 1 % perforated mode
-                  obj.MinCrackOpening=perfapeture;
+                  obj.MinCrackOpening=perfaperture;
                   obj.CrackOpening=obj.MinCrackOpening;
                   obj.CrackDisp=obj.Amat'*[0;0];
                   obj.IniCrackDisp=obj.CrackDisp;
                   obj.Traction=[0;0];
                   obj.TractionO=obj.Traction;
               case 2 % smeared mode
-                  obj.MinCrackOpening=minaperture;
+                  obj.MinCrackOpening=perfaperture;
                   obj.CrackOpening=0;
                   obj.CrackDisp=obj.Amat'*[0;0]; % initially 
                   obj.IniCrackDisp=obj.CrackDisp;
@@ -118,7 +118,7 @@ classdef GaussPnt_Cohesive < FEPack.GaussPnt_LE_UP
            % and Nuenrminus are good for these calculation but not Uplus
            % and Uminus. 
            % reverted 11/27/20, Uplus and Uminus are not outdated.
-           if ~obj.Smeared
+%            if ~obj.Smeared
                obj.Uplus=obj.Nu*us+obj.Nuenrplus*ua;
                obj.Uminus=obj.Nu*us+obj.Nuenrminus*ua;
                % add the obj.IniCrackDisp as the resultant crackdisp should be
@@ -126,8 +126,8 @@ classdef GaussPnt_Cohesive < FEPack.GaussPnt_LE_UP
                obj.CrackDisp=(obj.Nuenrplus-obj.Nuenrminus)*ua+obj.IniCrackDisp;
                % it is equivalent to obj.Nu*ua+obj.IniCrackDisp;
                crackopening=obj.Ntaud'*obj.CrackDisp;
-               obj.CrackOpening=crackopening+heaviside(crackopening)*obj.MinCrackOpening;
-           end
+               obj.CrackOpening=crackopening+obj.MinCrackOpening;
+%            end
            % one place to prevent interpenetration, 07052019
            % Other places to prevent interpenetration, cohesive and contact
            % behavior. (partially done)
@@ -139,14 +139,16 @@ classdef GaussPnt_Cohesive < FEPack.GaussPnt_LE_UP
 %            traction_local=obj.Amat*obj.Traction;
            % 0 for shear opening.
 %            obj.Alpha=max(0,atan(traction_local(2)/abs(traction_local(1))));
+           obj.InitialMode=1; % Change this to perforated crack
            obj.Smeared=false;
            separation=obj.TractionLaw.Lambdaini*obj.TractionLaw.CriticalDisp;
            ul=[separation*cos(obj.Alpha);separation*sin(obj.Alpha)]; % [us,un], local displcaement discontinuity averaged from nodal values
            obj.CrackDisp=obj.Amat'*ul;
            obj.IniCrackDisp=obj.CrackDisp;
 %            obj.MinCrackOpening=minaperture;    % Abaqus setttings
-           obj.CrackOpening=separation*sin(obj.Alpha)+obj.MinCrackOpening;
+           obj.CrackOpening=obj.MinCrackOpening;
 %            obj.TractionO=obj.Traction;
+            obj.Traction=[0;0];
             obj.TractionO=[0;0]; % For simplicity, after transit, cohesionless. 03/09/2021
        end
        

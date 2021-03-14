@@ -109,6 +109,7 @@ for iE=1:length(obj.INTELEM)
             obj.TransElems=[obj.TransElems;elem.Ind];
             obj.NewNodes=[obj.NewNodes;elem.NodList'];
             obj.Smeared=false; % also change the flag of this enrichitem.
+            obj.InitialMode=1; %  Change this to perforated crack. 03/11/21
         end
     end
     elem.LineGaussDict{ind}=linegauss;

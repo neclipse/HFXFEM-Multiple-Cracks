@@ -33,7 +33,7 @@ r1t=2*k*nnodes; % total uenrdofs
 r2t=k*nnodes;   % total penrdofs
 % 01/21/20201 Attemp to resolve the blocked pressure by existing crack. #19
 if k>1
-   kmat= 1000; % A big number to allow the pressure connection between cracks.
+   kmat= 10000; % A big number to allow the pressure connection between cracks.
 end
 %% May only need one final JacobianMat, no need for discrete crack. 092920.
 JMat=obj.JacobianMat; % elemental comprehensive JacobianMat
