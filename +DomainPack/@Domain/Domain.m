@@ -51,6 +51,7 @@ classdef Domain
        obj=updatelinsys(obj);
        obj=storage( obj, postdict, iinc, inc, varargin );
        obj=running(obj,postdict,savemode,varargin);
+       obj=restart(obj,postdict,savemode,ind,iinc,varargin);
        assign_arbitrary_flow(obj);
        snapshot( obj, crackid, variable, timesteps, varargin);
        %
