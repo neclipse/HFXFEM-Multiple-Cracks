@@ -26,14 +26,14 @@ obj.lcr=lcrs(icase);
 obj.dcr=dcrs(icase);  % critical crack displacement where cohesion vanishes (m) from Khoei
 obj.threshold=tinis(icase);       % this is actually tini.
 obj.threshold_formaxps=1e-3; % only used for maxps grow check, when I intentionally put tini=tkrg=0 for brittle material.
-obj.threshold_smeared=5e-4;    % threshold to convert "smeared" crack to open.
+obj.threshold_smeared=2e-4;    % threshold to convert "smeared" crack to open.
 obj.tkrg=tkrgs(icase);           % tkrg
 obj.Gc=0.5*(obj.threshold*obj.lcr+obj.tkrg)*obj.dcr;        %GN.m
 % lcoh=obj.E*obj.Gc/(1-obj.nu^2)/obj.tkrg^2;                  % Estimated cohesive zone size based on Hillerborg et al. 
 % % tmax is, however, usually size dependent according to Bazant, and Kazemi
 % % 1990 and 1991
 obj.lini=0;                 % Dimensionless parameter FOR initial crack separation, NOT USED BY BILINEAR NOR UNIFIED TRACTION LAW.
-obj.perfaperture=1e-4;
+obj.perfaperture=2e-4;
 obj.minaperture=8e-5;
 obj.mu=10;                   % dynamic viscosity of the fluid, unit cp, mpa.s
 obj.mul=1;                % dynamic viscosity of leakoff fluid,, unit cp, mpa.s
@@ -51,11 +51,11 @@ obj.Ks=34;               % Ks, bulk modulus of the solid phase, GPa 37.778
 obj.Biot_alpha=1-obj.K/obj.Ks;
 % obj.Biot_alpha=0;  
 % note this biot_mod should be 0.0687 when comparing to the single solid phase
-% obj.Biot_mod=obj.Biot_mod_crack;
-obj.Biot_mod=0.0687;
+obj.Biot_mod=obj.Ks/(obj.Biot_alpha-obj.poro*(1-obj.Ks/obj.Kf));
+% obj.Biot_mod=0.0687;
 obj.Cstar=1/obj.Biot_mod;
+% obj.Biot_mod_crack=obj.Biot_mod;
 obj.Biot_mod_crack=obj.Biot_mod;
-% obj.Biot_mod_crack=obj.Ks/(obj.Biot_alpha-obj.poro*(1-obj.Ks/obj.Kf));
 obj.Cstar_crack=1/obj.Biot_mod_crack;  
 % Effective compressibility, (GPa^-1)
 obj.Delastic=[obj.lambda+2*obj.G,obj.lambda,0,obj.lambda;

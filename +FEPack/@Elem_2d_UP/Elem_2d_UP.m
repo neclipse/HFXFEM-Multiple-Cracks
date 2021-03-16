@@ -116,7 +116,9 @@ classdef Elem_2d_UP < handle
             real_ind=notsmeared(i);
         end
         function value=get.RealEnrich(obj)
-            value=obj.Enrich(~obj.Smeared);
+%             value=zeros(size(obj.Enrich));
+%             value(~obj.Smeared)=obj.Enrich(~obj.Smeared);
+              value=obj.Enrich(~obj.Smeared); % Enrich=[2,1,0], smeared=[1,0,0], realenrich=[1,0]
         end
         function opensmeared(obj,enrichid)
             % update the flags and EnrichNum when the element opens in
