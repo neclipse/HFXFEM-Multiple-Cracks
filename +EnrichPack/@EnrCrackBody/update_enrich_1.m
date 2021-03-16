@@ -28,7 +28,7 @@ growchecks=[obj.Mytips.Growcheck];
 if any(obj.NewElems)
     if any([growchecks.Growflag])
         fprintf('\n The No.%d crack has crack growth at tips',obj.Id);
-        disp(growchecks.Growflag);
+        disp([growchecks.Growflag]);
     else
         fprintf('Part of the smeared crack %d opens.\n',obj.Id);
     end
@@ -50,7 +50,7 @@ if any(obj.NewElems)
     for iE=1:length(elems) 
         % set enrich flag 
         elem=obj.Elemdict(elems(iE));
-        elem.setenrich(obj.Id,4); % newly propagated segement initialmode=4.
+        elem.setenrich(obj.Id,5); % newly propagated segement initialmode=5.
         % Should use obj.Mygeo.Phi because the Phi values are updated based
         % on the new crack geometry. 01/22/2021 
         % [~,pnts,localpnts] = obj.Mygeo.intersection(elem, obj.Mygeo.Nodespool, obj.Mygeo.Phipool(:,2));
