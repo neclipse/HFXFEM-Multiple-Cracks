@@ -112,16 +112,18 @@ classdef EnFHeaviside < EnrichPack.EnrichFun
            end
            % loop over all Gauss points for the current enrcrack(id)
            enrichind=elem.Enrich==id;
-           realenrichind=find(elem.RealEnrich==id); % where the id item lies in elem.RealEnrich.
+           realenrichind=find(elem.RealEnrich==id); % where the id item lies in elem.RealEnrich, indicating the number in all real enriched items
            GaussPnt_domain=obj.enrichgauss(nodes_phi,elem.EnrichGauss,enrichind,realenrichind); %ok<FNDSB>
            % Because gausspnt is an data object, hard copy is required
            elem.EnrichGauss=GaussPnt_domain;
            % loop over all line gaussian points for the current enrich item
            % enrichind, 11/27/2020.
-           for ienr=1:elem.EnrichNum
+           for i=1:elem.EnrichNum
                % a flag to tell how nuenrplus should be calculated. 12/31/2020 
                % if the current enrichitem is enriching the linegauss of
                % on that enrichitem.
+               % BUG: issue # 39
+               ienr=elem.get_realenrichind(i); % only needs to enrich the real enriched item, find the index of real enriched item in elem.Enrich, % not equal to realenrichind
                self_enrich=elem.Enrich(ienr)==id; 
                GaussPnt_line=obj.enrichgauss(nodes_phi,elem.LineGaussDict{ienr},enrichind,realenrichind,self_enrich);
                elem.LineGaussDict{ienr}=GaussPnt_line;

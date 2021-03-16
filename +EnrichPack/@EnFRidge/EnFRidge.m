@@ -40,7 +40,9 @@ classdef EnFRidge < EnrichPack.EnrichFun
            elem.EnrichGauss=GaussPnt_domain;
            % loop over all line gaussian points for the current enrich item
            % enrichind, 11/27/2020.
-           for ienr=1:elem.EnrichNum
+           for i=1:elem.EnrichNum
+               % BUG: issue # 39
+               ienr=elem.get_realenrichind(i); % only needs to enrich the real enriched item, find the index of real enriched item in elem.Enrich, % not equal to realenrichind
                GaussPnt_line=obj.enrichgauss(nodes_phi,elem.LineGaussDict{ienr},enrichind,realenrichind);
                elem.LineGaussDict{ienr}=GaussPnt_line;
            end
