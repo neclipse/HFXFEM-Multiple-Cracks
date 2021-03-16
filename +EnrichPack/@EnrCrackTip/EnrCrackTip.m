@@ -67,7 +67,7 @@ classdef EnrCrackTip < EnrichPack.EnrichItem
                 else
                     % 2. obj.GrowCheck.growcheck;
 %                     obj.Growcheck.Tol2=0.15;
-                    obj.Growcheck.Mode='tip';
+                    obj.Growcheck.Mode='center';
                 end
                 obj.Growcheck.cal_pvariable(obj.Stressp,obj.Itip, obj.Omega,obj.NextElem);
                 obj.Growcheck.growcheck;  % unstable flag can be the output
@@ -89,6 +89,11 @@ classdef EnrCrackTip < EnrichPack.EnrichItem
         function checkactive(obj)
             % The Isactive is primarily determined by Mygeo.Rtip 12/07/20
             if all(obj.Mygeo.Rtips~=obj.Itip)
+                obj.Isactive = false;
+            end
+            if obj.Id==2 && obj.INTELEM.EnrichNum>0 % Specifically added for double HF case 03122021, note the new tipelem has not been enriched
+                % a more rigorous approach would be checking the angle of
+                % the two line segments.
                 obj.Isactive = false;
             end
         end
