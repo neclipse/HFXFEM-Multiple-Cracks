@@ -25,22 +25,25 @@ function subdomain(obj,varargin)
 % 1.  Read the cracks intersections with the boundaries (obj.LocalInt) and
 % express the crack segements in functions
 NLines=obj.EnrichNum;
-% RealEnrichLines=find(~obj.Smeared);
+RealEnrichLines=find(~obj.Smeared); % should not be blocked in the commit
+% d5fe520e92eda7eaa5f624205294850159b9196b
 MaxPart=NLines*(NLines+1)/2+1; % Maximum possible partitions from NLines
 polygons=cell(1,MaxPart);
 localints=zeros(NLines*2,2);
 localints_inrow=zeros(NLines,4);
 LineHandles=cell(1,NLines); % a cell array to store the function handles
 % create line function handles by two points
-for iline=1:NLines
-%     iline=RealEnrichLines(i); % TO find the not smeared line index.
+for i=1:NLines
+    % BUG after introducing smeared and realenrich, fixed on 03/16/21.
+%     can be done alternatively iline=obj.get_realenrichind(i);
+    iline=RealEnrichLines(i); % TO find the not smeared line index.
     x1=obj.LocalInt{iline}(1,1);
     y1=obj.LocalInt{iline}(1,2);
     x2=obj.LocalInt{iline}(2,1);
     y2=obj.LocalInt{iline}(2,2);
-    localints(2*iline-1:2*iline,:)=obj.LocalInt{iline};
-    localints_inrow(iline,:)=[x1,y1,x2,y2];
-    LineHandles{iline}=@(x,y) y-y1-(y2-y1)*(x-x1)/(x2-x1);
+    localints(2*i-1:2*i,:)=obj.LocalInt{iline};
+    localints_inrow(i,:)=[x1,y1,x2,y2];
+    LineHandles{i}=@(x,y) y-y1-(y2-y1)*(x-x1)/(x2-x1);
 end
 
 % 2. Find the intersections of these crack segments and store the
