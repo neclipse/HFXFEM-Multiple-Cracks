@@ -34,12 +34,12 @@ for iE=1:length(obj.INTELEM)
     us=elem.Un2i;
     ps=elem.Pn2i;      % elemental iterative total pore pressure vector, p_sup(n+1)_sub(i+1)
     pds=elem.Pn2t1;
+    % due=Jacob.dUn2iEnr;
+    ue=Jacob.Un2iEnr;
+    pe=Jacob.Pn2iEnr;
+    ve=Jacob.Un2t1Enr;
+    pde=Jacob.Pn2t1Enr;
     if ~elem.Smeared(elem.Enrich==obj.Id) % real enriched element for this enrcrackbody
-        % due=Jacob.dUn2iEnr;
-        ue=Jacob.Un2iEnr;
-        pe=Jacob.Pn2iEnr;
-        ve=Jacob.Un2t1Enr;
-        pde=Jacob.Pn2t1Enr;
         % Uncomment the if condition to apply the changes for issue #30. 1/1/21
         %     MinEnrichIndex=min(elem.Enrich(elem.Enrich>0)); % Find the enrichitem of lower id
         %% Leakoff calculation for the enrichitem of lower id number
@@ -60,7 +60,7 @@ for iE=1:length(obj.INTELEM)
     %% Calculation at the linegaussian points along the crack curve
     ind=elem.Enrich==obj.Id;
     linegauss=elem.LineGaussDict{ind};
-    if ~elem.Smeared(elem.Enrich==obj.Id) % really enriched crack
+    if ~elem.Smeared(elem.Enrich==obj.Id) % current id is really enriched
         for ig=1:length(linegauss)
             lg=linegauss(ig);
             intpoints(iint,:)=[lg.X,lg.Y];
@@ -85,14 +85,24 @@ for iE=1:length(obj.INTELEM)
             linegauss(ig)=lg;
             iint=iint+1;
         end
-    else  % smeared crack, only calculated the effective traction
+    else  % current id is still smeared
+        if elem.EnrichNum>0 % but there is other real enriched items
+            elem.calstress_enriched(false);
+        end
         smeared=true(1,length(linegauss));
         for ig=1:length(linegauss)
             lg=linegauss(ig);
             intpoints(iint,:)=[lg.X,lg.Y];
-            lg=lg.matsu(us,ps); % update the pressure and stress
-            pfrack(iint)=lg.P;
-            stressp=[lg.Stressp(1),lg.Stressp(3);lg.Stressp(3),lg.Stressp(2)]; % convert stressp to tensor form
+            % BUG: if the smeared element has other real enriched item,
+            % we should use matsu_enriched instead. 03/16/21
+            if elem.EnrichNum==0
+                lg=lg.matsu(us,ps); % update the pressure and stress
+                pfrack(iint)=lg.P;
+                stressp=[lg.Stressp(1),lg.Stressp(3);lg.Stressp(3),lg.Stressp(2)]; % convert stressp to tensor form
+            elseif elem.EnrichNum>0
+                 % approximately update the pressure and stress 03/18/21
+                [pfrack(iint),stressp]=elem.extrapstress_enriched(lg.Xi,lg.Eta);
+            end
             ShearTraction=lg.Mtaud'*stressp*lg.Ntaud; %
             NormalTraction=lg.Ntaud'*stressp*lg.Ntaud;
             lg.Traction=lg.Amat'*[ShearTraction;NormalTraction]; % store the traction in [tx,ty].

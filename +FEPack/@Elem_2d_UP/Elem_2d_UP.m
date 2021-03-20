@@ -140,6 +140,7 @@ classdef Elem_2d_UP < handle
 		subdomain(obj, varargins);
         linegauss( obj,id,cohesive,perforated,varargin );
         [stressp, stress]=extraplstress( obj, xi, eta);
+        [p,stressp]=extrapstress_enriched(obj,xi,eta);
         calstress(obj,storage);
         calstress_enriched(obj,storage);
     end
