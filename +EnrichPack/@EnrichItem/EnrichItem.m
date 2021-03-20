@@ -7,12 +7,12 @@ classdef EnrichItem < matlab.mixin.Copyable
        Enrichednode
 %        Allnodes 
        Timestep
+       Mygeo
    end
    properties(NonCopyable)
        Mesh
        Elemdict
        Nodedict                                                               % vector, a series of discrete time step, indicating the time line of the evolution of enrichment
-       Mygeo
        Myenfs
        Myassigner                                                             % all nodes within the enriched elements including the standard nodes
        INTELEM                                          

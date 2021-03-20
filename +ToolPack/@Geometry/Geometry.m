@@ -1,12 +1,11 @@
-classdef Geometry < handle
+classdef Geometry < matlab.mixin.Copyable
    properties
        Geotype                                                              % 1. (open end) piece-linear curve 2. (closed end) analytical function like a circle, an ellipse,etc
        Mesh
+   end
+   properties(NonCopyable)
        Nodedict
        Elemdict
-   end
-   properties (Access = protected)
-       
    end
    methods(Abstract)
        initiate(obj)                                                        % to find the inititial interacted elements with the geometry 

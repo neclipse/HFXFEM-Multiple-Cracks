@@ -38,6 +38,7 @@ post.P=obj.LinSysCrt.PO(1:obj.NoPDofs)+inipore;                            % Tot
 enrichitems=cell(size(obj.EnrichItems));
 for ien=1:numel(enrichitems)
    enrichitems{ien}=copy(obj.EnrichItems(ien)); 
+   enrichitems{ien}.Mygeo=copy(obj.EnrichItems(ien).Mygeo); % 
 end
 post.EnrichItems=enrichitems;
 %% Avearge the integration results to nodal values, NOT ACCURATE, ESPICICALLY ON THE BOUNDARIES
