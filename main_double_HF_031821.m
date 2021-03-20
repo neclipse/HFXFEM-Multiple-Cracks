@@ -122,25 +122,24 @@ plate=Quadmesher(meshnode,meshelement);
     % x should always start from left to right. 
     % Enforced this condition in opengeo.discretize 01/02/21
     % set crack geometry for two NFs (3m long=1+2)
-    theta1=70*pi/180;
+    theta1=80*pi/180;
     theta2=15*pi/180;
-    segments3=[1,2-cos(theta1),lh/2+ls/2-sin(theta1);2,2+2*cos(theta1),lh/2+ls/2+2*sin(theta1)]; 
+    segments3=[1,1.5-0.1*cos(theta1),lh/2+ls/2-0.1*sin(theta1);2,1.5+0.3*cos(theta1),lh/2+ls/2+0.3*sin(theta1)]; 
     segments4=[1,0.6-0.2*cos(theta2),lh/2-ls/2-0.2*sin(theta2);2,0.6+0.2*cos(theta2),lh/2-ls/2+0.2*sin(theta2)]; 
+    segments5=[1,2-cos(theta1),lh/2+ls/2-sin(theta1);2,2+2*cos(theta1),lh/2+ls/2+2*sin(theta1)];
     HF1=ToolPack.OpenGeo(1,mesh,bdls,nodedict,elemdict,1,segments1,10); % The HF1
     HF2=ToolPack.OpenGeo(2,mesh,bdls,nodedict,elemdict,1,segments2,10); % The HF2
     NF1=ToolPack.OpenGeo(3,mesh,bdls,nodedict,elemdict,1,segments3,10); % The NF1
     NF2=ToolPack.OpenGeo(4,mesh,bdls,nodedict,elemdict,1,segments4,10); % The NF2
-    crackdict=[HF1,HF2,NF1,NF2];
+    NF3=ToolPack.OpenGeo(5,mesh,bdls,nodedict,elemdict,1,segments5,10); % The NF2
+    crackdict=[HF1,HF2,NF1,NF2,NF3];
     injectionpoint1=[0,lh/2+ls/2]; % needed for opengeo.findblending.
     injectionpoint2=[0,lh/2-ls/2]; % needed for opengeo.findblending.
-    HF1.initiate;
-    HF2.initiate; 
-    NF1.initiate;
-    NF2.initiate;
     % visual check of the cracks and the nodes detection.
     mesh.plotmesh;
     hold on;
     for icrack=1:length(crackdict)
+        crackdict(icrack).initiate;
         crackdict(icrack).plotme;
     end
     % set EnrCrackBody using the initial crack info
@@ -151,8 +150,9 @@ plate=Quadmesher(meshnode,meshelement);
     % 5: newly propagated fracture started from tensile mode.
     InitialMode1=1; % 1:perforated for HF
     InitialMode2=1; 
-    InitialMode3=2; % 2: smeared for NF. 
+    InitialMode3=1; % 2: smeared for NF. 
     InitialMode4=1;
+    InitialMode5=2;
     cohesivetype='unified';
     % This alpha is used to initiate the initial traction and crack opening
     % for existing open crack with cohesive traction, implemented in 
@@ -173,9 +173,10 @@ plate=Quadmesher(meshnode,meshelement);
     encrack2=EnrichPack.EnrCrackBody('crackbody',elemdict,nodedict,HF2,InitialMode2,cohesivetype);
     encrack3=EnrichPack.EnrCrackBody('crackbody',elemdict,nodedict,NF1,InitialMode3,cohesivetype);
     encrack4=EnrichPack.EnrCrackBody('crackbody',elemdict,nodedict,NF2,InitialMode4,cohesivetype);
+    encrack5=EnrichPack.EnrCrackBody('crackbody',elemdict,nodedict,NF3,InitialMode5,cohesivetype);
     encrack1.Qtable=[encrack1.Id,q]; % for edge crack, it is okay to ignore the injection point.
     encrack2.Qtable=[encrack2.Id,q]; % for edge crack, it is okay to ignore the injection point.
-    Step1.EnrichItems=[encrack1,encrack2,encrack3,encrack4];           
+    Step1.EnrichItems=[encrack1,encrack2,encrack3,encrack4,encrack5];           
     %% Start the Newton-Raphson iterative analysis
     % ---- Newton-Raphson Iterator
 %     step=[0.005,0.0001;0.2,0.006;1,0.01];          % dimensionless increment size
@@ -187,7 +188,7 @@ plate=Quadmesher(meshnode,meshelement);
     % and the accuracy3 of the Newton-Raphson algorithm. If one is not sure the
     % impact of the setting, one can leave them blank.
     maxinc=1000;
-    maxitr=9; % set to an odd number upon issue # 35.
+    maxitr=15; % set to an odd number upon issue # 35.
     tol=1E-7;
     pincallowed=[];      % upper limit for pinc, may cause continuous increment cut if too small
     pinclimit=0.00001;       % a threshold to increase increment size
@@ -213,7 +214,13 @@ plate=Quadmesher(meshnode,meshelement);
 %     save('propagating_comparison_1105.mat','Step1');
 %     toc;
     postdict=Step1.Postprocess;
-
 %% Plotting
 %example of postprocessing
 % export_fig 'Organized results\Stationary_center_crack_0410\Deformed mesh plot with center crack.tif' -m3.125 -transparent
+% ux=Step1.Postprocess(end).UX;
+% uy=Step1.Postprocess(end).UY;
+mesh.plotmesh;
+hold on;
+for icrack=1:length(crackdict)
+crackdict(icrack).plotme; % deform, crack, node, phi,ux,uy,scale
+end

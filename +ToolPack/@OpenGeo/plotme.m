@@ -56,7 +56,7 @@ if deformflag % plot the crack on the deformed mesh
     end
 else            % plot the crack on the undeformed mesh
     if crackflag
-        plot(obj.Segments(:,2),obj.Segments(:,3),'-','LineWidth',2);
+        plot(obj.Segments(:,2),obj.Segments(:,3),'-','LineWidth',3);
         hold on
     end
     % check if need plot the enriched nodes

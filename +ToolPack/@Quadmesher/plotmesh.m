@@ -48,7 +48,7 @@ for ielem = 1:obj.Totelem
 end
 
 figure; hold on;
-patch(X,Y,[0.8 0.8 0.8])
+patch(X,Y,[0.8 0.8 0.8],'FaceColor','none','LineWidth',0.1)
 axis equal
 % title(titlename)
 xlabel('X'); ylabel('Y'); axis off; axis equal; 

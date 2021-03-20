@@ -29,6 +29,7 @@ if abs(gtheta)<1e-9
     gtheta=0;
 elseif abs(gtheta)>pi/2
     warning('The crack deflection can be overwhelming')
+    gtheta=1/3*gtheta;
 end
 A=[cos(gtheta), sin(gtheta);-sin(gtheta), cos(gtheta)];
 % transformed stress tensor
