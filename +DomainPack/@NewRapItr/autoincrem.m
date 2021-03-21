@@ -69,7 +69,7 @@ switch mode
             increments=[front,back,rest];
         end
     case 3 % for unstablegrow insert several small time steps
-        fprintf('Increment size is cut after No.%d increment to allow unstable crack growth\n',obj.IInc);
+%         fprintf('Increment size is cut after No.%d increment to allow unstable crack growth\n',obj.IInc);
         front=obj.Increments(1:iinc-1);
         insertion=obj.Increments(iinc):minimalinc:(obj.Increments(iinc)+minimalinc*allowedsteps);
         current=obj.Increments(iinc:end-1);

@@ -3,15 +3,11 @@ function obj=assembleglobalinputs(icase)
 % This file is set to for "main-03152020_Abaqus_Ruhrsandstone.m"
 % 4.2 Storage-toughness dominated regime
 %% Parameters for parallel runs
-tinis=[1.5	0.8	0.8	0.8	0.8	0.8	0.8	0.8	0.8	0.8 0.8 0.8]*1e-3;
-tkrgs=[1	1.5	1.5	1.5 2.1	2.1	2.1 2.1 1.5	1.5	1.5	1.5]*1e-3;
-lcrs =[0.2	0.4	0.4	0.4	0.4	0.4	0.4	0.4	0.4 0.4 0.4 0.4];
-dcrs =[1 2	2 2 2 2 2 2 2.66 2.66 2.66 2.66]*1e-4;
-% Es=[15.96	15.96	15.96	15.96	15.96	15.96 15.96	15.96 15.96	15.96 15.96	15.96];
-% nus=[0.219	0.219	0.219	0.219	0.219	0.219	0.219	0.219 0.219	0.219 0.219	0.219];
-% Kss=[22	26	30 34 22 26	30 34 22 26	30 34]; % case 47-58
-% Kfs=[1.0 1.6 2.1 2.6 1.0 1.6 2.1 2.6 1.0 1.6 2.1 2.6]; % case 59-70
-poros=[0.2,0.2,0.25,0.3,0.15,0.2,0.25,0.3,0.15,0.2,0.25,0.3];% case 71-82
+tinis=[1	1	1	1.5	1	1	1	1	1.5	1 0.5 1 1 1 1 1 1 0.5 ]*1e-3;
+tkrgs=[0	1	1	1.5 1	1	1	1.5	1 1	1 0.5 1 1 1 1 1 0.5]*1e-3;
+lcrs =[0.2	0.2 0.2 0.2 0.5	0.2	0.2 0.2 0.2 0.5 0.2 0.2 0.35 0.2 0.2 0.2 0.2 0.2];
+dcrs =[0 0.5 1	1 1 1 2 2 2 2 2 2 2 1 1 1 1 1]*1e-4;
+poros=[0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2, 0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2];% 
 %% Parameters
 obj=struct();
 % -- Rock Properties(GN, GPa, m, s)
@@ -25,7 +21,7 @@ obj.Density=0;
 obj.lcr=lcrs(icase);
 obj.dcr=dcrs(icase);  % critical crack displacement where cohesion vanishes (m) from Khoei
 obj.threshold=tinis(icase);       % this is actually tini.
-obj.threshold_formaxps=1.5e-3; % only used for maxps grow check, when I intentionally put tini=tkrg=0 for brittle material.
+obj.threshold_formaxps=obj.threshold; % only used for maxps grow check, when I intentionally put tini=tkrg=0 for brittle material.
 obj.threshold_smeared=2e-4;    % threshold to convert "smeared" crack to open.
 obj.tkrg=tkrgs(icase);           % tkrg
 obj.Gc=0.5*(obj.threshold*obj.lcr+obj.tkrg)*obj.dcr;        %GN.m

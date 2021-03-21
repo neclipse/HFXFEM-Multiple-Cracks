@@ -197,7 +197,7 @@ classdef OpenGeo < ToolPack.Geometry
         update(obj)                                                         % update the geometry and the interacted elements with the updated geometry
         flag=interactwith(obj,elem)                                         % determine if the element is interacting with the crack using the calculated level set values
         length=callength(obj)                                               % determine the crack length
-        plotme(obj,deformflag,crackflag, nodeflag,varargin);                % plot the crack segments with options
+        h=plotme(obj,deformflag,crackflag, nodeflag,varargin);                % plot the crack segments with options
         elems=findelems( obj,plist,varargin )                               % find the interacting elements with a list of plist(x,y;...) with options 'inside', 'edge', 'in_edge'
         [good,pnts,localpnts]=intersection(obj,elem,varargin)                  % the intersection method to find the intersections of the crack with the elem obj
     end
