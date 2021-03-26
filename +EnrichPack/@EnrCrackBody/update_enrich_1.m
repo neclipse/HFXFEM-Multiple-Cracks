@@ -3,8 +3,8 @@ function update_enrich_1(obj,varargin)
 % and nodes, change the enrich flag of these elements and nodes, but do not
 % update the subdomain and update the enrichment function.
 %% Really grow the crack if cutflag is not true for any tip
-nodes=NaN(100,1);
-elems=NaN(100,1);
+nodes=NaN(1,100);
+elems=NaN(1,100);
 inode=1;ielem=1;
 for itip=1:length(obj.Mytips)
     if any(obj.Stdnodes(itip,:)) % the call of Stdnodes will check the smeared flag of tip element.
@@ -18,8 +18,8 @@ for itip=1:length(obj.Mytips)
 end
 nodes=nodes(1:inode-1);
 elems=elems(1:ielem-1);
-obj.NewNodes=[obj.NewNodes;nodes];
-obj.NewElems=[obj.TransElems;elems];
+obj.NewNodes=[obj.NewNodes,nodes];
+obj.NewElems=[obj.TransElems,elems];
 %% Really update crackbody object info and the enrichment
 % Matlab does not allow second-level vectorized property retrieving.
 % Then we use [obj.Mytips.Growcheck] to obtain a intermediate growcheck
