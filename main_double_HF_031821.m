@@ -56,8 +56,8 @@ plate=Quadmesher(meshnode,meshelement);
 % proT.Units='Normalized';
 % proT.Position=[.1,.1,.8,.8];
 workers=int8(4);
-cases=2;
-caseids=[6,7];
+cases=1;
+caseids=1;
 % proT.Data(1,1:cases)=caesids;
 % parprofile=Par(cases); % profile the time for each head
 % parfor(icase=1:cases,workers) % request 4 workers
@@ -123,12 +123,12 @@ for icase=1:cases
     % x should always start from left to right. 
     % Enforced this condition in opengeo.discretize 01/02/21
     % set crack geometry for two NFs (3m long=1+2)
-    theta1=80*pi/180;
+    theta1=30*pi/180;
     theta2=15*pi/180;
-    theta3=80*pi/180;
-    segments3=[1,1.5-0.1*cos(theta3),lh/2+ls/2-0.1*sin(theta3);2,1.5+0.3*cos(theta3),lh/2+ls/2+0.3*sin(theta3)]; 
-    segments4=[1,0.6-0.2*cos(theta2),lh/2-ls/2-0.2*sin(theta2);2,0.6+0.2*cos(theta2),lh/2-ls/2+0.2*sin(theta2)]; 
-    segments5=[1,2-cos(theta1),lh/2+ls/2-sin(theta1);2,2+2*cos(theta1),lh/2+ls/2+2*sin(theta1)];
+    theta3=60*pi/180;
+    segments3=[1,1.5-0.1*cos(theta3),lh/2+ls/2-0.1*sin(theta3);2,1.5+0.2*cos(theta3),lh/2+ls/2+0.2*sin(theta3)]; 
+    segments4=[1,0.6-0.05*cos(theta2),lh/2-ls/2-0.05*sin(theta2);2,0.6+0.2*cos(theta2),lh/2-ls/2+0.2*sin(theta2)]; 
+    segments5=[1,2.5-0.5*cos(theta1),lh/2+ls/2-0.5*sin(theta1);2,2.5+1*cos(theta1),lh/2+ls/2+1*sin(theta1)];
     HF1=ToolPack.OpenGeo(1,mesh,bdls,nodedict,elemdict,1,segments1,10); % The HF1
     HF2=ToolPack.OpenGeo(2,mesh,bdls,nodedict,elemdict,1,segments2,10); % The HF2
     NF1=ToolPack.OpenGeo(3,mesh,bdls,nodedict,elemdict,1,segments3,10); % The NF1
@@ -138,11 +138,11 @@ for icase=1:cases
     injectionpoint1=[0,lh/2+ls/2]; % needed for opengeo.findblending.
     injectionpoint2=[0,lh/2-ls/2]; % needed for opengeo.findblending.
     % visual check of the cracks and the nodes detection.
-    mesh.plotmesh;
-    hold on;
+%     mesh.plotmesh;
+%     hold on;
     for icrack=1:length(crackdict)
         crackdict(icrack).initiate;
-        crackdict(icrack).plotme;
+%         crackdict(icrack).plotme;
     end
     % set EnrCrackBody using the initial crack info
     % Initialmode 1: perforated, completely traction free; 
@@ -154,7 +154,7 @@ for icase=1:cases
     InitialMode2=1; 
     InitialMode3=1; % 2: smeared for NF. 
     InitialMode4=1;
-    InitialMode5=2;
+    InitialMode5=1;
     cohesivetype='unified';
     % This alpha is used to initiate the initial traction and crack opening
     % for existing open crack with cohesive traction, implemented in 
@@ -183,13 +183,14 @@ for icase=1:cases
     % ---- Newton-Raphson Iterator
 %     step=[0.005,0.0001;0.2,0.006;1,0.01];          % dimensionless increment size
 %     step=[0.005,0.0002;0.3,0.003;1,0.009];          % dimensionless increment size
-    step=[0.01,0.0003;0.1,0.001;0.4,0.003;0.8,0.005;1,0.008];  % dimensionless increment size
+%     step=[0.01,0.00015;0.1,0.0008;0.4,0.002;0.8,0.004;1,0.008];  % dimensionless increment size
+    step=[0.01,0.0002;0.1,0.001;0.4,0.004;0.8,0.008;1,0.01];  % dimensionless increment size
     tottime=10;                                 % total time
     inctype=1;                                  % inctype: 1-load increments; 2- displacement increments
     % The following three parameters are optional setting to control the speed
     % and the accuracy3 of the Newton-Raphson algorithm. If one is not sure the
     % impact of the setting, one can leave them blank.
-    maxinc=1000;
+    maxinc=2000;
     maxitr=15; % set to an odd number upon issue # 35.
     tol=1E-7;
     pincallowed=[];      % upper limit for pinc, may cause continuous increment cut if too small
@@ -216,7 +217,7 @@ for icase=1:cases
 %     save('propagating_comparison_1105.mat','Step1');
 %     toc;
     postdict=Step1.Postprocess;
-    filename=strcat('C:\Users\chuan\Google Drive\Exciting Research\Writings\Efficient HM-XFEM model with complex fracture network\Results\Enhanced run-0318\case_',num2str(caseids(icase)),'.mat');
+    filename=strcat('C:\Users\chuan\Google Drive\Exciting Research\Writings\Efficient HM-XFEM model with complex fracture network\Results\Enhanced rerun-0321\case_',num2str(caseids(icase)),'_newangles5.mat');
     m=matfile(filename,'writable',true);
     m.postdict=postdict;
     m.GBINP=GBINP;
@@ -227,23 +228,21 @@ end
 %% Plotting
 %example of postprocessing
 % export_fig 'Organized results\Stationary_center_crack_0410\Deformed mesh plot with center crack.tif' -m3.125 -transparent
-ux=Step1.Postprocess(end).UX;
-uy=Step1.Postprocess(end).UY;
 % mesh.plotmesh;
-
+% % 
 figure()
 hold on;
 for icrack=1:length(crackdict)
-crackdict(icrack).plotme(0,1,0,0,ux,uy,100); % deform, crack, node, phi,ux,uy,scale
+crackdict(icrack).plotme; % deform, crack, node, phi,ux,uy,scale
 end
 ax=gca;
 fs=16;
-titlestr=strcat('The final fracture network for case-',num2str(caseids(icase)));
-title(titlestr,'FontSize',fs);
+titlestr=strcat('The final fracture network for case-3 by 60s injection');
+% title(titlestr,'FontSize',fs);
 axis('equal')
 xlabel('X axis')
 ylabel('Y axis')
-xlim([0,8])
+xlim([0,10])
 ylim([24,38])
 % Set x and y font sizes.
 ax.XAxis.FontSize = fs-2;

@@ -16,7 +16,6 @@ if nargin>4
 else
     titlename=['Countour plot of the ', variable,' averaged at nodes after ',inc,' seconds'];
 end
-var=transpose(reshape(var,meshstructure));
 if deformedflag     % surfplot on the deformed mesh
     dispmin=min(min([obj.UX,obj.UY]));
     dispmax=max(max([obj.UX,obj.UY]));
@@ -24,20 +23,27 @@ if deformedflag     % surfplot on the deformed mesh
     scale=10^(abs(fix(log10(maxabsdisp)))+0.5);      % scaling factor
     Xd=obj.XN+obj.UX*scale;
     Yd=obj.YN+obj.UY*scale;
-    X=transpose(reshape(Xd,meshstructure));
-    Y=transpose(reshape(Yd,meshstructure));
 else                % surfplot on the undeformed mesh
-    X=transpose(reshape(obj.XN,meshstructure));
-    Y=transpose(reshape(obj.YN,meshstructure));
+    Xd=obj.XN;
+    Yd=obj.YN;
 end
 figure('Name',titlename,'NumberTitle','off');
-h=contourf(X,Y,var,ncontour);
+if length(meshstructure)==2
+    var=transpose(reshape(var,meshstructure));
+    X=transpose(reshape(Xd,meshstructure));
+    Y=transpose(reshape(Yd,meshstructure));
+    h=contourf(X,Y,var,ncontour);
+else 
+    tri = delaunay(Xd,Yd);
+    h = tricontour(tri, Xd, Yd, var*1000, ncontour);
+end
 daspect([1 1 1])
 colormap (jet)
 colorbar
 % title(titlename);
 xlabel('x');
 ylabel('y');
-zlabel(variable)
+zl=strcat(variable," (MPa)");
+zlabel(zl)
 end
 

@@ -165,7 +165,7 @@ plate=Quadmesher(meshnode,meshelement);
 %     step=[0.005,0.0001;0.2,0.006;1,0.01];          % dimensionless increment size
 %     step=[0.005,0.0002;0.3,0.003;1,0.009];          % dimensionless increment size
     step=[0.004,0.0001;0.2,0.003;0.75,0.008;1,0.01];  % dimensionless increment size
-    tottime=5;                                 % total time
+    tottime=10;                                 % total time
     inctype=1;                                  % inctype: 1-load increments; 2- displacement increments
     % The following three parameters are optional setting to control the speed
     % and the accuracy3 of the Newton-Raphson algorithm. If one is not sure the

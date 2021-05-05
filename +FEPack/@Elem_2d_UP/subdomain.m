@@ -164,9 +164,9 @@ if npart~=obj.PolygonNum
         % triangulation
         warning('off', 'MATLAB:delaunay:DupPtsDelarunayWarnId')
         tri = delaunay(seeds(:,1),seeds(:,2));
-        %     triplot(tri,seeds(:,1),seeds(:,2));
-        %     triplot(tri,GScoord(:,1),GScoord(:,2));
-        %     hold on
+%             triplot(tri,seeds(:,1),seeds(:,2));
+%             triplot(tri,GScoord(:,1),GScoord(:,2));
+%             hold on
         [q,w] = gausstable(p,'TRI');
         NPT=p*size(tri,1);% number of total integration poionts for this subpolygon
         gp=zeros(NPT,2);
@@ -206,6 +206,7 @@ if npart~=obj.PolygonNum
                 % SUM[2*Ak*w(i)/2*F(P(xi_i,eta_i),Q(xi_i,eta_i))]. Note detJ
                 % is already expressed by 2*AK. so the easy way to accomadate
                 % the change is to combine the w(i)/2 and 2*Ak for gw(pt).
+				% Checked with Serfeim_bakalakos thesis 2000.
                 subarea=polyarea(gcoord(:,1),gcoord(:,2)); %AK
                 % polyarea used here has no problem because triangular
                 % vertices can be arbitrarily ordered.

@@ -3,17 +3,17 @@
 % mesh.plotmesh;
 clear;clc
 %% specify the compared cases
-caseids=[7,8];
-figurename='Impacts of Ambient Fracture';
-h1=figure('Name',figurename,'NumberTitle','off','Position',[40,40,640*1.5,500*1.5]);
+caseids=[1];
+figurename='Impacts of Tini';
+% h1=figure('Name',figurename,'NumberTitle','off','Position',[40,40,640*1.5,500*1.5]);
 %% first case
-filename1=strcat('C:\Users\chuan\Google Drive\Exciting Research\Writings\Efficient HM-XFEM model with complex fracture network\Results\Enhanced run-0318\case_',num2str(caseids(1)),'.mat');
+filename1=strcat('C:\Users\chuan\Google Drive\Exciting Research\Writings\Efficient HM-XFEM model with complex fracture network\Results\Enhanced rerun-0321\case_',num2str(caseids(1)),'.mat');
 load(filename1);
 subplot(1,length(caseids),1)
 hold on;
 crackdict=[];
-% specify the ind
-ind=length(postdict);
+%% specify the ind
+ind=52;
 for ienr=1:length(postdict(1).EnrichItems)
     crackgeo=postdict(ind).EnrichItems{ienr}.Mygeo;
     crackdict=[crackdict,crackgeo];
@@ -27,7 +27,7 @@ ax=gca;
 fs=16;
 % titlestr='\Lambda_{cr} = 0.2';
 % titlestr='\sigma_{h} = 2MPa';
-titlestr='with NF1';
+titlestr='T_{ini}=1 MPa';
 % titlestr=['With NF1 at angle = 80' char(176)];
 title(titlestr,'FontSize',fs);
 axis('equal')
@@ -42,8 +42,8 @@ legend('HF1','HF2','NF1','NF2','NF3','FontSize',fs-2,'Location','East')
 % retrieve the crackdict
 hold off;
 
-%% second case
-filename2=strcat('C:\Users\chuan\Google Drive\Exciting Research\Writings\Efficient HM-XFEM model with complex fracture network\Results\Enhanced run-0318\case_',num2str(caseids(2)),'.mat');
+% %% second case
+filename2=strcat('C:\Users\chuan\Google Drive\Exciting Research\Writings\Efficient HM-XFEM model with complex fracture network\Results\Enhanced rerun-0321\case_',num2str(caseids(2)),'_longrun.mat');
 load(filename2);
 % mesh=postdict(1).EnrichItems{1}.Mygeo.Mesh;
 % mesh.plotmesh;
@@ -65,7 +65,7 @@ ax=gca;
 fs=16;
 % titlestr='\Lambda_{cr} = 0.35';
 % titlestr='\sigma_{h} = 3MPa';
-titlestr='Without NF1';
+titlestr='T_{ini}=1.5 MPa';
 % titlestr=['With NF1 at angle = 30' char(176)];
 title(titlestr,'FontSize',fs);
 axis('equal')
@@ -76,8 +76,8 @@ ylim([24,38])
 % Set x and y font sizes.
 ax.XAxis.FontSize = fs-2;
 ax.YAxis.FontSize = fs-2;
-legend('HF1','HF2','NF2','NF3','FontSize',fs-2,'Location','East')
+legend('HF1','HF2','NF1','NF2','NF3','FontSize',fs-2,'Location','East')
 % retrieve the crackdict
 hold off;
 %%
-% export_fig 'C:\Users\chuan\Google Drive\Exciting Research\Writings\Efficient HM-XFEM model with complex fracture network\Results\Enhanced run-0318\Impacts of Ambient Fracture.tif' -m3.125 -transparent
+export_fig 'C:\Users\chuan\Google Drive\Exciting Research\Writings\Efficient HM-XFEM model with complex fracture network\Results\Enhanced rerun-0321\Impacts of T_ini-case7-9_20s.tif' -m3.125 -transparent
