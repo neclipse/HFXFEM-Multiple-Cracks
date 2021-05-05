@@ -16,19 +16,25 @@ classdef EnrCrackTip < EnrichPack.EnrichItem
         NewElems         % Newly added elements to be enriched.
         UpdateElems      % May include the old tip element to be updated, the enrichement and the stiffness matrix
     end
-    properties (Access = protected)
+    properties (SetAccess = protected)
         Isactive = true
         Mycrackbody
     end
     
     methods
         
-        function obj = EnrCrackTip(type,elemdict,nodedict,mygeo,itip)
+        function obj = EnrCrackTip(type,elemdict,nodedict,mygeo,id,itip)
             obj = obj@EnrichPack.EnrichItem(type,elemdict,nodedict);
             obj.Mygeo=mygeo;
+            obj.Id=id;
             obj.Itip=itip;
             obj.Mesh=mygeo.Mesh;
             obj.initiate;
+            % specifically added for double HF case 04132021, try to
+            % simplify the intersection of HF2 and NF2.
+            if obj.Id==4 && obj.Itip==2
+                obj.Isactive = false;
+            end
         end
         function [growflag,unstablegrow,cutflag]=lookahead(obj)
             % An important method for the crack tip for crack propagation:
