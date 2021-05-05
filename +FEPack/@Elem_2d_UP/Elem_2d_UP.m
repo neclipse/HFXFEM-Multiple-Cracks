@@ -48,7 +48,7 @@ classdef Elem_2d_UP < handle
     end
     
     methods
-        function obj=Elem_2d_UP(index,elemtype,mattype,nodlist,noddict,gaussdictm)
+        function obj=Elem_2d_UP(index,elemtype,mattype,nodlist,noddict,varargin)
             if nargin>0
                obj.Ind=index;
                obj.Type=elemtype;
@@ -60,10 +60,13 @@ classdef Elem_2d_UP < handle
                obj.Y=[noddict.Y]';
                obj.NoNodes=length(noddict);
 %                obj.GaussPntDictM=gaussdictm;
-               for igauss=1:length(gaussdictm)
-                  gaussdictm(igauss)=gaussdictm(igauss).preparing(obj.X,obj.Y); 
+               if ~isempty(varargin)
+                   gaussdictm=varargin{1};
+                   for igauss=1:length(gaussdictm)
+                       gaussdictm(igauss)=gaussdictm(igauss).preparing(obj.X,obj.Y);
+                   end
+                   obj.GaussPntDictM=gaussdictm;
                end
-               obj.GaussPntDictM=gaussdictm;
             end
         end
 		function dislist = callength(obj) 

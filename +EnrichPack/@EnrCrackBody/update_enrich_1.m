@@ -28,7 +28,9 @@ growchecks=[obj.Mytips.Growcheck];
 if any(obj.NewElems)
     if any([growchecks.Growflag])
         fprintf('\n The No.%d crack has crack growth at tips',obj.Id);
-        disp([growchecks.Growflag]);
+        growstatus=[growchecks.Growflag];
+%         growstatus(~[obj.Mytips.Isactive])=0;
+        disp(growstatus);
     else
         fprintf('Part of the smeared crack %d opens.\n',obj.Id);
     end
