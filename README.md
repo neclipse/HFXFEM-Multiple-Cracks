@@ -1,7 +1,7 @@
 # HFXFEM-Verified-Singlecrack
 
 # Author info
-Chang Huang : chuan25@lsu.edu
+Chang Huang : chuan25@lsu.edu, huangchang73@gmail.com
 
 # Affiliation
 Geomechanics Group leaded by Dr. Shengli Chen (shenglichen@lsu.edu)
