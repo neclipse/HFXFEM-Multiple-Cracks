@@ -1,4 +1,4 @@
-# HFXFEM-Verified-Singlecrack
+# HFXFEM-Multiple-crack
 
 # Author info
 Chang Huang : chuan25@lsu.edu, huangchang73@gmail.com
