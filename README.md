@@ -20,5 +20,7 @@ More detailed introduction of the code can be seen in Chapter 4 of my dissertati
 
 # References
 
+-Huang, Chang, "Modeling Hydraulic Fracturing Initiation and Propagation in Porous Rock Formationsl" (2021). LSU Doctoral Dissertations. 5531.
+https://digitalcommons.lsu.edu/gradschool_dissertations/5531
 - Dontsov, E. V. 2017. An approximate solution for a plane strain hydraulic fracture that accounts for fracture toughness, fluid viscosity, and leak-off. International Journal of Fracture 205 (2): 221-237. http://doi.org/10.1007/s10704-017-0192-4.
 - Moës, Nicolas, Dolbow, John, and Belytschko, Ted. 1999. A finite element method for crack growth without remeshing. International journal for numerical methods in engineering 46 (1): 131-150. http://doi.org/10.1002/(SICI)1097-0207(19990910)46:1<131::AID-NME726>3.0.CO;2-J.
