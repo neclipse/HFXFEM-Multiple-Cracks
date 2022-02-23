@@ -33,7 +33,7 @@ r1t=2*k*nnodes; % total uenrdofs
 r2t=k*nnodes;   % total penrdofs
 % 01/21/20201 Attemp to resolve the blocked pressure by existing crack. #19
 if k>1
-   kmat= 1000; % A big number to allow the pressure connection between cracks.
+   kmat= 100000; % A big number to allow the pressure connection between cracks.
 end
 %% May only need one final JacobianMat, no need for discrete crack. 092920.
 JMat=obj.JacobianMat; % elemental comprehensive JacobianMat
@@ -154,7 +154,8 @@ JMat.Sintpspe=zeros(r2,r2t);
 JMat.Sintpeps=zeros(r2t,r2);
 JMat.Sintpepe=zeros(r2t,r2t);
 % Loop over every Enrichitem in this element
-for ienr=1:obj.EnrichNum
+for i=1:obj.EnrichNum
+    ienr=obj.get_realenrichind(i); % mapping from i to real_ienr 02/05/2021
     % coehsive force
     Kc=zeros(r1,r1);
     % fluid pressure to the crack
@@ -247,8 +248,8 @@ for ienr=1:obj.EnrichNum
 %     obj.JacobianMatDict(ienr).Sintpepe=Sintpepe;
     % store the elemental comprehensive matrices
     % Fractioned Kc lies along the main diagnal of elemental comprehensive Kc 
-    istart=1+(ienr-1)*r1;
-    iend=ienr*r1;
+    istart=1+(i-1)*r1;
+    iend=i*r1;
     JMat.Kc(istart:iend,istart:iend)=Kc;
     JMat.Qintueps(istart:iend,:)=Qintueps;
     JMat.Qintuepe(istart:iend,:)=Qintuepe;

@@ -102,8 +102,6 @@ classdef EnFHeaviside < EnrichPack.EnrichFun
                % obtain the nodes_phi from obj.Lsv.
                % enrich the gauss points inside
                nodes=elem.NodList;
-               %            stdnodes=elem.NodstdList;
-               %            stdnodes=stdnodes{id};                  % standard nodes list for the current enrichitem id;
                nodespool=obj.Lsv(:,1);                  % all nodes in the interacted elems
                phipool=obj.Lsv(:,2);
                [Lia,Lcob]=ismember(nodes,nodespool);    % find the relative index of nodes in the nodespool
@@ -114,17 +112,20 @@ classdef EnFHeaviside < EnrichPack.EnrichFun
            end
            % loop over all Gauss points for the current enrcrack(id)
            enrichind=elem.Enrich==id;
-           GaussPnt_domain=obj.enrichgauss(nodes_phi,elem.EnrichGauss,enrichind);
+           realenrichind=find(elem.RealEnrich==id); % where the id item lies in elem.RealEnrich, indicating the number in all real enriched items
+           GaussPnt_domain=obj.enrichgauss(nodes_phi,elem.EnrichGauss,enrichind,realenrichind); %ok<FNDSB>
            % Because gausspnt is an data object, hard copy is required
            elem.EnrichGauss=GaussPnt_domain;
            % loop over all line gaussian points for the current enrich item
            % enrichind, 11/27/2020.
-           for ienr=1:elem.EnrichNum
+           for i=1:elem.EnrichNum
                % a flag to tell how nuenrplus should be calculated. 12/31/2020 
                % if the current enrichitem is enriching the linegauss of
                % on that enrichitem.
+               % BUG: issue # 39
+               ienr=elem.get_realenrichind(i); % only needs to enrich the real enriched item, find the index of real enriched item in elem.Enrich, % not equal to realenrichind
                self_enrich=elem.Enrich(ienr)==id; 
-               GaussPnt_line=obj.enrichgauss(nodes_phi,elem.LineGaussDict{ienr},enrichind,self_enrich);
+               GaussPnt_line=obj.enrichgauss(nodes_phi,elem.LineGaussDict{ienr},enrichind,realenrichind,self_enrich);
                elem.LineGaussDict{ienr}=GaussPnt_line;
            end
        end
@@ -145,7 +146,7 @@ classdef EnFHeaviside < EnrichPack.EnrichFun
            node.NoEnrDofs=node.NoUenrDofs+node.NoPenrDofs;
        end
        
-       function [GaussPnt,Nuenrplus,Nuenrminus]=enrichgauss(obj,nodes_phi,GaussPnt,enrichind,varargin)
+       function [GaussPnt,Nuenrplus,Nuenrminus]=enrichgauss(obj,nodes_phi,GaussPnt,enrichind,realenrichind,varargin)
           % enrichind; % the logical array of the current enrichitem in
           % elem.Enrich.
           if ~isempty(varargin)
@@ -187,7 +188,7 @@ classdef EnFHeaviside < EnrichPack.EnrichFun
                nuenr=N.*Phishift';
                Nuenr(1,1:2:end)=nuenr;
                Nuenr(2,2:2:end)=nuenr;
-               k=find(enrichind); % return the index of logical "1"
+               k=realenrichind; % return the index of logical "1"
                startind=1+(k-1)*size(Nuenr,2);
                endind=k*size(Nuenr,2);
                GaussPnt(igauss).Nuenr(:,startind:endind)=Nuenr;

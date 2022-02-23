@@ -1,4 +1,4 @@
-function [ gp,gw ] = linegauss( obj,id,cohesive,perforated,varargin )
+function [ gp,gw ] = linegauss( obj,id,cohesive,initialmode,varargin )
 % LINEGAUSS is a method of Enriched Elem_2d_UP, called by EnrCrackBody
 % Use the seeds to create local gaussian points for line integral
 % The number of line integral gaussian points are better to be at least 2 as 
@@ -11,6 +11,7 @@ function [ gp,gw ] = linegauss( obj,id,cohesive,perforated,varargin )
 inp=inputParser;
 addOptional(inp,'Alpha',pi/2);
 addOptional(inp,'p',2);
+% addParameter(inp,'inplace',false);
 parse(inp,varargin{:});
 Alpha=inp.Results.Alpha;
 p=inp.Results.p;
@@ -19,9 +20,27 @@ p=inp.Results.p;
 gbinp=obj.GaussPntDictM(1).GBINP;
 lcr=gbinp.lcr;
 dcr=gbinp.dcr;
-tkrg=gbinp.tkrg;
+% tkrg=gbinp.tkrg;
 lini=gbinp.lini;
-tini=gbinp.threshold;
+switch initialmode
+    case 1 % 'perforated', totally traction-free
+        tini=0; % assign initial traction as zero for in-place tensile crack
+        tkrg=0;
+    case 2 % 'Smeared mode'
+%         tini=gbinp.threshold_smeared;
+%         tkrg=gbinp.threshold_smeared;
+        tini=0;
+        tkrg=0;
+        lini=0.1;
+        lcr=0.1;
+    case 3 % in place initially compressive 
+        tini=0; tkrg=0;
+    case 4 % in place initially tensile
+        tini=0; tkrg=gbinp.tkrg;
+    case 5 % newly propagated, tensile
+        tini=gbinp.threshold;
+        tkrg=gbinp.tkrg;
+end
 minaperture=gbinp.minaperture;
 perfaperture=gbinp.perfaperture;
 % use logical array id to relieve the single index id. 10/02/20
@@ -59,7 +78,7 @@ Mtaud=mtaud/ds;   % unit tangent vector
 
 gaussdictm(1,p)=FEPack.GaussPnt_Cohesive(); % generate an void object array
 for igauss=1:p
-    gaussdictm(igauss)=FEPack.GaussPnt_Cohesive(gp(igauss,1),gp(igauss,2),gw(igauss),nnodes,gbinp,perforated,Alpha);
+    gaussdictm(igauss)=FEPack.GaussPnt_Cohesive(gp(igauss,1),gp(igauss,2),gw(igauss),nnodes,gbinp,initialmode,Alpha);
     gaussdictm(igauss)=gaussdictm(igauss).preparing(obj.X,obj.Y,obj.EnrichNum);
     % Explicit linear softening
     if strcmp(cohesive,'unified')

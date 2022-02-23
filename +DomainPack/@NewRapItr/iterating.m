@@ -38,9 +38,11 @@ Ncut=0;                        % Number of times that increment cut procedure ha
 while obj.CutFlag==1
     while obj.ConvFlag==0
         % Check if load increment should be cut down
-        if obj.IItr>=obj.MaxItr || obj.DivFlag==1
+        % one way to switch the maxitr number between odd and even number.
+        % 02/02/2021.
+        if obj.IItr>=obj.MaxItr+Ncut || obj.DivFlag==1
             Ncut=Ncut+1;
-            if Ncut>10
+            if Ncut>15
 %                 cutratio=0.45;
 %             elseif Ncut>10
                 warning('The increment size may be too big, consider to use a small cut ratio.')
@@ -129,11 +131,11 @@ end
 
 % adjust the increment size if unstablegrow is requested.
 if any(unstablegrowflag)
-    % minimal time step =inc*obj.Tottime, must be smaller than the step
-    % size defined in the main function.
-    minimalinc=1e-5;    
-    allowedsteps=2;
-    obj.autoincrem(3,0.25,1.5,inclist,minimalinc,allowedsteps);
+%     minimal time step =inc*obj.Tottime, must be smaller than the step
+%     size defined in the main function.
+    minimalinc=3e-5;    
+    allowedsteps=3;
+    obj.autoincrem(3,1,1.5,inclist,minimalinc,allowedsteps);
 end
 % store current values of some parameters to the last converged value
 obj.switching(1);

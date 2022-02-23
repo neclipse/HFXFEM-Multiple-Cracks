@@ -1,5 +1,5 @@
 %% stress, pressure and disp in one encriched elemeent during debugging
-allgauss=obj.INTELEM(1,4).EnrichGauss;
+allgauss=obj.INTELEM(1,9).EnrichGauss;
 % allgauss=obj.EnrichItems(1).INTELEM(1,2).EnrichGauss;
 % allgauss=obj.Mytips.NextElem.GaussPntDictM;
 % elems=mesh.findelems([6.35,30],elemdict);

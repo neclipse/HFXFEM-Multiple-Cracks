@@ -16,19 +16,25 @@ classdef EnrCrackTip < EnrichPack.EnrichItem
         NewElems         % Newly added elements to be enriched.
         UpdateElems      % May include the old tip element to be updated, the enrichement and the stiffness matrix
     end
-    properties (Access = protected)
+    properties (SetAccess = protected)
         Isactive = true
         Mycrackbody
     end
     
     methods
         
-        function obj = EnrCrackTip(type,elemdict,nodedict,mygeo,itip)
+        function obj = EnrCrackTip(type,elemdict,nodedict,mygeo,id,itip)
             obj = obj@EnrichPack.EnrichItem(type,elemdict,nodedict);
             obj.Mygeo=mygeo;
+            obj.Id=id;
             obj.Itip=itip;
             obj.Mesh=mygeo.Mesh;
             obj.initiate;
+            % specifically added for double HF case 04132021, try to
+            % simplify the intersection of HF2 and NF2.
+            if obj.Id==4 && obj.Itip==2
+                obj.Isactive = false;
+            end
         end
         function [growflag,unstablegrow,cutflag]=lookahead(obj)
             % An important method for the crack tip for crack propagation:
@@ -60,13 +66,13 @@ classdef EnrCrackTip < EnrichPack.EnrichItem
                     % Temporarily increase the tolerance to 100% to allow
                     % the crack extend to the next element.(not adopted)
                     obj.Growcheck.Mode='all';
-                    obj.Growcheck.Tol2=0.5;
+%                     obj.Growcheck.Tol2=0.5;
                     % may use nextelem.stressp determine the possible
                     % interatcion scenario.
                     % if obj.NextElem.Streesp
                 else
                     % 2. obj.GrowCheck.growcheck;
-                    obj.Growcheck.Tol2=0.15;
+%                     obj.Growcheck.Tol2=0.15;
                     obj.Growcheck.Mode='center';
                 end
                 obj.Growcheck.cal_pvariable(obj.Stressp,obj.Itip, obj.Omega,obj.NextElem);
@@ -89,6 +95,11 @@ classdef EnrCrackTip < EnrichPack.EnrichItem
         function checkactive(obj)
             % The Isactive is primarily determined by Mygeo.Rtip 12/07/20
             if all(obj.Mygeo.Rtips~=obj.Itip)
+                obj.Isactive = false;
+            end
+            if obj.Id==2 && obj.INTELEM.EnrichNum>0 % Specifically added for double HF case 03122021, note the new tipelem has not been enriched
+                % a more rigorous approach would be checking the angle of
+                % the two line segments.
                 obj.Isactive = false;
             end
         end

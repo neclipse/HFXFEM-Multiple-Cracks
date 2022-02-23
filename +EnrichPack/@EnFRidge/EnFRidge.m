@@ -34,13 +34,16 @@ classdef EnFRidge < EnrichPack.EnrichFun
            end
            % loop over all Gauss points for the current enrcrack(id)
            enrichind=elem.Enrich==id;
-           GaussPnt_domain=obj.enrichgauss(nodes_phi,elem.EnrichGauss,enrichind);
+           realenrichind=find(elem.RealEnrich==id);
+           GaussPnt_domain=obj.enrichgauss(nodes_phi,elem.EnrichGauss,enrichind,realenrichind);
            % Because gausspnt is an data object, hard copy is required
            elem.EnrichGauss=GaussPnt_domain;
            % loop over all line gaussian points for the current enrich item
            % enrichind, 11/27/2020.
-           for ienr=1:elem.EnrichNum
-               GaussPnt_line=obj.enrichgauss(nodes_phi,elem.LineGaussDict{ienr},enrichind);
+           for i=1:elem.EnrichNum
+               % BUG: issue # 39
+               ienr=elem.get_realenrichind(i); % only needs to enrich the real enriched item, find the index of real enriched item in elem.Enrich, % not equal to realenrichind
+               GaussPnt_line=obj.enrichgauss(nodes_phi,elem.LineGaussDict{ienr},enrichind,realenrichind);
                elem.LineGaussDict{ienr}=GaussPnt_line;
            end
        end
@@ -59,7 +62,7 @@ classdef EnFRidge < EnrichPack.EnrichFun
            end
            node.NoEnrDofs(id)=node.NoUenrDofs(id)+node.NoPenrDofs(id);
        end
-       function GaussPnt=enrichgauss(obj,nodes_phi,GaussPnt,enrichind)
+       function GaussPnt=enrichgauss(obj,nodes_phi,GaussPnt,enrichind,realenrichind)
            for igauss=1:length(GaussPnt)
                N=GaussPnt(igauss).Np;
                DNp=GaussPnt(igauss).DNp;
@@ -92,7 +95,7 @@ classdef EnFRidge < EnrichPack.EnrichFun
                DNpjy=N_y.*Ridge+Nj*Ridge_y;
                DNpenr=[DNpjx;DNpjy];
                % Store Npenr and DNpenr in the right location, 10/18/20
-               k=find(enrichind); % return the index of logical "1"
+               k=realenrichind; % return the index of logical "1"
                startind=1+(k-1)*size(Npenr,2);
                endind=k*size(Npenr,2);
                GaussPnt(igauss).Npenr(:,startind:endind)=Npenr;

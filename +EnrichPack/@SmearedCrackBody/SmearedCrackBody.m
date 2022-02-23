@@ -1,40 +1,13 @@
-classdef EnrCrackBody < EnrichPack.EnrichItem
+classdef SmearedCrackBody < EnrichPack.EnrCrackBody
    properties
-       IntPoints        % Global coordinates of the line gauss points along the whole crack
-       Uplus            % Displacement of the upper side u+
-       Uminus           % Displacement of the lower side u-
-       Aperture         % Apeature at the crack IntPoint
-       Pfrack           % Fracture pressures at each the crack IntPoint
-       CTraction        % Cohesion traction vector at each crack IntPoint
-       CrackVf          % Crack volume fraction on the IntPoint
-       CrackVolume      % Integrated crack volume,m^3
-       InjectionFlux=0;    % Current injection volumetric rate, m^3/2
-       LeakoffFlux=0;      % Current leakoff flux volumetric rate,m^3/2
-       LeakoffVolume=0; % Integrated leak volume over time
-       Qtable           % Applied fluid injection to this crack
-       Length           % Current crack length
-       CMOD             % Crack mouth opening
-       CMP              % Crack mouth pressure
-       % IN such fashion [encrack.Id,q,locnode1,localnode2,x_coord of the
-       % injection point,y_coord of the injection point];
-       NewNodes         % Newly found nodes to be enriched at this increment
-       NewElems         % These info will be used in obj.postprocess for skipping.
-       TransElems   % Part of the NewElems that are actually transited from previously smeared element.
-       InitialMode      % Initial crack mode: 1-perforated; 2-smeared 3-compressive; 4-tensile.
-       Smeared=false;   % Boolean flag to tell if the initial crack is smeared, dependent on InitialMode
-       Cohesive         % flag for the type of TSL, 'linear'-linear softening; 'bilinear'-bilinear softening.
-       Alpha=pi/2;      % angle between the crack plane and the initial loading for inplace mode
-       Isactive = true; % Indicate if the crack is able to propagate from the ti.
+       
    end
    properties(NonCopyable)
        Mytips
    end
-   properties(Dependent)
-       Stdnodes
-   end
    methods
        
-       function obj = EnrCrackBody(type,elemdict,nodedict,mygeo,initialmode,cohesive,varargin)
+       function obj = SmearedCrackBody(type,elemdict,nodedict,mygeo,initialmode,cohesive,varargin)
            % To allow constructor work with empty input, 12/07/20.
            if nargin==0
                super_args={};
@@ -47,9 +20,6 @@ classdef EnrCrackBody < EnrichPack.EnrichItem
            obj.Mesh=mygeo.Mesh;
            obj.InitialMode=initialmode;   
            obj.Cohesive=cohesive;       
-           obj.generatetips;
-           obj.setinteractedelem;
-           obj.setenrichednode;
            if ~isempty(varargin)
                obj.Alpha=varargin{1}; % the default value of alpha is pi/2
            end
@@ -60,14 +30,14 @@ classdef EnrCrackBody < EnrichPack.EnrichItem
            % not smeared. In this way, it may be easier to transfer
            % attributes between the smeared to open crack. (a proposal) 
            if initialmode==2
-               % For now, the newelems and newnodes will be empty.
                obj.Smeared=true;
-           else
-               % Initially the new elems and nodes are all nodes interacted
-               % if the obj.smeared is not true
-               obj.NewElems=obj.Interactedelem';
-               obj.NewNodes=obj.Enrichednode';
            end
+           obj.generatetips;
+           obj.setinteractedelem;
+           obj.setenrichednode;
+           % Initially the new elems and nodes are all nodes interacted
+           obj.NewElems=obj.Interactedelem';
+           obj.NewNodes=obj.Enrichednode';
            % Later on the new elems and nodes are updated in
            % obj.update_enrich per crack propagation.
        end
@@ -91,15 +61,6 @@ classdef EnrCrackBody < EnrichPack.EnrichItem
            end
            obj.Mytips=val;
        end  
-       function stdnodes=get.Stdnodes(obj)
-           stdnodes=zeros(length(obj.Mytips),2);
-           for itip=1:length(obj.Mytips)
-               tipelem=obj.Mytips(itip).INTELEM;
-               if ~tipelem.Smeared(tipelem.Enrich==obj.Id)
-                   stdnodes(itip,:)=obj.Mygeo.Stdnodes(2*itip-1:2*itip);
-               end
-           end
-       end
        
        function checkactive(obj)
            % 12/07/20 The activeness primarily depends on the geometry
@@ -115,10 +76,10 @@ classdef EnrCrackBody < EnrichPack.EnrichItem
        [unstablegrow,cutflag]=check_grow(obj,varargin);
        initial_enrich_1(obj,varargin);
        initial_enrich_2(obj,varargin);
-%        initial_enrich_3(obj,varargin);
+       initial_enrich_3(obj,varargin);
        update_enrich_1(obj,varargin);
        update_enrich_2(obj,varargin);
-%        update_enrich_3(obj,varargin)
+       update_enrich_3(obj,varargin)
        showme( obj,typex,varargin );
    end
 end

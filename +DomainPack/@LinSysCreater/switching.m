@@ -13,15 +13,25 @@ if mode==1
     obj.POt1=obj.Pt1;
     % For the enriched 
     if ~isempty(obj.EnrichItems)
-        for iEnrich=1:length(obj.EnrichItems)
+        smeared=[obj.EnrichItems.Smeared];
+        realenrich=find(~smeared);
+        for i=1:length(realenrich)
+            iEnrich=realenrich(i);
             enrichitem=obj.EnrichItems(iEnrich);
             id=enrichitem.Id;
             for ielem=1:length(enrichitem.INTELEM)
                 elem=enrichitem.INTELEM(ielem);
-                Jacob=elem.JacobianMatDict(id);
-                Jacob.F_coh_old=Jacob.F_coh_i;
-                for ig=1:length(elem.LineGaussDict{id})
-                    elem.LineGaussDict{id}(ig).TractionO=elem.LineGaussDict{id}(ig).Traction;
+                % when the enrichitem.Smeared==false, there is still a
+                % chance that some of its involved elements has opened.
+                ind=elem.Enrich==id; % should have been fixed for issue #1.
+                if ~elem.Smeared(ind) % the crack is open at this element
+                    Jacob=elem.JacobianMat;
+                    % There may be bug when there is change in elem.Enrich.
+                    % 02/05/21
+                    Jacob.F_coh_old=Jacob.F_coh_i;
+                    for ig=1:length(elem.LineGaussDict{ind})
+                        elem.LineGaussDict{ind}(ig).TractionO=elem.LineGaussDict{ind}(ig).Traction;
+                    end
                 end
             end
         end
@@ -47,15 +57,23 @@ elseif mode==3
     obj.P=zeros(obj.Npdof,1);
     if ~isempty(obj.EnrichItems)
         % For the enriched 
-        for iEnrich=1:length(obj.EnrichItems)
+        smeared=[obj.EnrichItems.Smeared];
+        realenrich=find(~smeared);
+        for i=1:length(realenrich)
+            iEnrich=realenrich(i);
             enrichitem=obj.EnrichItems(iEnrich);
             id=enrichitem.Id;
             for ielem=1:length(enrichitem.INTELEM)
                 elem=enrichitem.INTELEM(ielem);
-                Jacob=enrichitem.INTELEM(ielem).JacobianMatDict(id);
-                Jacob.F_coh_i=Jacob.F_coh_old; % initial F_coh_old should be assigned in the JacobianMat.
-                for ig=1:length(elem.LineGaussDict{id})
-                    elem.LineGaussDict{id}(ig).Traction=elem.LineGaussDict{id}(ig).TractionO;
+                % when the enrichitem.Smeared==false, there is still a
+                % chance that some of its involved elements has opened.
+                ind=elem.Enrich==id;
+                if ~elem.Smeared(ind) % the crack is open at this element
+                    Jacob=enrichitem.INTELEM(ielem).JacobianMat;
+                    Jacob.F_coh_i=Jacob.F_coh_old; % initial F_coh_old should be assigned in the JacobianMat.
+                    for ig=1:length(elem.LineGaussDict{ind})
+                        elem.LineGaussDict{ind}(ig).Traction=elem.LineGaussDict{ind}(ig).TractionO;
+                    end
                 end
             end
         end

@@ -16,19 +16,8 @@ function  [traction,stagechangeflag,obj]=matctu(obj,ua,Due)
 % fracturing process so the scheme is not changed to full NR scheme yet.
 
 %%
-if ~obj.Perforated
-    Vx=[1,0];
-    Vy=[0,1];
-    Vxl=obj.Mtaud;
-    Vyl=obj.Ntaud;
-    % Refer to the coordinate transformation
-    lxl=Vx*Vxl;     % cos(theta)
-    mxl=Vy*Vxl;     % sin (theta)
-    lyl=Vx*Vyl;     % -sin(theta)
-    myl=Vy*Vyl;     % cos(theat)
-    % 2d-Coordinate transformation matrix from global to the local;
-    Amat=[lxl,mxl;lyl,myl];
-    % ul=Amat*obj.CrackDisp;     % ul is local displcaement discontinuity averaged from nodal values
+if obj.InitialMode~=1 && ~obj.Smeared % matctu is not needed for perforated or smeared crack
+    % ul=obj.Amat*obj.CrackDisp;     % ul is local displcaement discontinuity averaged from nodal values
     %% Part 2:Derive Tangent_loc in the local orthogonal coordinate system
     % obj.TractionLaw.Disp=ul;            % Local
     % if isempty(varargin)
@@ -43,9 +32,9 @@ if ~obj.Perforated
     traction=obj.TractionO+obj.Tangent_coh*(obj.Nuenrplus-obj.Nuenrminus)*Due;
     %% Validate or modify the traction
     % crack opening in the last increment
-    %     localdisp=Amat*obj.CrackDisp;
+    %     localdisp=obj.Amat*obj.CrackDisp;
     %     lastopening=localdisp(2);
-    %     initialdisp=Amat*obj.IniCrackDisp;
+    %     initialdisp=obj.Amat*obj.IniCrackDisp;
     %     initialopening=initialdisp(2);
     % calculate the current crack opening
     % the two ways: (Nuenrplus-Nuenrminus)*ua or Nu*ua
@@ -58,12 +47,12 @@ if ~obj.Perforated
     calcrackopening=obj.Ntaud'*CrackDisp;
     %     shearopening=obj.Mtaud'*CrackDisp;
     %% By current opening, change the stiffness matrix also
-    if calcrackopening<=0
+    if calcrackopening<=0 
         Tangent_lol=[obj.TractionLaw.Tshearc,0;0,obj.TractionLaw.Tnormalc];
-        Tangent_coh=Amat'*Tangent_lol*Amat;
+        Tangent_coh=obj.Amat'*Tangent_lol*obj.Amat;
         if any(ua)  % to avoid disturbing the initial call of intforcer when ua are all zeros.
             temp1=Tangent_coh*(obj.Nuenrplus-obj.Nuenrminus)*ua;
-            temp2=Amat*temp1; % from global x-y to local shear-normal
+            temp2=obj.Amat*temp1; % from global x-y to local shear-normal
             tnormal=temp2(2);
             % Bug: traction(1) is global traction in x-direction, it may
             % not be tshear. Change it to temp2(1)
@@ -74,7 +63,7 @@ if ~obj.Perforated
                 traction_eff=sqrt(tshear^2+tnormal^2);
                 if traction_eff>obj.TractionLaw.PeakTraction*1.1
                     %                     release the shear traction if tnormal turns positive
-                    traction=Amat'*[0;obj.TractionLaw.IniTraction];
+                    traction=obj.Amat'*[0;obj.TractionLaw.IniTraction];
                 end
             else
                 % compressive mode, could use mohr-coulomb criterion, not
@@ -82,7 +71,8 @@ if ~obj.Perforated
                 traction=temp1;
             end
         end
-    else
+    else % current opening is positive
+        % if the previous increment is already stage 1
         if obj.TractionLaw.Stage==1 % only need to worry about stage change at stage 1
             traction_eff=sqrt(traction(1)^2+traction(2)^2);
             traction_effold=sqrt(obj.TractionO(1)^2+obj.TractionO(2)^2);
@@ -99,11 +89,18 @@ if ~obj.Perforated
                 else
                     obj.TractionLaw.AfterPeak=true;
                     % stagechangeflag=true;
-                    traction=Amat'*obj.TractionO;   % Just use the old traction
+                    traction=obj.Amat'*obj.TractionO;   % Just use the old traction
                     return;
                 end
             end
-        end  
+            % if the previous increment is still at stage -1
+        elseif obj.TractionLaw.Stage==-1
+            traction_eff=sqrt(traction(1)^2+traction(2)^2);
+            if traction_eff>obj.TractionLaw.PeakTraction
+                stagechangeflag=true;
+                return;
+            end
+        end
     end
 else
     stagechangeflag=false;

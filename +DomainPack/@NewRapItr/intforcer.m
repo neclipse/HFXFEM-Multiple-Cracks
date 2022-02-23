@@ -15,7 +15,7 @@ edict=obj.LinSysCrt.ElemDict;
 loadvec=zeros(obj.Dim,1);
 for ielem=1:length(edict)
     elem=edict(ielem);
-    if any(elem.Enrich)     % Enriched elements
+    if any(elem.RealEnrich)     % Enriched elements
 %         ienrich= find(elem.Enrich,1);
         % At the preliminary stage, there will be at most one enrich item in
         % one element, so this works. Later on, when there can be more enrich
@@ -32,7 +32,7 @@ for ielem=1:length(edict)
             load=elem.ifstd_enriched(obj.Newmark,stagecheck);
         end
         array=elem.JacobianMat.LocarrayAll;
-    else                    % Standard elements
+    else  % Standard elements
         stagechangeflag=false;
         load=elem.ifstd(obj.Newmark);
         array=edict(ielem).Locarray;

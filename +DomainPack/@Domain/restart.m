@@ -1,5 +1,5 @@
 %% Method of Domain class to direct the whole solving process
-function obj=running(obj,postdict,savemode,varargin)
+function obj=restart(obj,postdict,savemode,ind,iinc,varargin)
 %RUNNING Method of 'Domain' class
 % Loop over equilibrium iterations for one load increment
 % Assemble, solve Linear equation system and update
@@ -20,16 +20,6 @@ stdpdofs=obj.NoPDofs;
 % obj.Postprocess=postdict;
 % clear postdict;
 %% Loop over Newton_Raphson iteration increments
-ind=1;
-iinc=1;
-% 10/30/20 There may be more than one encracks in the future, so that
-% the following initialization would be carried out in a domain class.
-% Another reason is that the initial enrich and update_enrich will be
-% carried out in two steps: first we set_enrich and second we use
-% subdomain to the NewElems for EnrichGauss and enrich these elems.
-obj.initiate_enrich;
-obj=obj.updatedofarray_enriched; % Bug-Issue #15. 12/04/2020
-obj.LinSysCrt.initialRHS;
 % Add try and catch statements to handle unexpected errors without saving
 % the results to obj.Postprocess.07132019
 try

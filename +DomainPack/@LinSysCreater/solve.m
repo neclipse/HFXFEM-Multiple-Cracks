@@ -12,20 +12,21 @@ else
     LHS=obj.LHS;        % nonlinear because of Kc in the LHS
 end
 if obj.Drow<=100000 
-    if isempty(obj.EnrichItems)
+%     if isempty(obj.EnrichItems)
         % The standard matrix is already well Banded
         obj.Unknowns=LHS\obj.RHS;
-    else
-        % The enriched matrix may disturb the banded structure
-        % Use the Sparse reverse Cuthill-McKee ordering to reduce the
-        % bandwidth of the LHS in order to improve the solution speed. (03032019)
-        r=symrcm(LHS);
-        rcmlhs=LHS(r,r);
-        rcmrhs=obj.RHS(r);
-        rcmunknowns=rcmlhs\rcmrhs;
-        [~,rI]=sort(r);
-        obj.Unknowns=rcmunknowns(rI);   %recover the orginal order
-    end
+%     else % may cause singularity problem when crack get unsmeared
+%     03112021, go back to the standard solver.
+%         % The enriched matrix may disturb the banded structure
+%         % Use the Sparse reverse Cuthill-McKee ordering to reduce the
+%         % bandwidth of the LHS in order to improve the solution speed. (03032019)
+%         r=symrcm(LHS);
+%         rcmlhs=LHS(r,r);
+%         rcmrhs=obj.RHS(r);
+%         rcmunknowns=rcmlhs\rcmrhs;
+%         [~,rI]=sort(r);
+%         obj.Unknowns=rcmunknowns(rI);   %recover the orginal order
+%     end
 else
 % Iterative solver GMRES with ilu preconditioner, ILU(0) or milu
     setup.type='nofill';

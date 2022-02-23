@@ -9,6 +9,7 @@ if ~isempty(obj.EnrichItems)
     for ienr=1:length(obj.EnrichItems)
         enritem=obj.EnrichItems(ienr);
         enritem.NewElems=[];
+        enritem.TransElems=[]; % 02/12/2021.
         enritem.NewNodes=[];
         enritem.postprocess(obj.NewtonRaphson.Dt);      % obtain crack aperture and other practical information.
     end
@@ -30,7 +31,7 @@ if ~isempty(obj.EnrichItems)
 %         obj.EnrichItems(ienr).update_enrich_3;
 %     end
     % Fixing a BUG in issue #19: the existing crack did not enrich the
-    % element with a new crack crossing but the existing enrichitem did not
+    % element with a new crack crossing because the existing enrichitem did not
     % have the element as NewElem. 12/25/2020
     % New approach: fetch all newelems and start the loop from the new elems
     % but not from the enrichitems. Domain. initiate_enrich can follow the
@@ -40,7 +41,8 @@ if ~isempty(obj.EnrichItems)
     for ielem=1:length(allnewelems)
         newelem=obj.ElemDict(allnewelems(ielem));
         % loop over all EnrichItems involved with the newelem
-        for ienr=1:newelem.EnrichNum
+        for i=1:newelem.EnrichNum
+            ienr=newelem.get_realenrichind(i); % the index in elem.Enrich
             EnrItem=obj.EnrichItems(newelem.Enrich(ienr));
             % loop over the Myenfs of the EnrItem
             for ienf=1:length(EnrItem.Myenfs)

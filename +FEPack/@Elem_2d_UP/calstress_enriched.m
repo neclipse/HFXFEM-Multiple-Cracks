@@ -1,7 +1,7 @@
 function calstress_enriched(obj,storage)
 %Calstress_enriched: function of elem2d, will be called in domain.storage
 %Extrapolate/Average stress from subtriangles gaussian points to the nodes
-%1. Loop over each node to find the closest two gaussian points
+%1. Loop over each node to find the closest three gaussian points
 %2. Obtain the average stresses as the contribution of stresses from 
 % this element to the node, only when storage==true
 % obtain the coordinates of the enriched gaussian points

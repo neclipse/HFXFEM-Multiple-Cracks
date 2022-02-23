@@ -95,11 +95,11 @@ methods
         % AFFECT THE CRACK PROPAGATION.
         switch obj.Mode
             case 'tip'
-                if f>1+obj.Tol2
-                    %             warning('cut back the current time increment');
-                    obj.Unstable=true;
-                    obj.Growflag=false;
-                elseif f>=1+obj.Tol
+%                 if f>1+obj.Tol2
+%                     %             warning('cut back the current time increment');
+%                     obj.Unstable=true;
+%                     obj.Growflag=true; % don't cut back now 03/09/21
+                if f>=1+obj.Tol
                     %             warning('cut the following increments');
                     obj.Unstable=true;
                     obj.Growflag=true;
@@ -111,11 +111,11 @@ methods
                     obj.Growflag=false;
                 end
             case 'center'
-                if max(f)>1+obj.Tol2
-                    %             warning('cut back the current time increment');
-                    obj.Unstable=true;
-                    obj.Growflag=false;
-                elseif max(f)>=1+obj.Tol 
+%                 if max(f)>1+obj.Tol2
+%                     %             warning('cut back the current time increment');
+%                     obj.Unstable=true;
+%                     obj.Growflag=true;
+                if max(f)>=1+obj.Tol 
 %                     warning('cut the following increments');
                     obj.Unstable=true;
                     obj.Growflag=true;
@@ -138,8 +138,9 @@ methods
                 obj.Unstable=false;
                 obj.Growflag=false;
                 temp=f(f>1);
-                midvalue=min(0.7,quantile(f(2:end),0.25));
-                if f(1)>midvalue && length(temp)>2
+%                 midvalue=min(0.7,quantile(f(2:end),0.2));
+%                 if   f(1)>midvalue;
+                if  length(temp)>1
                     obj.Unstable=false;
                     obj.Growflag=true;
                 end
@@ -165,7 +166,7 @@ methods
         % rotated if negative then clockwisely rotated
         %IMPORTANT BUG: DO NOT USE THETA MIMUS OBJ.OMEGA. 08082019
         % ALSO USE ABS(THETA)
-        if abs(theta)<1e-5
+        if abs(theta)<1e-2
             theta=0;
         end
         obj.Growdirection=theta;
